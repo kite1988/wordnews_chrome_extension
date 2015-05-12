@@ -1,4 +1,5 @@
 'use script';
+// Is this above meant to be 'use strict'?
 
 var url_front = "http://translatenews.herokuapp.com/";
 //var url_front = "http://localhost:3000/";
@@ -14,6 +15,9 @@ var vocabularyListDisplayed;
 var displayID = "";
 var appendContentDictionary = {};
 var websiteSetting = "";
+
+var startTime;
+
 
 function talkToHeroku(url, params, index){
     var xhr = new XMLHttpRequest();
@@ -75,7 +79,11 @@ function talkToHeroku(url, params, index){
 		}
 		//console.log(x+" "+obj[x]+" "+obj[x].isTest);
 	    }
+
+	    startTime = new Date();  // this is used to track the time between each click
+
 	    replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
+
 	    //document.getElementById('article').innerHTML  = obj["chinese"];
 	}
 	else {// Show what went wrong
@@ -405,23 +413,6 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
 	});
 	var parts = text.split(" " + sourceWord + " ");
-	/*		var t = 1;
-
-			for(var k=0; k< parts.length; k++){
-			var n = occurrences(parts[k],"\"");
-			if(n%2==1){
-			if(t == 1){
-			parts[k] = parts[k] + "\"";
-			t = 2;
-			}
-			else{
-			parts[k] = "\"" + parts[k];
-			t = 1;
-			}
-			}
-			}*/
-
-	//var result = parts.join(joinString);
 	var result = "";
 	if(parts.length > 1)
 	{
@@ -436,19 +427,6 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	result += parts.join(" " + sourceWord + " ");
 
 	paragraph.innerHTML = result;
-	/*    	console.log("paragraph.length is: "+paragraphs.length+" and i is:"+i);
-		if(i == paragraphs.length-1 && vocabularyListDisplayed == 0){
-		vocabularyListDisplayed = 1;
-		console.log("wowowowowowowowowowowow");
-		var oneMoreParagraph = "<p></p><p></p>";
-		oneMoreParagraph+="<p style='font-weight: bold;'>Words translated in this page:</p>";
-	//console.log("size of the dictionary is: "+ Object.keys(pageDictionary).length);
-	var key;
-	for(key in pageDictionary){
-	oneMoreParagraph+="<p>"+key+" : "+pageDictionary[key]+"</p>";
-	}
-	$(oneMoreParagraph).insertAfter(".cnn_storypgraph"+(i+2));
-	}*/
 	}
 
 	//this is test on 2015/3/6
@@ -461,49 +439,25 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    } while(element);
 
 	    return {
-top: top,
-	 left: left
+		 top: top,
+		 left: left
 	    };
 	};
 
-	/*	$('html').click(function() {
-		var myElem = document.getElementById(displayID);
-		if(myElem!=null)
-		document.body.removeChild(myElem);
-		displayID = '';
-		});*/
-
-	/*	$(document).mouseup(function (e)
-		{
-		var container = $(".jfk-bubble")
-	//console.log(container[0]);
-	//console.log("000   "+container[0]);
-	if(container[0] !== undefined)
-	{
-	console.log("111   "+container[0]);
-	if ( !container.is(e.target) && container.has(e.target).length === 0) // if the target of the click isn't the container... // ... nor a descendant of the container
-	{
-	//console.log("222   "+container[0]);
-	var id = container.attr('id');
-
-	console.log(id);
-	var englishWord = id.split('_')[1];
-	var tempWordID = id.split('_')[2];
-	var remembered = new HttpClient();
-	remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-	console.log("this is answer: "+answer);
-	});
-
-	document.body.removeChild(container[0]);
-	}
-	}
-	});*/
-	$(document).unbind().mousedown(function (e)
-		{
+	$(document).unbind().mousedown(function (e) {
 		e = e || window.event;
 		var id = (e.target || e.srcElement).id;
 		var thisClass = (e.target || e.srcElement).className;
 		var container = $(".jfk-bubble")
+
+
+		var currentTime = new Date();
+		var timeElapsed = currentTime - startTime; 
+
+                var loggingUrl = url_front + 'log?' + 'id=' + encodeURIComponent(userAccount) +
+		'&time=' + encodeURIComponent(timeElapsed) + '&move=';  // missing move param
+		var remembered = new HttpClient();
+
 		//console.log(container[0]);
 		console.log("000   "+container[0]);
 		console.log("class is "+thisClass);		
@@ -518,19 +472,24 @@ top: top,
 		var englishWord = id.split('_')[1];
 		var tempWordID = id.split('_')[2];
 		var mainOrTest = id.split('_')[4];
-		var remembered = new HttpClient();
 		console.log(mainOrTest);
 		if(mainOrTest == 0)
 		{
 		    remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
 			    console.log("this is answer: "+answer);
 			    });
+		    remembered.post(loggingUrl + 'myId_more', function(dummy) {
+			console.log("log sent");
+		    });
 		}
 		document.body.removeChild(container[0]);
 		}
 	if(id == 'myID_more')
 	{
 	    console.log("222   "+container[0]);
+	    remembered.post(loggingUrl + 'myId_more', function(dummy) {
+		console.log("log sent");
+	    });
 
 	    id = container.attr('id');
 
@@ -546,6 +505,11 @@ top: top,
 	{
 	    console.log("clicked id is "+id);
 	    var myAudio = document.getElementById("myAudio_"+id);
+
+	    remembered.post(loggingUrl + 'clickAudioButton', function(dummy) {
+		console.log("log sent");
+	    });
+
 	    if (myAudio.paused) {
 		//console.log("find this element and it is paused");
 		myAudio.play();
@@ -561,6 +525,9 @@ top: top,
 	    var remembered = new HttpClient();
 	    if(isCorrect == 'c')
 	    {
+		remembered.post(loggingUrl + 'correct_quiz_answer', function(dummy) {
+		    console.log("log sent");
+		});
 		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
 			console.log("select the correct answer");
 			});
@@ -571,6 +538,9 @@ top: top,
 	    }
 	    else
 	    {
+		remembered.post(loggingUrl + 'wrong_quiz_answer', function(dummy) {
+		    console.log("log sent");
+		});
 		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
 			console.log("select the wrong answer");
 			});
@@ -583,29 +553,10 @@ top: top,
 		});
 
 
-	/*	$(".gtx-a").click(function(event){
-		var container = $(".jfk-bubble")
-		console.log("000   "+container[0]);
-		if(container[0] !== undefined)
-		{
-		console.log("111   "+container[0]);
-		var id = container.attr('id');
-
-		console.log(id);
-		var englishWord = id.split('_')[1];
-		var tempWordID = id.split('_')[2];
-		var remembered = new HttpClient();
-		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-		console.log("this is answer: "+answer);
-		});
-
-		document.body.removeChild(container[0]);
-		}
-		});*/
 
 	$(".fypSpecialClass").unbind().click(function(event) {
 
-		//event.stopPropagation();
+
 
 		var id = $(this).attr('id');
 
@@ -617,18 +568,13 @@ top: top,
 		if(myElem!=null)
 		document.body.removeChild(myElem);
 
-		//document.body.innerHTML += appendContentDictionary[id+"_popup"];
-		//console.log(appendContentDictionary);
-		//console.log(id);
-		//console.log(appendContentDictionary[id+"_popup"]);
-
 		$("body").append(appendContentDictionary[id+"_popup"]);
 		document.getElementById(id+"_popup").style.left = (rect.left-100)+'px';
 		document.getElementById(id+"_popup").style.top = (rect.top+30)+'px';
-		//left: '+(rect.left-100)+'px; top: '+(rect.top+30)+'px;
+
 	});
 
-	//$('.fypSpecialClass').popover({ html : true, placement : 'bottom', trigger: 'click hover', delay: {show: 300, hide: 300}});
+
 
 	$('.fypSpecialClass').mouseover(function(){
 		$(this).css("color","#FF9900");
@@ -689,17 +635,6 @@ top: top,
 		}
 
 		var remembered = new HttpClient();
-		//http://testnaijia.herokuapp.com/getIfTranslate?name='+userAccoun
-		/*		remembered.get(url_front+'getIfTranslate?name='+userAccount, function(answer) {
-
-				var obj=JSON.parse(answer);
-
-				if(obj.if_translate!==undefined){
-				if(obj.if_translate=='1')
-				isWorking = 1;
-				else
-				isWorking = 0;
-				}*/
 
 		var websiteCheck = 0;
 		var splitedWebsite = websiteSetting.split("_");
@@ -707,18 +642,18 @@ top: top,
 		for(var k = 0; k < splitedWebsite.length; k++){
 		    if(document.URL.indexOf(splitedWebsite[k]) !== -1 && websiteSetting !== "")
 			websiteCheck = 1;
-		} 9
+		} 
 
 		if(websiteSetting.indexOf('all')!==-1)
 		    websiteCheck = 1;
 		console.log("isWorking "+isWorking + " websiteCheck "+websiteCheck);
 		if(isWorking == 1 && websiteCheck == 1)
 		{
-		    //var paragraphs = document.getElementsByClassName('zn-body__paragraph');	
+
 		    var paragraphs = document.getElementsByTagName('p');
 
 		    for (var i = 0; i < paragraphs.length; i++) {
-			//console.log("length of the paragraphs is : "+paragraphs.length);
+
 			var sourceWords = [];
 			var targetWords = [];
 
@@ -727,25 +662,13 @@ top: top,
 
 			var url = url_front+'show';
 			var params = "text="+stringToServer+"&url="+document.URL+"&name="+userAccount;
-			//console.log(params);
+	
 			talkToHeroku(url, params, i);
 		    }
 
-		    /*			$(document).on("click", ".audioButton", function() {
-					var id = $(this).attr('id');
-					console.log("clicked id is "+id);
-					var myAudio = document.getElementById("myAudio_"+id);
-					if (myAudio.paused) {
-		    //console.log("find this element and it is paused");
-		    myAudio.play();
-		    } else {
-		    myAudio.pause();
-		    }
-		    });*/
 
 		}
 
-		//});
 	    });
     });
 
@@ -760,6 +683,16 @@ top: top,
 	    anHttpRequest.open( "GET", aUrl, true );            
 	    anHttpRequest.send( null );
 	}	
+	this.post = function(url, callback) {
+            httpRequest = new XMLHttpRequest(); 
+	    httpRequest.onreadystatechange = function() { 
+		if (httpRequest.readyState == 4 && httpRequest.status == 200)
+		    callback(anHttpRequest.responseText);
+	    }
+	    httpRequest.open( "POST", url, true );            
+	    httpRequest.send( null );
+
+	}
     }
 
     function shuffle(o){ //v1.0
