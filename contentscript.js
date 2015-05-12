@@ -302,11 +302,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    }
 
 
-	    //append += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
-	    //append += '<a id="myID_more" target="_blank" href="http://dict.youdao.com/search?q='+sourceWord+'&keyfrom=dict.index"  style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
 	    append += '</div></div></div></div>';
-	    //append += '</div>';
-	    //append += '<div class="jfk-bubble-closebtn-id jfk-bubble-closebtn" aria-label="Close" role="button" tabindex="0"></div>';
 	    append += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
 	    append += '<div class="jfk-bubble-arrowimplbefore"></div>';
 	    append += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
@@ -321,71 +317,9 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
 	}
 
-	/*		$(document).on("click", "#"+id+"_btn1", function() {
-			var id = $(this).attr('id');
-			var englishWord = id.split('_')[1];
-			var tempWordID = id.split('_')[2];
-			console.log(tempWordID);
-			var remembered = new HttpClient();
-			remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-			console.log("this is answer: "+answer);
-			});
-			$('.fypSpecialClass').popover('hide');
-			});*/
 
-
-	//this is the end of the test
-
-	/*		$(document).on("click", "#"+id+"_btn2", function() {
-			var id = $(this).attr('id');
-			var englishWord = id.split('_')[1];
-			var tempWordID = id.split('_')[2];
-	//console.log(tempWordID);
-	var remembered = new HttpClient();
-	$('.fypSpecialClass').popover('hide');
-	remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-	console.log("this is answer: "+answer);
-	});
-	window.open("http://dict.youdao.com/search?q="+englishWord+"&keyfrom=dict.index");
-	});*/
-
-	/*		$(document).on("click","#"+id+"_btn3",function(){
-			var id = $(this).attr('id');
-			var englishWord = id.split('_')[1];
-			var tempWordID = id.split('_')[2];
-	//console.log(tempWordID);
-	var remembered = new HttpClient();
-	remembered.get(url_front+'getExampleSentences?name='+userAccount+'&wordID='+tempWordID, function(answer) {
-	var obj=JSON.parse(answer);
-	console.log(obj);
-	var exampleSentences = "";
-
-	if(obj.englishSentence !== undefined && obj.chineseSentence !== undefined){
-	var tempEnglishSentence = [];
-	for(var key in obj.englishSentence){
-	exampleSentences += "<div>"+obj.englishSentence[key]+"</div>";
-	exampleSentences += "<div>"+obj.chineseSentence[key]+"</div>";
-	console.log("from server: "+exampleSentences);
-	}
-	}
-	else{
-	console.log("englishSentence or chineseSentence is not defined!!!");
-	}
-	if(exampleSentences == ""){
-	exampleSentences += "<div>Sorry. No example sentence available for this word.</div>";
-	exampleSentences += "<div>You can click \"show me\" for more info.</div>";
-	}
-	document.getElementById('exampleSentences').innerHTML = exampleSentences;
-	document.getElementById("exampleSentences").style.display="table";
-
-	});
-	//document.getElementById('exampleSentences').innerHTML = "This is a book. 是一本...";
-	});*/
-
-	//$(document).on("click", "#"+id+"_btn3", function() {
 	$(document).on("click", "input[name*='inlineRadioOptions']", function() {
-		//$('input:radio').change(function() {
-		//alert("radio changed");
+
 	    var id = $(this).attr('id');
 	    var tempWordID = $(this).attr('value').split("_")[0];
 	    //console.log("word = "+word+" id = "+id);
@@ -412,6 +346,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    }
 
 	});
+
 	var parts = text.split(" " + sourceWord + " ");
 	var result = "";
 	if(parts.length > 1)
@@ -427,136 +362,135 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	result += parts.join(" " + sourceWord + " ");
 
 	paragraph.innerHTML = result;
-	}
+    }
 
 	//this is test on 2015/3/6
-	var cumulativeOffset = function(element) {
-	    var top = 0, left = 0;
-	    do {
-		top += element.offsetTop  || 0;
-		left += element.offsetLeft || 0;
-		element = element.offsetParent;
-	    } while(element);
+    var cumulativeOffset = function(element) {
 
-	    return {
-		 top: top,
-		 left: left
-	    };
+	var top = 0, left = 0;
+	do {
+	    top += element.offsetTop  || 0;
+	    left += element.offsetLeft || 0;
+	    element = element.offsetParent;
+	} while(element);
+
+	return {
+	    top: top,
+	    left: left
 	};
+    };
 
-	$(document).unbind().mousedown(function (e) {
-		e = e || window.event;
-		var id = (e.target || e.srcElement).id;
-		var thisClass = (e.target || e.srcElement).className;
-		var container = $(".jfk-bubble")
+    $(document).unbind().mousedown(function (e) {
+	    e = e || window.event;
+	    var id = (e.target || e.srcElement).id;
+	    var thisClass = (e.target || e.srcElement).className;
+	    var container = $(".jfk-bubble")
 
 
-		var currentTime = new Date();
-		var timeElapsed = currentTime - startTime; 
+	    var currentTime = new Date();
+	    var timeElapsed = currentTime - startTime; 
 
-                var loggingUrl = url_front + 'log?' + 'id=' + encodeURIComponent(userAccount) +
-		'&time=' + encodeURIComponent(timeElapsed) + '&move=';  // missing move param
-		var remembered = new HttpClient();
+	    var loggingUrl = url_front + 'log?' + 'id=' + encodeURIComponent(userAccount) +
+	    '&time=' + encodeURIComponent(timeElapsed) + '&move=';  // missing move param
+	    var remembered = new HttpClient();
 
-		//console.log(container[0]);
-		console.log("000   "+container[0]);
-		console.log("class is "+thisClass);		
-		if(container[0] !== undefined)
-		{	    	
+	    //console.log(container[0]);
+	    console.log("000   "+container[0]);
+	    console.log("class is "+thisClass);		
+	    if (container[0] !== undefined) {   
 		console.log("111   "+container[0]);
 		if ( !container.is(e.target) && container.has(e.target).length === 0) // if the target of the click isn't the container... // ... nor a descendant of the container
 		{
-		console.log("222   "+container[0]);
-		var id = container.attr('id');
-		console.log(id);
-		var englishWord = id.split('_')[1];
-		var tempWordID = id.split('_')[2];
-		var mainOrTest = id.split('_')[4];
-		console.log(mainOrTest);
-		if(mainOrTest == 0)
-		{
-		    remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-			    console.log("this is answer: "+answer);
-			    });
+		    console.log("222   "+container[0]);
+		    var id = container.attr('id');
+		    console.log(id);
+		    var englishWord = id.split('_')[1];
+		    var tempWordID = id.split('_')[2];
+		    var mainOrTest = id.split('_')[4];
+		    console.log(mainOrTest);
+		    if(mainOrTest == 0)
+		    {
+			remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
+				console.log("this is answer: "+answer);
+				});
+			remembered.post(loggingUrl + 'myId_more', function(dummy) {
+				console.log("log sent");
+				});
+		    }
+		    document.body.removeChild(container[0]);
+		}
+
+		if(id == 'myID_more') {
+		    console.log("222   "+container[0]);
 		    remembered.post(loggingUrl + 'myId_more', function(dummy) {
 			console.log("log sent");
 		    });
-		}
-		document.body.removeChild(container[0]);
-		}
-	if(id == 'myID_more')
-	{
-	    console.log("222   "+container[0]);
-	    remembered.post(loggingUrl + 'myId_more', function(dummy) {
-		console.log("log sent");
-	    });
 
-	    id = container.attr('id');
+		    id = container.attr('id');
+		    console.log(id);
 
-	    console.log(id);
-	    var englishWord = id.split('_')[1];
-	    var tempWordID = id.split('_')[2];
-	    var remembered = new HttpClient();
-	    remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-		    console.log("this is answer: "+answer);
+		    var englishWord = id.split('_')[1];
+		    var tempWordID = id.split('_')[2];
+		    var remembered = new HttpClient();
+
+		    remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
+			    console.log("this is answer: "+answer);
 		    });
-	}
-	if(thisClass == 'audioButton')
-	{
-	    console.log("clicked id is "+id);
-	    var myAudio = document.getElementById("myAudio_"+id);
-
-	    remembered.post(loggingUrl + 'clickAudioButton', function(dummy) {
-		console.log("log sent");
-	    });
-
-	    if (myAudio.paused) {
-		//console.log("find this element and it is paused");
-		myAudio.play();
-	    } else {
-		myAudio.pause();
-	    }
-	}
-	if(thisClass == 'fyp_choice_class')
-	{
-	    console.log("clicked id isis "+id);
-	    var tempWordID = id.split("_")[0];
-	    var isCorrect = id.split("_")[1];
-	    var remembered = new HttpClient();
-	    if(isCorrect == 'c')
-	    {
-		remembered.post(loggingUrl + 'correct_quiz_answer', function(dummy) {
-		    console.log("log sent");
-		});
-		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-			console.log("select the correct answer");
-			});
-		$('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");				
-		$('.jfk-bubble').css("background-size", "cover");
-
-		$('.content').css("background-color", "#cafffb");
-	    }
-	    else
-	    {
-		remembered.post(loggingUrl + 'wrong_quiz_answer', function(dummy) {
-		    console.log("log sent");
-		});
-		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-			console.log("select the wrong answer");
-			});
-		$('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");				
-		$('.jfk-bubble').css("background-size", "cover");
-	    }
-
-	}
 		}
-		});
+
+		if(thisClass == 'audioButton') {
+		    console.log("clicked id is "+id);
+		    var myAudio = document.getElementById("myAudio_"+id);
+
+		    remembered.post(loggingUrl + 'clickAudioButton', function(dummy) {
+			console.log("log sent");
+		    });
+
+		    if (myAudio.paused) {
+			myAudio.play();
+		    } else {
+			myAudio.pause();
+		    }
+		}
+    
+		if(thisClass == 'fyp_choice_class') {
+		    console.log("clicked id isis "+id);
+		    var tempWordID = id.split("_")[0];
+		    var isCorrect = id.split("_")[1];
+		    var remembered = new HttpClient();
+		    if(isCorrect == 'c') {
+			remembered.post(loggingUrl + 'correct_quiz_answer', function(dummy) {
+				console.log("log sent");
+			});
+
+			remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
+				console.log("select the correct answer");
+			});
+
+			$('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");				
+
+			$('.jfk-bubble').css("background-size", "cover");
+
+			$('.content').css("background-color", "#cafffb");
+		    }
+		    else {
+			remembered.post(loggingUrl + 'wrong_quiz_answer', function(dummy) {
+				console.log("log sent");
+				});
+			remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
+				console.log("select the wrong answer");
+				});
+			$('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");				
+			$('.jfk-bubble').css("background-size", "cover");
+		    }
+
+		}
+	    }
+	});
 
 
 
 	$(".fypSpecialClass").unbind().click(function(event) {
-
-
 
 		var id = $(this).attr('id');
 
@@ -575,14 +509,13 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	});
 
 
-
 	$('.fypSpecialClass').mouseover(function(){
 		$(this).css("color","#FF9900");
 		$(this).css("cursor","pointer");
-		});
+	});
 	$('.fypSpecialClass').mouseout(function(){
 		$(this).css("color","black");
-		});
+	});
     }
 
 
@@ -662,7 +595,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
 			var url = url_front+'show';
 			var params = "text="+stringToServer+"&url="+document.URL+"&name="+userAccount;
-	
+
 			talkToHeroku(url, params, i);
 		    }
 
@@ -684,7 +617,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    anHttpRequest.send( null );
 	}	
 	this.post = function(url, callback) {
-            httpRequest = new XMLHttpRequest(); 
+	    httpRequest = new XMLHttpRequest(); 
 	    httpRequest.onreadystatechange = function() { 
 		if (httpRequest.readyState == 4 && httpRequest.status == 200)
 		    callback(anHttpRequest.responseText);
