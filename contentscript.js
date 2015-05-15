@@ -290,9 +290,17 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 			break;
 		    case 4:
 			if(isTest[j]==1)
-			    append += '<div id="'+wordID[j]+'_c" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; float: left; width: 50%; padding-top: 16px;">'+sourceWord+'</div>';
+			    append += '<div id="'+wordID[j]+'_c" align="center"' +
+			    'class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'"' +
+			    'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
+			    'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:'+
+			    '16px;">'+ sourceWord.toLowerCase() +'</div>';
 			else if(isTest[j]==2)
-			    append += '<div id="'+wordID[j]+'_c" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; float: left; width: 50%; padding-top: 16px;">'+targetWord+'</div>';
+			    append += '<div id="'+wordID[j]+'_c" align="center"'
+			    'class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'"' +
+			    'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
+			    'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:'+
+			    '16px;">'+targetWord.toLowerCase()+'</div>';
 			break;
 		    default:
 			break;
