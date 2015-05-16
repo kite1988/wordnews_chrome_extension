@@ -421,7 +421,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 			remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
 				console.log("this is answer: "+answer);
 				});
-			remembered.post(loggingUrl + 'myId_more', function(dummy) {
+			remembered.post(loggingUrl + 'myId_more_' + tempWordID, function(dummy) {
 				console.log("log sent");
 				});
 		    }
@@ -430,7 +430,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
 		if(id == 'myID_more') {
 		    console.log("222   "+container[0]);
-		    remembered.post(loggingUrl + 'myId_more', function(dummy) {
+		    remembered.post(loggingUrl + 'myId_more_wordID_' + tempWordID, function(dummy) {
 			console.log("log sent");
 		    });
 
@@ -450,7 +450,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		    console.log("clicked id is "+id);
 		    var myAudio = document.getElementById("myAudio_"+id);
 
-		    remembered.post(loggingUrl + 'clickAudioButton', function(dummy) {
+		    remembered.post(loggingUrl + 'clickAudioButton_wordID_'+id, function(dummy) {
 			console.log("log sent");
 		    });
 
@@ -467,7 +467,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		    var isCorrect = id.split("_")[1];
 		    var remembered = new HttpClient();
 		    if(isCorrect == 'c') {
-			remembered.post(loggingUrl + 'correct_quiz_answer', function(dummy) {
+			remembered.post(loggingUrl + 'correct_quiz_answer_wordId_' + tempWordID, function(dummy) {
 				console.log("log sent");
 			});
 
@@ -482,7 +482,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 			$('.content').css("background-color", "#cafffb");
 		    }
 		    else {
-			remembered.post(loggingUrl + 'wrong_quiz_answer', function(dummy) {
+			remembered.post(loggingUrl + 'wrong_quiz_answer_wordID_' + tempWordID, function(dummy) {
 				console.log("log sent");
 				});
 			remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
