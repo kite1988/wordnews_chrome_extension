@@ -39,10 +39,10 @@ function onWindowLoad() {
 	    }
 	    console.log("isWorking "+isWorking);
 	    if(isWorking == 0){
-	    document.getElementById("turnOn").className = "btn btn-default";
-	    document.getElementById("turnOff").className = "btn btn-primary active";
+		document.getElementById("turnOn").className = "btn btn-default";
+		document.getElementById("turnOff").className = "btn btn-primary active";
 	    }
-	    else{
+	    else {
 		document.getElementById("turnOn").className = "btn btn-primary active";
 		document.getElementById("turnOff").className = "btn btn-default";
 	    }
@@ -65,21 +65,23 @@ function onWindowLoad() {
 	    wordsReplaced = result.wordsReplaced;
 	    console.log("wordsReplaced "+wordsReplaced);
 	    if(wordsReplaced == undefined){
-		wordsReplaced = 0;
+		wordsReplaced = 2;
+		console.log("Set to default wordsReplaced setting");
 		chrome.storage.sync.set({'wordsReplaced': wordsReplaced});
 	    }
 	    else{
 		//document.getElementById("wordsReplaced").value = wordsReplaced;
 		$("#wordsReplaced").slider({
-precision: 2,
-value: wordsReplaced // Slider will instantiate showing 8.12 due to specified precision
-});
+		    precision: 2,
+		    value: wordsReplaced // Slider will instantiate showing 8.12 due to specified precision
+		});
 }
 
 websiteSetting = result.websiteSetting;
 console.log("websiteSetting "+websiteSetting);
 if(websiteSetting == undefined){
-    websiteSetting = "";
+    websiteSetting = "cnn.com";
+    console.log("Set to default website setting");
     chrome.storage.sync.set({'websiteSetting': websiteSetting});
 }
 if(websiteSetting.indexOf('cnn.com') !== -1)
@@ -91,14 +93,6 @@ document.getElementById("inlineCheckbox3").checked = true;
 if(websiteSetting.indexOf('all') !== -1)
 document.getElementById("inlineCheckbox4").checked = true;
 
-/*		if(categoryParameter.indexOf('@1@') !== -1)
-		{
-		document.getElementById("inlineCheckbox1").checked = true;
-		}
-		if(categoryParameter.indexOf('@3@') !== -1)
-		{
-		document.getElementById("inlineCheckbox3").checked = true;
-		}*/
 
 
 var remembered = new HttpClient();
@@ -118,57 +112,37 @@ remembered.get(url_front+'/getNumber?name='+userAccount, function(answer) {
 	});
 });
 
-// With JQuery
-//$("#wordsReplaced").slider();
 $("#wordsReplaced").on("slide", function(slideEvt) {
 	chrome.storage.sync.set({'wordsReplaced': slideEvt.value});
 	});
 
-/*	$("input").change(function() {
-	console.log("1111111");
-	categoryParameter = "";
-	if(document.getElementById("inlineCheckbox1").checked == true)
-	{
-	categoryParameter+= "@"+document.getElementById("inlineCheckbox1").value+"@";
-	}
-	if(document.getElementById("inlineCheckbox3").checked == true)
-	{
-	categoryParameter+= "@"+document.getElementById("inlineCheckbox3").value+"@";
-	}
-	chrome.storage.sync.set({'categoryParameter': categoryParameter});
-	chrome.storage.sync.get('categoryParameter', function(result){
-	userAccount = result.categoryParameter;
-	console.log("user categoryParameter: "+ result.categoryParameter);
-	});
-	});*/
 
 $("input").change(function() {
-	console.log("1111111");
+
 	websiteSetting = "";
-	if(document.getElementById("inlineCheckbox1").checked == true)
-	{
-	if(websiteSetting !== "")
-	websiteSetting += '_';
-	websiteSetting+= document.getElementById("inlineCheckbox1").value;
+	if(document.getElementById("inlineCheckbox1").checked == true) {
+	    if(websiteSetting !== "")
+		websiteSetting += '_';
+	    websiteSetting+= document.getElementById("inlineCheckbox1").value;
 	}
-	if(document.getElementById("inlineCheckbox2").checked == true)
-	{
-	if(websiteSetting !== "")
-	websiteSetting += '_';
-	websiteSetting+= document.getElementById("inlineCheckbox2").value;
+
+	if(document.getElementById("inlineCheckbox2").checked == true) {
+	    if(websiteSetting !== "")	
+		websiteSetting += '_';
+		websiteSetting += document.getElementById("inlineCheckbox2").value;
 	}
-	if(document.getElementById("inlineCheckbox3").checked == true)
-	{
-	if(websiteSetting !== "")
-	websiteSetting += '_';
-	websiteSetting+= document.getElementById("inlineCheckbox3").value;
+	if(document.getElementById("inlineCheckbox3").checked == true) {
+		if(websiteSetting !== "")
+		    websiteSetting += '_';
+		websiteSetting+= document.getElementById("inlineCheckbox3").value;
 	}
-	if(document.getElementById("inlineCheckbox4").checked == true)
-	{
+	
+	// Comment out temporarily for now, to prevent the use of "All website"
+	/*if(document.getElementById("inlineCheckbox4").checked == true) {
 	    if(websiteSetting !== "")
 		websiteSetting += '_';
 	    websiteSetting+= document.getElementById("inlineCheckbox4").value;
-	}
+	}*/
 
 	chrome.storage.sync.set({'websiteSetting': websiteSetting});
 	chrome.storage.sync.get('websiteSetting', function(result){

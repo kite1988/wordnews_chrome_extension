@@ -566,12 +566,14 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		}
 
 		if(wordsReplaced == undefined){
-		    wordsReplaced = 0;
+		    wordsReplaced = 2;
+		    console.log("Setting words to replace to : " + wordsReplaced + " (default setting)");
 		    chrome.storage.sync.set({'wordsReplaced': wordsReplaced});
 		}
 
 		if(websiteSetting == undefined){
-		    websiteSetting = "";
+		    websiteSetting = "cnn.com";
+		    console.log("Setting websites to use to : " + websiteSetting + " (default setting)");
 		    chrome.storage.sync.set({'websiteSetting': websiteSetting});
 		}
 
