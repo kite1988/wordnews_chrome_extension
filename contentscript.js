@@ -96,7 +96,6 @@ function talkToHeroku(url, params, index){
 
 function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, i){
 
-    //var paragraphs = document.getElementsByClassName('zn-body__paragraph');
     var paragraphs = document.getElementsByTagName('p');
 
 
@@ -108,10 +107,9 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	var paragraph = paragraphs[i];
 	var text = paragraph.innerHTML;
 
-	//var id = "myID_"+sourceWord+"_"+targetWord+"_"+i.toString();
+
 	var id = "myID_"+sourceWord+"_"+wordID[j]+"_"+i.toString()+"_"+isTest[j];
 
-	//console.log(id);
 
 	var popoverContent = "";
 	var joinString = "";
@@ -177,101 +175,37 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    appendContentDictionary[id+"_popup"] = append;
 
 	}
-	else
-	{
+	else {
 
 	    popoverContent += "<div class = \"row\">";
 
-	    var myArrayShuffle = [1,2,3,4];
+	    var myArrayShuffle = [1, 2, 3, 4];
 	    myArrayShuffle = shuffle(myArrayShuffle);
 
-	    /*			for(var k=0;k<myArrayShuffle.length;k++)
-				{
-				switch(myArrayShuffle[k])
-				{
-				case 1:
-				popoverContent += "<div class = \"col-xs-6\">"
-				popoverContent += "<lable class = \"radio-inline\">";
-				popoverContent += "<input type=\"radio\" name =\"inlineRadioOptions\" id=\"inlineRadio1\" value=\""+wordID[j]+"\">";
-				popoverContent += choices1[j];
-				popoverContent += "</lable>";
-				popoverContent += "</div>"
-				break;
-				case 2:
-				popoverContent += "<div class = \"col-xs-6\">"
-				popoverContent += "<lable class = \"radio-inline\">";
-				popoverContent += "<input type=\"radio\" name =\"inlineRadioOptions\" id=\"inlineRadio2\" value=\""+wordID[j]+"\">";
-				popoverContent += choices2[j];
-				popoverContent += "</lable>";
-				popoverContent += "</div>"
-				break;
-				case 3:
-				popoverContent += "<div class = \"col-xs-6\">"
-				popoverContent += "<lable class = \"radio-inline\">";
-				popoverContent += "<input type=\"radio\" name =\"inlineRadioOptions\" id=\"inlineRadio3\" value=\""+wordID[j]+"\">";
-				popoverContent += choices3[j];
-				popoverContent += "</lable>";
-				popoverContent += "</div>"
-				break;
-				case 4:
-				popoverContent += "<div class = \"col-xs-6\">"
-				popoverContent += "<lable class = \"radio-inline\">";
-				popoverContent += "<input type=\"radio\" name =\"inlineRadioOptions\" id=\"inlineRadioCorrect\" value=\""+wordID[j]+"\">";
-				if(isTest[j] == 1)
-				popoverContent += sourceWord;
-				else if(isTest[j] == 2)
-				popoverContent += targetWord;
-				popoverContent += "</lable>";
-				popoverContent += "</div>"
-				break;
-				default:
-				break;
-				}
-				if(k==1)
-				{
-				popoverContent += "</div>";
-				popoverContent += "<div class = \"row\">";
-				}
-				}
-
-				popoverContent += "</div>";*/
-
-	    //popoverContent += "<button style = \"margin-top:10px;\" id=\""+ id + "_btn3\" class=\"btn btn-success\">Submit</button>";
-
-	    /*	    	popoverContent += "<div id=\"alertSuccess\" class=\"alert alert-success\" role=\"alert\" style=\"display:none;margin-top:20px;\">Well done! You got the correct answer!</div>";
-			if(isTest[j] == 2)
-			popoverContent += "<div id=\"alertDanger\" class=\"alert alert-danger\" role=\"alert\" style=\"display:none;margin-top:20px;\">Oh snap! The answer should be \""+targetWord+"\"!</div>";
-			else
-			popoverContent += "<div id=\"alertDanger\" class=\"alert alert-danger\" role=\"alert\" style=\"display:none;margin-top:20px;\">Oh snap! The answer should be \""+sourceWord+"\"!</div>";
-	     */
 	    joinString += "  <span ";
 	    joinString += "class = 'fypSpecialClass' ";
 	    joinString += "style='text-decoration:underline; font-weight: bold; ' ";
 	    joinString += "data-placement='above' ";
-	    if(isTest[j] == 1)
+	    if(isTest[j] == 1) {
 		joinString += "title='Which of the following is the corresponding English word?' ";
-	    else
+	    } else if (isTest[j] == 2) {
 		joinString += "title='Which of the following is the corresponding Chinese word?' ";
+            }
 	    joinString += "href='#' ";
-	    //joinString += "data-content = '" + popoverContent + "'";
 	    joinString += "id = '" + id + "' >";
-	    if(isTest[j] != 2)
+	    if(isTest[j] == 1) {
 		joinString += targetWord;
-	    else
+	    } else {
 		joinString += sourceWord;
+            }
 	    joinString += "</span>  ";
-
 
 
 	    var append = '<div id=\"'+ id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">';
 	    append += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
 	    append += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
-	    //append += '<div class="content" style="border: 0px; margin: 0; padding-bottom: 0px;">';
 	    append += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
 	    append += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';
-	    //append += '<div class="gtx-source-audio jfk-button jfk-button-flat gtx-audio-button" role="button" tabindex="0" style="-webkit-user-select: none;">';
-	    //append += '<div class="jfk-button-img"></div></div>';
-	    //append += '<div class="gtx-body" style="padding-left:21px;">'+sourceWord+'</div><br>';
 
 	    for(var k=0;k<myArrayShuffle.length;k++)
 	    {
@@ -601,10 +535,10 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 			var targetWords = [];
 
 			var stringToServer = paragraphs[i];
-			stringToServer = stringToServer.innerHTML;
+			stringToServer = stringToServer.innerText;
 
 			var url = url_front+'show';
-			var params = "text="+stringToServer+"&url="+document.URL+"&name="+userAccount;
+			var params = "text="+encodeURIComponent(stringToServer) + "&url=" + encodeUriComponent(document.URL) + "&name=" + userAccount;
 
 			talkToHeroku(url, params, i);
 		    }
