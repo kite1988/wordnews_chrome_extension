@@ -538,7 +538,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 			stringToServer = stringToServer.innerText;
 
 			var url = url_front+'show';
-			var params = "text="+encodeURIComponent(stringToServer) + "&url=" + encodeUriComponent(document.URL) + "&name=" + userAccount;
+			var params = "text="+encodeURIComponent(stringToServer) + "&url=" + encodeURIComponent(document.URL) + "&name=" + userAccount;
 
 			talkToHeroku(url, params, i);
 		    }
