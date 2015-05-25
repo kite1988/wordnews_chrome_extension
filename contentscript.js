@@ -23,7 +23,6 @@ function talkToHeroku(url, params, index){
     var xhr = new XMLHttpRequest();
     xhr.open('POST', url, true);
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    //console.log("here");
 
     xhr.onreadystatechange = function() {//Call a function when the state changes.
 	if(xhr.readyState == 4 && xhr.status == 200) {
@@ -37,9 +36,9 @@ function talkToHeroku(url, params, index){
 	    var targetWords = [];
 	    var isTest = [];
 	    var pronunciation = [];
-	    var choices1 = [];
-	    var choices2 = [];
-	    var choices3 = [];
+	    var choices1 = {};
+	    var choices2 = {};
+	    var choices3 = {};
 	    var wordID = [];
 	    var count = 0;
 	    for (var x in obj) {
@@ -67,16 +66,30 @@ function talkToHeroku(url, params, index){
 		}
 
 		if(obj[x].isTest == 1 || obj[x].isTest == 2){
-		    choices1.push(obj[x]["choices"]["0"]);
-		    choices2.push(obj[x]["choices"]["1"]);
-		    choices3.push(obj[x]["choices"]["2"]);
+		    choices1[x.toLowerCase()] = obj[x]["choices"]["0"];
+		    choices2[x.toLowerCase()] = obj[x]["choices"]["1"];
+		    choices3[x.toLowerCase()] = obj[x]["choices"]["2"];
 		    //console.log("other english is : "+obj[x]["choices"]["2"]);
 		}
 		else{
-		    choices1.push(" ");
-		    choices2.push(" ");
-		    choices3.push(" ");
+		    choices1[x.toLowerCase(] = " ";
+		    choices2[x.toLowerCase(] = " ";
+		    choices3[x.toLowerCase(] = " ";
 		}
+                var isChoicesProvided = obj[x].isChoicesProvided;
+                
+                if (!isChoicesProvided) {
+                    // make a seperate request to get the quiz options
+		    var httpClient = new HttpClient();
+		    httpClient.get(url_front+'getQuiz.json?word='+ +'&category='+'Technology'+'&level=3', function(quizOptions) {
+                        var choices = quizOptions[x]['choices'];
+                        choices1[x.toLowerCase()] = choices['0'];
+                        choices2[x.toLowerCase()] = choices['1'];
+                        choices3[x.toLowerCase()] = choices['2'];
+	                
+		     });
+
+                }
 		//console.log(x+" "+obj[x]+" "+obj[x].isTest);
 	    }
 
@@ -114,7 +127,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	var popoverContent = "";
 	var joinString = "";
 	pronunciation[j] = pronunciation[j].replace("5","");
-	if(isTest[j] == 0){
+	if(isTest[j] == 0) { // no quiz
 
 	    var splitedPinyin = pronunciation[j].split(" ");
 	    var chineseCharactors = targetWord.replace("(","").replace(")","").split("");
@@ -140,13 +153,8 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    append += '<div class="content" style="border: 0px; margin: 0">';
 	    append += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
 	    append += '<div class="gtx-language">ENGLISH</div>';
-	    //append += '<div class="gtx-source-audio jfk-button jfk-button-flat gtx-audio-button" role="button" tabindex="0" style="-webkit-user-select: none;">';
-	    //append += '<div class="jfk-button-img"></div></div>';
 	    append += '<div class="gtx-body" style="padding-left:21px;">'+sourceWord+'</div><br>';
 	    append += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
-	    //append += '<div class="gtx-target-audio jfk-button jfk-button-flat gtx-audio-button" role="button" tabindex="0" style="-webkit-user-select: none;">';
-
-	    //append += '<div class="jfk-button jfk-button-flat gtx-audio-button" role="button" tabindex="0" style="-webkit-user-select: none; display: inline;">';
 	    append += '<p style = "margin: 0px;padding-left:10px;">';
 	    for(var k = 0; k < splitedPinyin.length; k++){
 		append += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  id="'+splitedPinyin[k]+'" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
@@ -158,12 +166,8 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		append += '</audio>';
 	    }
 	    append += '</p>';
-	    //append += '</div>';
-	    //append += '<a id="off" class="gtx-a" target="_blank" href="chrome-extension://aapbdbdomjkkjkaonfhkkikfgjllcleb/options.html">EXTENSION OPTIONS</a>';
-	    //  onclick="return myFYPOnclickFunction();"
 	    append += '<a id="myID_more" target="_blank" href="http://dict.youdao.com/search?q='+sourceWord+'&keyfrom=dict.index"  style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
 	    append += '</div></div></div></div></div>';
-	    //append += '<div class="jfk-bubble-closebtn-id jfk-bubble-closebtn" aria-label="Close" role="button" tabindex="0"></div>';
 	    append += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
 	    append += '<div class="jfk-bubble-arrowimplbefore"></div>';
 	    append += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
@@ -175,7 +179,8 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    appendContentDictionary[id+"_popup"] = append;
 
 	}
-	else {
+	else {  // has quiz
+ 
 
 	    popoverContent += "<div class = \"row\">";
 
@@ -214,13 +219,13 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		switch(myArrayShuffle[k])
 		{
 		    case 1:
-			append += '<div id="'+wordID[j]+'_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices1[j]+'</div>';
+			append += '<div id="'+wordID[j]+'_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices1[targetWord.toLowerCase()]+'</div>';
 			break;
 		    case 2:
-			append += '<div id="'+wordID[j]+'_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices2[j]+'</div>';
+			append += '<div id="'+wordID[j]+'_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices2[targetWord.toLowerCase()]+'</div>';
 			break;
 		    case 3:
-			append += '<div id="'+wordID[j]+'_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices3[j]+'</div>';
+			append += '<div id="'+wordID[j]+'_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices3[targetWord.toLowerCase()]+'</div>';
 			break;
 		    case 4:
 			if(isTest[j]==1)
