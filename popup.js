@@ -97,18 +97,19 @@ document.getElementById("inlineCheckbox4").checked = true;
 
 var remembered = new HttpClient();
 var answer;
+
+
+document.getElementById("learnt").innerHTML = "-";
+document.getElementById("toLearn").innerHTML = "-";
+
 remembered.get(url_front+'/getNumber?name='+userAccount, function(answer) {
-	console.log("this is answer: "+answer);
-	var obj=JSON.parse(answer);
-	console.log(obj);
-	if(obj.learnt!==undefined)
-	{
-	document.getElementById("learnt").innerHTML = obj["learnt"];
-	}
-	if(obj.toLearn!==undefined)
-	{
-	document.getElementById("toLearn").innerHTML = obj["toLearn"];
-	}
+		var obj=JSON.parse(answer);
+		if("learnt" in obj) {
+			document.getElementById("learnt").innerHTML = obj["learnt"];
+		}
+		if("toLearn" in obj) {
+			document.getElementById("toLearn").innerHTML = obj["toLearn"];
+		}
 	});
 });
 
