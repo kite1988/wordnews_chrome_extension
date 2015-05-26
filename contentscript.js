@@ -1,5 +1,4 @@
-'use script';
-// Is this above meant to be 'use strict'?
+'use strict';
 
 var url_front = "http://translatenews.herokuapp.com/";
 //var url_front = "http://localhost:3000/";
@@ -18,6 +17,21 @@ var websiteSetting = "";
 
 var startTime;
 
+var UserSettings = (function() {
+    var _numWordsToTranslate;    
+    function UserSettings() {
+        _numWordsToTranslate = 2;
+    }
+    UserSettings.prototype.updateNumWords = function(newNumWords) {
+        _numWordsToTranslate = newNumWords; 
+    }
+    UserSettings.prototype.readNumWords = function() {
+        return _numWordsToTranslate;
+    }
+    return UserSettings;
+}());
+
+var userSettings = new UserSettings();
 
 function talkToHeroku(url, params, index){
     var xhr = new XMLHttpRequest();
@@ -81,12 +95,8 @@ function talkToHeroku(url, params, index){
 		    $.ajax({url: url_front+'getQuiz.json?word='+ x.toLowerCase() +'&category='+'Technology'+'&level=3'})
 		        .done(function(quizOptions) {
 
-                        console.log(quizOptions);
-                        console.log("hmmmmmmmmmmmmmmmmmmmm");
                         for (quizStart in quizOptions) {
 				var choices = quizOptions[quizStart]['choices'];
-                                console.log(choices);
-                                console.log("choices from getquiz^^");
 				choices1[quizStart.toLowerCase()] = choices['0'];
 				choices2[quizStart.toLowerCase()] = choices['1'];
 				choices3[quizStart.toLowerCase()] = choices['2'];
@@ -102,8 +112,6 @@ function talkToHeroku(url, params, index){
 
 	    startTime = new Date();  // this is used to track the time between each click
 
-            console.log("=====================");
-	    console.log(choices1);
 	    replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
 
 	    //document.getElementById('article').innerHTML  = obj["chinese"];
@@ -332,7 +340,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	};
     };
 
-    $(document).unbind().mousedown(function (e) {
+    $(document).mousedown(function (e) {
 	    e = e || window.event;
 	    var id = (e.target || e.srcElement).id;
 	    var thisClass = (e.target || e.srcElement).className;
@@ -492,50 +500,53 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		console.log("user wordsReplaced: "+ result.wordsReplaced);
 		console.log("user websiteSetting: "+ result.websiteSetting);
 
-		if (userAccount == undefined){
+		if (userAccount == undefined) {
 		var d = new Date();
 		userAccount = "id"+d.getTime()+"_1";
 		chrome.storage.sync.set({'userAccount': userAccount});
 		}
 
-		if(isWorking == undefined)
-		{
+		if (isWorking == undefined) {
 		    isWorking = 0;
 		    chrome.storage.sync.set({'isWorking': isWorking});
 		}
 
-		if(wordDisplay == undefined){
+		if (wordDisplay == undefined) {
 		    wordDisplay = 0;
 		    chrome.storage.sync.set({'wordDisplay': wordDisplay});
 		}
 
-		if(wordsReplaced == undefined){
+		if (wordsReplaced == undefined) {
 		    wordsReplaced = 2;
 		    console.log("Setting words to replace to : " + wordsReplaced + " (default setting)");
 		    chrome.storage.sync.set({'wordsReplaced': wordsReplaced});
 		}
 
-		if(websiteSetting == undefined){
+		if (websiteSetting == undefined) {
 		    websiteSetting = "cnn.com";
 		    console.log("Setting websites to use to : " + websiteSetting + " (default setting)");
 		    chrome.storage.sync.set({'websiteSetting': websiteSetting});
 		}
 
+		userSettings.updateNumWords(wordsReplaced);
+
 		var remembered = new HttpClient();
 
-		var websiteCheck = 0;
+		var isWebsiteForTranslation = 0;
 		var splitedWebsite = websiteSetting.split("_");
 
-		for(var k = 0; k < splitedWebsite.length; k++){
-		    if(document.URL.indexOf(splitedWebsite[k]) !== -1 && websiteSetting !== "")
-			websiteCheck = 1;
-		} 
+		if(websiteSetting.indexOf('all') !== -1) { 
+		    isWebsiteForTranslation = 1;
+                } else {
+ 		    for(var k = 0; k < splitedWebsite.length; k++){
+		        if(document.URL.indexOf(splitedWebsite[k]) !== -1 && websiteSetting !== "")
+		   	    isWebsiteForTranslation = 1;
+		    } 
+                }
 
-		if(websiteSetting.indexOf('all')!==-1)
-		    websiteCheck = 1;
-		console.log("isWorking "+isWorking + " websiteCheck "+websiteCheck);
-		if(isWorking == 1 && websiteCheck == 1)
-		{
+		console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
+
+		if (isWorking && isWebsiteForTranslation) {
 
 		    var paragraphs = document.getElementsByTagName('p');
 
@@ -547,8 +558,8 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 			var stringToServer = paragraphs[i];
 			stringToServer = stringToServer.innerText;
 
-			var url = url_front+'show';
-			var params = "text="+encodeURIComponent(stringToServer) + "&url=" + encodeURIComponent(document.URL) + "&name=" + userAccount;
+			var url = url_front + 'show';
+			var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
 
 			talkToHeroku(url, params, i);
 		    }
