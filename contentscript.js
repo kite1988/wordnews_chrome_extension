@@ -19,15 +19,20 @@ var startTime;
 
 var UserSettings = (function() {
     var _numWordsToTranslate;    
+    var _isWorking;
+
     function UserSettings() {
         _numWordsToTranslate = 2;
     }
+
     UserSettings.prototype.updateNumWords = function(newNumWords) {
         _numWordsToTranslate = newNumWords; 
     }
+
     UserSettings.prototype.readNumWords = function() {
         return _numWordsToTranslate;
     }
+
     return UserSettings;
 }());
 
@@ -90,34 +95,35 @@ function talkToHeroku(url, params, index){
 		}
                 var isChoicesProvided = (isChoicesProvided in obj[x]) ? obj[x].isChoicesProvided : false;
                 
-                if (isTest > 0 && !isChoicesProvided) {
+                if (obj[x].isTest > 0 && !isChoicesProvided) {
+                    console.log("making request to obtain qiz options!");
                     // make a seperate request to get the quiz options
 		    $.ajax({url: url_front+'getQuiz.json?word='+ x.toLowerCase() +'&category='+'Technology'+'&level=3'})
 		        .done(function(quizOptions) {
-
-                        for (quizStart in quizOptions) {
+		
+                        for (var quizStart in quizOptions) {
 				var choices = quizOptions[quizStart]['choices'];
 				choices1[quizStart.toLowerCase()] = choices['0'];
 				choices2[quizStart.toLowerCase()] = choices['1'];
 				choices3[quizStart.toLowerCase()] = choices['2'];
                         }
+ 			console.log("quiz options retrieved:");
                         console.log(quizOptions);
 	                
 	                replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
-		     });
-
+		     }).fail(function() {
+                        console.log("Retrieving of quiz options failed!");
+                     });
+ 
                 }
-		//console.log(x+" "+obj[x]+" "+obj[x].isTest);
 	    }
 
 	    startTime = new Date();  // this is used to track the time between each click
 
 	    replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
-
-	    //document.getElementById('article').innerHTML  = obj["chinese"];
 	}
 	else {// Show what went wrong
-	    //document.getElementById('article').innerHTML  = "Something Went Wrong";
+	    
 	}
     }
     xhr.send(params);
@@ -196,7 +202,13 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    appendContentDictionary[id+"_popup"] = append;
 
 	} else {  // has quiz
- 
+             // first check if the quiz options are provided, otherwise we must wait for the new request to be completed
+            if (!choices1[sourceWord] && !choices1[targetWord] &&
+                !choices2[sourceWord] && !choices2[targetWord] &&
+                !choices3[sourceWord] && !choices3[targetWord]) {   // test that no choices are provided
+                continue; // skip this word
+	    }
+
 	    popoverContent += "<div class = \"row\">";
 
 	    var myArrayShuffle = [1, 2, 3, 4];
@@ -227,12 +239,11 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    append += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
 	    append += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';
 
-            console.log("will append!!!!!");
 	    for(var k=0;k<myArrayShuffle.length;k++) {
 		if(k==0||k==2)
 		    append += '<div style="width: 100%;">';
                 var wordTouse = isTest[j] === 1? sourceWord.toLowerCase() : targetWord.toLowerCase();
-            console.log(wordTouse);
+
 		switch(myArrayShuffle[k])
 		{
 		    case 1:
@@ -272,9 +283,6 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    append += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
 
 	    appendContentDictionary[id+"_popup"] = append;
-
-
-
 	}
 
 
@@ -282,25 +290,22 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
 	    var id = $(this).attr('id');
 	    var tempWordID = $(this).attr('value').split("_")[0];
-	    //console.log("word = "+word+" id = "+id);
 	    var remembered = new HttpClient();
 	    document.getElementById("inlineRadio1").disabled = true;
 	    document.getElementById("inlineRadio2").disabled = true;
 	    document.getElementById("inlineRadio3").disabled = true;
 	    document.getElementById("inlineRadioCorrect").disabled = true;
-	    if(document.getElementById("inlineRadioCorrect").checked == true)
-	    {
+	    if (document.getElementById("inlineRadioCorrect").checked) {
 		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-			console.log("select the correct answer");
+			console.log("selected the correct answer");
 			});
 		document.getElementById("alertSuccess").style.display="inline-flex";
 		setTimeout(function() {$('.fypSpecialClass').popover('hide')},1000);
 	    }
-	    else
-	    {
+	    else {
 		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-			console.log("select the wrong answer");
-			});
+			console.log("selected the wrong answer");
+		});
 		document.getElementById("alertDanger").style.display="inline-flex";
 		setTimeout(function() {$('.fypSpecialClass').popover('hide')},2500);
 	    }
@@ -351,25 +356,20 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    var timeElapsed = currentTime - startTime; 
 
 	    var loggingUrl = url_front + 'log?' + 'id=' + encodeURIComponent(userAccount) +
-	    '&time=' + encodeURIComponent(timeElapsed) + '&move=';  // missing move param
+	    '&time=' + encodeURIComponent(timeElapsed) + '&move=';  // missing move param, to be added when sending log
 	    var remembered = new HttpClient();
 
-	    //console.log(container[0]);
-	    console.log("000   "+container[0]);
-	    console.log("class is "+thisClass);		
-	    if (container[0] !== undefined) {   
-		console.log("111   "+container[0]);
-		if ( !container.is(e.target) && container.has(e.target).length === 0) // if the target of the click isn't the container... // ... nor a descendant of the container
-		{
+	    if (container[0]) {   
+		if ( !container.is(e.target) && container.has(e.target).length === 0) { // if the target of the click isn't the container... // ... nor a descendant of the container
+		
 		    console.log("222   "+container[0]);
 		    var id = container.attr('id');
 		    console.log(id);
 		    var englishWord = id.split('_')[1];
 		    var tempWordID = id.split('_')[2];
 		    var mainOrTest = id.split('_')[4];
-		    console.log(mainOrTest);
-		    if(mainOrTest == 0)
-		    {
+		    
+		    if(mainOrTest == 0) {
 			remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
 				console.log("this is answer: "+answer);
 				});
@@ -381,13 +381,13 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		}
 
 		if(id == 'myID_more') {
-		    console.log("222   "+container[0]);
+		    
 		    remembered.post(loggingUrl + 'myId_more_wordID_' + tempWordID, function(dummy) {
 			console.log("log sent");
 		    });
 
 		    id = container.attr('id');
-		    console.log(id);
+		   
 
 		    var englishWord = id.split('_')[1];
 		    var tempWordID = id.split('_')[2];
@@ -402,7 +402,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		    console.log("clicked id is "+id);
 		    var myAudio = document.getElementById("myAudio_"+id);
 
-		    remembered.post(loggingUrl + 'clickAudioButton_wordID_'+id, function(dummy) {
+		    remembered.post(loggingUrl + 'clickAudioButton_wordID_' + id, function(dummy) {
 			console.log("log sent");
 		    });
 
@@ -414,7 +414,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		}
     
 		if(thisClass == 'fyp_choice_class') {
-		    console.log("clicked id isis "+id);
+		  
 		    var tempWordID = id.split("_")[0];
 		    var isCorrect = id.split("_")[1];
 		    var remembered = new HttpClient();
@@ -432,8 +432,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 			$('.jfk-bubble').css("background-size", "cover");
 
 			$('.content').css("background-color", "#cafffb");
-		    }
-		    else {
+		    } else {
 			remembered.post(loggingUrl + 'wrong_quiz_answer_wordID_' + tempWordID, function(dummy) {
 				console.log("log sent");
 				});
@@ -449,22 +448,21 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	});
 
 
-
 	$(".fypSpecialClass").click(function(event) {
-
 		var id = $(this).attr('id');
 
 		var element = document.getElementById(id);
 		var rect = cumulativeOffset(element);
-		console.log(event.pageX+' '+event.pageY+' '+rect.left+' '+rect.top);
+		//console.log(event.pageX+' '+event.pageY+' '+rect.left+' '+rect.top);
 		displayID = id+"_popup";
 		var myElem = document.getElementById(displayID);
-		if(myElem!=null)
-		document.body.removeChild(myElem);
+		if (myElem != null) {
+		    document.body.removeChild(myElem);
+                }
 
 		$("body").append(appendContentDictionary[id+"_popup"]);
-		document.getElementById(id+"_popup").style.left = (rect.left-100)+'px';
-		document.getElementById(id+"_popup").style.top = (rect.top+30)+'px';
+		document.getElementById(id + "_popup").style.left = (rect.left - 100) + 'px';
+		document.getElementById(id + "_popup").style.top = (rect.top + 30) + 'px';
 
 	});
 
@@ -477,8 +475,6 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		$(this).css("color","black");
 	});
     }
-
-
 
 
     window.addEventListener("load", function(){
@@ -573,7 +569,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
     var HttpClient = function() {
 	this.get = function(aUrl, aCallback) {
-	    anHttpRequest = new XMLHttpRequest();
+	    var anHttpRequest = new XMLHttpRequest();
 	    anHttpRequest.onreadystatechange = function() { 
 		if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
 		    aCallback(anHttpRequest.responseText);
@@ -582,10 +578,10 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	    anHttpRequest.send( null );
 	}	
 	this.post = function(url, callback) {
-	    httpRequest = new XMLHttpRequest(); 
+	    var httpRequest = new XMLHttpRequest(); 
 	    httpRequest.onreadystatechange = function() { 
 		if (httpRequest.readyState == 4 && httpRequest.status == 200)
-		    callback(anHttpRequest.responseText);
+		    callback(httpRequest.responseText);
 	    }
 	    httpRequest.open( "POST", url, true );            
 	    httpRequest.send( null );
@@ -594,7 +590,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
     }
 
     function shuffle(o){ //v1.0
-	for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+	for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
 	return o;
     };
 
