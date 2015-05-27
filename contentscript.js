@@ -286,31 +286,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	}
 
 
-	$(document).on("click", "input[name*='inlineRadioOptions']", function() {
-
-	    var id = $(this).attr('id');
-	    var tempWordID = $(this).attr('value').split("_")[0];
-	    var remembered = new HttpClient();
-	    document.getElementById("inlineRadio1").disabled = true;
-	    document.getElementById("inlineRadio2").disabled = true;
-	    document.getElementById("inlineRadio3").disabled = true;
-	    document.getElementById("inlineRadioCorrect").disabled = true;
-	    if (document.getElementById("inlineRadioCorrect").checked) {
-		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-			console.log("selected the correct answer");
-			});
-		document.getElementById("alertSuccess").style.display="inline-flex";
-		setTimeout(function() {$('.fypSpecialClass').popover('hide')},1000);
-	    }
-	    else {
-		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-			console.log("selected the wrong answer");
-		});
-		document.getElementById("alertDanger").style.display="inline-flex";
-		setTimeout(function() {$('.fypSpecialClass').popover('hide')},2500);
-	    }
-
-	});
+	$(document).on("click", "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
 
 	var parts = text.split(" " + sourceWord + " ");
 	var result = "";
@@ -329,21 +305,6 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	paragraph.innerHTML = result;
     }
 
-	//this is test on 2015/3/6
-    var cumulativeOffset = function(element) {
-
-	var top = 0, left = 0;
-	do {
-	    top += element.offsetTop  || 0;
-	    left += element.offsetLeft || 0;
-	    element = element.offsetParent;
-	} while(element);
-
-	return {
-	    top: top,
-	    left: left
-	};
-    };
 
     $(document).mousedown(function (e) {
 	    e = e || window.event;
@@ -448,7 +409,45 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	});
 
 
-	$(".fypSpecialClass").click(function(event) {
+	$(".fypSpecialClass").click(appendPopUp);
+
+
+	$('.fypSpecialClass').mouseover(function(){
+		$(this).css("color","#FF9900");
+		$(this).css("cursor","pointer");
+	});
+	$('.fypSpecialClass').mouseout(function(){
+		$(this).css("color","black");
+	});
+}
+
+function documentClickOnInlineRadioButton() {
+
+	    var id = $(this).attr('id');
+	    var tempWordID = $(this).attr('value').split("_")[0];
+	    var remembered = new HttpClient();
+	    document.getElementById("inlineRadio1").disabled = true;
+	    document.getElementById("inlineRadio2").disabled = true;
+	    document.getElementById("inlineRadio3").disabled = true;
+	    document.getElementById("inlineRadioCorrect").disabled = true;
+	    if (document.getElementById("inlineRadioCorrect").checked) {
+		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
+			console.log("selected the correct answer");
+			});
+		document.getElementById("alertSuccess").style.display="inline-flex";
+		setTimeout(function() {$('.fypSpecialClass').popover('hide')},1000);
+	    }
+	    else {
+		remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
+			console.log("selected the wrong answer");
+		});
+		document.getElementById("alertDanger").style.display="inline-flex";
+		setTimeout(function() {$('.fypSpecialClass').popover('hide')},2500);
+	    }
+
+}
+
+function appendPopUp(event) {
 		var id = $(this).attr('id');
 
 		var element = document.getElementById(id);
@@ -463,17 +462,6 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 		$("body").append(appendContentDictionary[id+"_popup"]);
 		document.getElementById(id + "_popup").style.left = (rect.left - 100) + 'px';
 		document.getElementById(id + "_popup").style.top = (rect.top + 30) + 'px';
-
-	});
-
-
-	$('.fypSpecialClass').mouseover(function(){
-		$(this).css("color","#FF9900");
-		$(this).css("cursor","pointer");
-	});
-	$('.fypSpecialClass').mouseout(function(){
-		$(this).css("color","black");
-	});
     }
 
 
@@ -610,3 +598,18 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 	}
 	return (n);
     }
+	//this is test on 2015/3/6
+    var cumulativeOffset = function(element) {
+
+	var top = 0, left = 0;
+	do {
+	    top += element.offsetTop  || 0;
+	    left += element.offsetLeft || 0;
+	    element = element.offsetParent;
+	} while(element);
+
+	return {
+	    top: top,
+	    left: left
+	};
+    };
