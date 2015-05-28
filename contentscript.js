@@ -465,93 +465,92 @@ function appendPopUp(event) {
     }
 
 
-    window.addEventListener("load", function(){
-	    vocabularyListDisplayed = 0;
-	    chrome.storage.sync.get(null, function(result){
+    console.log('execute chrome extension');
+    vocabularyListDisplayed = 0;
+    chrome.storage.sync.get(null, function(result) {
 
-		var allKeys = Object.keys(result);
-		console.log(allKeys);
+	var allKeys = Object.keys(result);
+	console.log(allKeys);
 
-		userAccount = result.userAccount;
-		isWorking = result.isWorking;
-		wordDisplay = result.wordDisplay;
-		wordsReplaced = result.wordsReplaced;
-		websiteSetting = result.websiteSetting;
+	userAccount = result.userAccount;
+	isWorking = result.isWorking;
+	wordDisplay = result.wordDisplay;
+	wordsReplaced = result.wordsReplaced;
+	websiteSetting = result.websiteSetting;
 
-		console.log("user acc: "+ result.userAccount);
-		console.log("user isWorking: "+ result.isWorking);
-		console.log("user wordDisplay: "+ result.wordDisplay);
-		console.log("user wordsReplaced: "+ result.wordsReplaced);
-		console.log("user websiteSetting: "+ result.websiteSetting);
+	console.log("user acc: "+ result.userAccount);
+	console.log("user isWorking: "+ result.isWorking);
+	console.log("user wordDisplay: "+ result.wordDisplay);
+	console.log("user wordsReplaced: "+ result.wordsReplaced);
+	console.log("user websiteSetting: "+ result.websiteSetting);
 
-		if (userAccount == undefined) {
-		var d = new Date();
-		userAccount = "id"+d.getTime()+"_1";
-		chrome.storage.sync.set({'userAccount': userAccount});
-		}
+	if (userAccount == undefined) {
+	    var d = new Date();
+	    userAccount = "id"+d.getTime()+"_1";
+	    chrome.storage.sync.set({'userAccount': userAccount});
+	}
 
-		if (isWorking == undefined) {
-		    isWorking = 0;
-		    chrome.storage.sync.set({'isWorking': isWorking});
-		}
+	if (isWorking == undefined) {
+	    isWorking = 0;
+	    chrome.storage.sync.set({'isWorking': isWorking});
+	}
 
-		if (wordDisplay == undefined) {
-		    wordDisplay = 0;
-		    chrome.storage.sync.set({'wordDisplay': wordDisplay});
-		}
+	if (wordDisplay == undefined) {
+	    wordDisplay = 0;
+	    chrome.storage.sync.set({'wordDisplay': wordDisplay});
+	}
 
-		if (wordsReplaced == undefined) {
-		    wordsReplaced = 2;
-		    console.log("Setting words to replace to : " + wordsReplaced + " (default setting)");
-		    chrome.storage.sync.set({'wordsReplaced': wordsReplaced});
-		}
+	if (wordsReplaced == undefined) {
+	    wordsReplaced = 2;
+	    console.log("Setting words to replace to : " + wordsReplaced + " (default setting)");
+	    chrome.storage.sync.set({'wordsReplaced': wordsReplaced});
+	}
 
-		if (websiteSetting == undefined) {
-		    websiteSetting = "cnn.com";
-		    console.log("Setting websites to use to : " + websiteSetting + " (default setting)");
-		    chrome.storage.sync.set({'websiteSetting': websiteSetting});
-		}
+	if (websiteSetting == undefined) {
+	    websiteSetting = "cnn.com";
+	    console.log("Setting websites to use to : " + websiteSetting + " (default setting)");
+	    chrome.storage.sync.set({'websiteSetting': websiteSetting});
+	}
 
-		userSettings.updateNumWords(wordsReplaced);
+	userSettings.updateNumWords(wordsReplaced);
 
-		var remembered = new HttpClient();
+	var remembered = new HttpClient();
 
-		var isWebsiteForTranslation = 0;
-		var splitedWebsite = websiteSetting.split("_");
+	var isWebsiteForTranslation = 0;
+	var splitedWebsite = websiteSetting.split("_");
 
-		if(websiteSetting.indexOf('all') !== -1) { 
+	if(websiteSetting.indexOf('all') !== -1) { 
+	    isWebsiteForTranslation = 1;
+	} else {
+	    for(var k = 0; k < splitedWebsite.length; k++){
+		if(document.URL.indexOf(splitedWebsite[k]) !== -1 && websiteSetting !== "")
 		    isWebsiteForTranslation = 1;
-                } else {
- 		    for(var k = 0; k < splitedWebsite.length; k++){
-		        if(document.URL.indexOf(splitedWebsite[k]) !== -1 && websiteSetting !== "")
-		   	    isWebsiteForTranslation = 1;
-		    } 
-                }
+	    } 
+	}
 
-		console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
+	console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
 
-		if (isWorking && isWebsiteForTranslation) {
+	if (isWorking && isWebsiteForTranslation) {
 
-		    var paragraphs = document.getElementsByTagName('p');
+	    var paragraphs = document.getElementsByTagName('p');
 
-		    for (var i = 0; i < paragraphs.length; i++) {
+	    for (var i = 0; i < paragraphs.length; i++) {
 
-			var sourceWords = [];
-			var targetWords = [];
+		var sourceWords = [];
+		var targetWords = [];
 
-			var stringToServer = paragraphs[i];
-			stringToServer = stringToServer.innerText;
+		var stringToServer = paragraphs[i];
+		stringToServer = stringToServer.innerText;
 
-			var url = url_front + 'show';
-			var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
+		var url = url_front + 'show';
+		var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
 
-			talkToHeroku(url, params, i);
-		    }
+		talkToHeroku(url, params, i);
+	    }
 
 
-		}
+	}
 
-	    });
     });
 
 
