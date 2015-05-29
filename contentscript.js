@@ -47,7 +47,7 @@ function talkToHeroku(url, params, index){
         if (xhr.readyState == 4 && xhr.status == 200) {
             var response = xhr.responseText.replace(/&quot;/g,'"');
             var obj = JSON.parse(response);
-            console.log(obj);
+            //console.log(obj);
 
             var sourceWords = [];
             var targetWords = [];
@@ -82,7 +82,7 @@ function talkToHeroku(url, params, index){
                     wordID.push(obj[x]["wordID"]);
                 }
 
-                if(obj[x].isTest === 1 || obj[x].isTest === 2){
+                if (obj[x].isTest === 1 || obj[x].isTest === 2){
                     console.log("key of choice is " + x.toLowerCase());
                     choices1[x.toLowerCase()] = obj[x]["choices"]["0"];
                     choices2[x.toLowerCase()] = obj[x]["choices"]["1"];
@@ -201,14 +201,12 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             appendContentDictionary[id+"_popup"] = append;
 
         } else {  // has quiz
-            // first check if the quiz options are provided, otherwise we must wait for the new request to be completed
+            // first check if the quiz options are provided, otherwise we must wait for the new xml http request to be completed
             console.log(choices1[sourceWord]);
-            console.log(typeof choices1[sourceWord]);
             console.log(choices1[targetWord]);
-            console.log(typeof choices1[targetWord]);
             if (typeof choices1[sourceWord] == 'undefined' && typeof choices1[targetWord] == 'undefined') {   // test that no choices are provided
                 console.log("SKIP " + sourceWord);
-                    continue; // skip this word
+                continue; // skip this word
             }
 
             popoverContent += "<div class = \"row\">";
@@ -261,18 +259,19 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                     append += '<div id="'+wordID[j] + i + '_w3" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices3[wordTouse]+'</div>';
                     break;
                 case 4:
-                if(isTest[j]==1)
-                    append += '<div id="'+wordID[j] + i + '_c" align="center"' +
-                    'class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'"' +
-                    'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
-                    'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:'+
-                    '16px;">'+ sourceWord.toLowerCase() +'</div>';
-                else if(isTest[j]==2)
-                    append += '<div id="'+wordID[j]+'_c" align="center"'
-                    'class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'"' +
-                    'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
-                    'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:'+
-                    '16px;">'+targetWord.toLowerCase()+'</div>';
+                    if (isTest[j] == 1) {
+                        append += '<div id="'+wordID[j] + i + '_c" align="center"' +
+                        'class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'"' +
+                        'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
+                        'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:'+
+                        '16px;">'+ sourceWord.toLowerCase() +'</div>';
+                    } else if (isTest[j] == 2) {
+                        append += '<div id="'+wordID[j]+'_c" align="center"' + 
+                        'class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'"' +
+                        'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
+                        'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:'+
+                        '16px;">'+targetWord+'</div>';
+                    }
                     break;
                 default:
                     break;
@@ -472,7 +471,6 @@ vocabularyListDisplayed = 0;
 chrome.storage.sync.get(null, function(result) {
 
     var allKeys = Object.keys(result);
-    console.log(allKeys);
 
     userAccount = result.userAccount;
     isWorking = result.isWorking;
