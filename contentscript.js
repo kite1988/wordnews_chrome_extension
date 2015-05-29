@@ -3,7 +3,7 @@
 var url_front = "http://translatenews.herokuapp.com/";
 //var url_front = "http://localhost:3000/";
 
-
+// TODO: move into UserSettings
 var userAccount = "";
 var isWorking = "";
 var categoryParameter = "";
@@ -93,29 +93,29 @@ function talkToHeroku(url, params, index){
                     choices2[x.toLowerCase()] = " ";
                     choices3[x.toLowerCase()] = " ";
                 }
-                    var isChoicesProvided = (isChoicesProvided in obj[x]) ? obj[x].isChoicesProvided : false;
+                var isChoicesProvided = (isChoicesProvided in obj[x]) ? obj[x].isChoicesProvided : false;
                     
-                    if (obj[x].isTest > 0 && !isChoicesProvided) {
-                        console.log("making request to obtain qiz options!");
-                        // make a seperate request to get the quiz options
-                $.ajax({url: url_front+'getQuiz.json?word='+ x.toLowerCase() +'&category='+'Technology'+'&level=3'})
-                    .done(function(quizOptions) {
-                            // Callback for successful retrieval     
-                            for (var quizStart in quizOptions) {
-                                var choices = quizOptions[quizStart]['choices'];
-                                choices1[quizStart.toLowerCase()] = choices['0'];
-                                choices2[quizStart.toLowerCase()] = choices['1'];
-                                choices3[quizStart.toLowerCase()] = choices['2'];
-                            }
-                            console.log("quiz options retrieved:");
-                            console.log(quizOptions);
-                        
-                            replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
-                         }).fail(function() {
-                            console.log("Retrieving of quiz options failed!");
-                         });
-     
-                    }
+                if (obj[x].isTest > 0 && !isChoicesProvided) {
+                    console.log("making request to obtain qiz options!");
+                    // make a seperate request to get the quiz options
+            $.ajax({url: url_front+'getQuiz.json?word='+ x.toLowerCase() +'&category='+'Technology'+'&level=3'})
+                .done(function(quizOptions) {
+                        // Callback for successful retrieval     
+                        for (var quizStart in quizOptions) {
+                            var choices = quizOptions[quizStart]['choices'];
+                            choices1[quizStart.toLowerCase()] = choices['0'];
+                            choices2[quizStart.toLowerCase()] = choices['1'];
+                            choices3[quizStart.toLowerCase()] = choices['2'];
+                        }
+                        console.log("quiz options retrieved:");
+                        console.log(quizOptions);
+                    
+                        replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
+                     }).fail(function() {
+                        console.log("Retrieving of quiz options failed!");
+                     });
+ 
+                }
             }
 
             startTime = new Date();  // this is used to track the time between each click
@@ -200,10 +200,10 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             appendContentDictionary[id+"_popup"] = append;
 
         } else {  // has quiz
-                 // first check if the quiz options are provided, otherwise we must wait for the new request to be completed
-                if (!choices1[sourceWord] && !choices1[targetWord] &&
-                    !choices2[sourceWord] && !choices2[targetWord] &&
-                    !choices3[sourceWord] && !choices3[targetWord]) {   // test that no choices are provided
+            // first check if the quiz options are provided, otherwise we must wait for the new request to be completed
+            if (!choices1[sourceWord] && !choices1[targetWord] &&
+                !choices2[sourceWord] && !choices2[targetWord] &&
+                !choices3[sourceWord] && !choices3[targetWord]) {   // test that no choices are provided
                     continue; // skip this word
             }
 
@@ -217,17 +217,19 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             joinString += "style='text-decoration:underline; font-weight: bold; ' ";
             joinString += "data-placement='above' ";
             if(isTest[j] == 1) {
-            joinString += "title='Which of the following is the corresponding English word?' ";
+                joinString += "title='Which of the following is the corresponding English word?' ";
             } else if (isTest[j] == 2) {
-            joinString += "title='Which of the following is the corresponding Chinese word?' ";
-                }
+                joinString += "title='Which of the following is the corresponding Chinese word?' ";
+            }
+
             joinString += "href='#' ";
             joinString += "id = '" + id + "' >";
-            if(isTest[j] == 1) {
-            joinString += targetWord;
+
+            if (isTest[j] == 1) {
+                joinString += targetWord;
             } else {
-            joinString += sourceWord;
-                }
+                joinString += sourceWord;
+            }
             joinString += "</span>  ";
 
 
@@ -237,22 +239,22 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             append += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
             append += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';
 
-            for(var k=0;k<myArrayShuffle.length;k++) {
-            if(k==0||k==2)
-                append += '<div style="width: 100%;">';
-                    var wordTouse = isTest[j] === 1? sourceWord.toLowerCase() : targetWord.toLowerCase();
+            for (var k=0; k<myArrayShuffle.length; k++) {
+                if (k == 0 || k == 2)
+                    append += '<div style="width: 100%;">';
+                var wordTouse = isTest[j] === 1? sourceWord.toLowerCase() : targetWord.toLowerCase();
 
-            switch(myArrayShuffle[k])
-            {
+                switch (myArrayShuffle[k]) {
+
                 case 1:
-                append += '<div id="'+wordID[j] + i + '_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices1[wordTouse]+'</div>';
-                break;
+                    append += '<div id="'+wordID[j] + i + '_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices1[wordTouse]+'</div>';
+                    break;
                 case 2:
-                append += '<div id="'+wordID[j] + i + '_w2" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices2[wordTouse]+'</div>';
-                break;
+                    append += '<div id="'+wordID[j] + i + '_w2" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices2[wordTouse]+'</div>';
+                    break;
                 case 3:
-                append += '<div id="'+wordID[j] + i + '_w3" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices3[wordTouse]+'</div>';
-                break;
+                    append += '<div id="'+wordID[j] + i + '_w3" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices3[wordTouse]+'</div>';
+                    break;
                 case 4:
                 if(isTest[j]==1)
                     append += '<div id="'+wordID[j] + i + '_c" align="center"' +
@@ -266,12 +268,12 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                     'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
                     'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:'+
                     '16px;">'+targetWord.toLowerCase()+'</div>';
-                break;
+                    break;
                 default:
-                break;
-            }
-            if(k==1 || k==3)
-                append += "</div>";
+                    break;
+                }
+                if (k == 1 || k == 3)
+                    append += "</div>";
             }
 
 
@@ -284,12 +286,11 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         }
 
 
-        $(document).on("click", "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
+        $(document).off('click.translatenews').on('click.translatenews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
 
         var parts = text.split(" " + sourceWord + " ");
         var result = "";
-        if(parts.length > 1)
-        {
+        if (parts.length > 1) {
             var n = occurrences(parts[0],"\"");
             if(n%2 == 1)
             result += parts[0] + '"' + joinString + '"';
@@ -304,7 +305,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
     }
 
 
-    $(document).mousedown(function (e) {
+    $(document).off('mousedown.translatenews').on('mousedown.translatenews', function (e) {
         e = e || window.event;
         var id = (e.target || e.srcElement).id;
         var thisClass = (e.target || e.srcElement).className;
@@ -405,7 +406,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         }
     });
 
-    $(".fypSpecialClass").click(appendPopUp);
+    $(".fypSpecialClass").off('click.translatenews').on('click.translatenews', appendPopUp);
 
     $('.fypSpecialClass').mouseover(function(){
         $(this).css("color","#FF9900");
@@ -418,27 +419,27 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
 function documentClickOnInlineRadioButton() {
         var id = $(this).attr('id');
-        var tempWordID = $(this).attr('value').split("_")[0];
+        var tempWordID = $(this).attr('value').split('_')[0];
         var remembered = new HttpClient();
 
-        document.getElementById("inlineRadio1").disabled = true;
-        document.getElementById("inlineRadio2").disabled = true;
-        document.getElementById("inlineRadio3").disabled = true;
-        document.getElementById("inlineRadioCorrect").disabled = true;
+        document.getElementById('inlineRadio1').disabled = true;
+        document.getElementById('inlineRadio2').disabled = true;
+        document.getElementById('inlineRadio3').disabled = true;
+        document.getElementById('inlineRadioCorrect').disabled = true;
 
-        if (document.getElementById("inlineRadioCorrect").checked) {
+        if (document.getElementById('inlineRadioCorrect').checked) {
             remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
                 console.log("selected the correct answer");
             });
 
-            document.getElementById("alertSuccess").style.display="inline-flex";
+            document.getElementById('alertSuccess').style.display = 'inline-flex';
             setTimeout(function() {$('.fypSpecialClass').popover('hide')},1000);
         } else {
             remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
                 console.log("selected the wrong answer");
             });
 
-            document.getElementById("alertDanger").style.display="inline-flex";
+            document.getElementById('alertDanger').style.display = 'inline-flex';
             setTimeout(function() {$('.fypSpecialClass').popover('hide')},2500);
         }
 
@@ -456,9 +457,9 @@ function appendPopUp(event) {
         document.body.removeChild(myElem);
     }
 
-    $("body").append(appendContentDictionary[id+"_popup"]);
-    document.getElementById(id + "_popup").style.left = (rect.left - 100) + 'px';
-    document.getElementById(id + "_popup").style.top = (rect.top + 30) + 'px';
+    $('body').append(appendContentDictionary[id + '_popup']);
+    document.getElementById(id + '_popup').style.left = (rect.left - 100) + 'px';
+    document.getElementById(id + '_popup').style.top = (rect.top + 30) + 'px';
 }
 
 
