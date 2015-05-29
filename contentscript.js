@@ -47,7 +47,7 @@ function talkToHeroku(url, params, index){
         if (xhr.readyState == 4 && xhr.status == 200) {
             var response = xhr.responseText.replace(/&quot;/g,'"');
             var obj = JSON.parse(response);
-            //console.log(obj);
+            console.log(obj);
 
             var sourceWords = [];
             var targetWords = [];
@@ -71,7 +71,7 @@ function talkToHeroku(url, params, index){
                 isTest.push(obj[x].isTest);
                 pageDictionary[x] = obj[x].chinese;
 
-                if (obj[x].pronunciation !== undefined) {
+                if (obj[x].pronunciation != undefined) {
                     pronunciation.push(obj[x].pronunciation);
                 }
                 else {
@@ -83,6 +83,7 @@ function talkToHeroku(url, params, index){
                 }
 
                 if(obj[x].isTest === 1 || obj[x].isTest === 2){
+                    console.log("key of choice is " + x.toLowerCase());
                     choices1[x.toLowerCase()] = obj[x]["choices"]["0"];
                     choices2[x.toLowerCase()] = obj[x]["choices"]["1"];
                     choices3[x.toLowerCase()] = obj[x]["choices"]["2"];
@@ -93,7 +94,7 @@ function talkToHeroku(url, params, index){
                     choices2[x.toLowerCase()] = " ";
                     choices3[x.toLowerCase()] = " ";
                 }
-                var isChoicesProvided = (isChoicesProvided in obj[x]) ? obj[x].isChoicesProvided : false;
+                var isChoicesProvided = ('isChoicesProvided' in obj[x]) ? obj[x]['isChoicesProvided'] : false;
                     
                 if (obj[x].isTest > 0 && !isChoicesProvided) {
                     console.log("making request to obtain qiz options!");
@@ -201,9 +202,12 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
         } else {  // has quiz
             // first check if the quiz options are provided, otherwise we must wait for the new request to be completed
-            if (!choices1[sourceWord] && !choices1[targetWord] &&
-                !choices2[sourceWord] && !choices2[targetWord] &&
-                !choices3[sourceWord] && !choices3[targetWord]) {   // test that no choices are provided
+            console.log(choices1[sourceWord]);
+            console.log(typeof choices1[sourceWord]);
+            console.log(choices1[targetWord]);
+            console.log(typeof choices1[targetWord]);
+            if (typeof choices1[sourceWord] == 'undefined' && typeof choices1[targetWord] == 'undefined') {   // test that no choices are provided
+                console.log("SKIP " + sourceWord);
                     continue; // skip this word
             }
 
@@ -242,7 +246,8 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             for (var k=0; k<myArrayShuffle.length; k++) {
                 if (k == 0 || k == 2)
                     append += '<div style="width: 100%;">';
-                var wordTouse = isTest[j] === 1? sourceWord.toLowerCase() : targetWord.toLowerCase();
+                var wordTouse = sourceWord.toLowerCase();
+                
 
                 switch (myArrayShuffle[k]) {
 
