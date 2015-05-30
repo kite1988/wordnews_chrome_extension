@@ -34,7 +34,7 @@ function onWindowLoad() {
 
 	    isWorking = result.isWorking;
 	    if(isWorking == undefined){
-	    isWorking = 0;
+	    isWorking = 1;
 	    chrome.storage.sync.set({'isWorking': isWorking});
 	    }
 	    console.log("isWorking "+isWorking);

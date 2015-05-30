@@ -491,7 +491,7 @@ chrome.storage.sync.get(null, function(result) {
     }
 
     if (isWorking == undefined) {
-        isWorking = 0;
+        isWorking = 1;
         chrome.storage.sync.set({'isWorking': isWorking});
     }
 
