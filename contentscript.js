@@ -47,7 +47,7 @@ function talkToHeroku(url, params, index){
         if (xhr.readyState == 4 && xhr.status == 200) {
             var response = xhr.responseText.replace(/&quot;/g,'"');
             var obj = JSON.parse(response);
-            //console.log(obj);
+            console.log(obj);
 
             var sourceWords = [];
             var targetWords = [];
@@ -97,7 +97,7 @@ function talkToHeroku(url, params, index){
                 var isChoicesProvided = ('isChoicesProvided' in obj[x]) ? obj[x]['isChoicesProvided'] : false;
                     
                 if (obj[x].isTest > 0 && !isChoicesProvided) {
-                    console.log("making request to obtain qiz options!");
+                    //console.log("making request to obtain quiz options!");
                     // make a seperate request to get the quiz options
             $.ajax({url: url_front+'getQuiz.json?word='+ x.toLowerCase() +'&category='+'Technology'+'&level=3'})
                 .done(function(quizOptions) {
@@ -202,11 +202,9 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
         } else {  // has quiz
             // first check if the quiz options are provided, otherwise we must wait for the new xml http request to be completed
-            console.log(choices1[sourceWord]);
-            console.log(choices1[targetWord]);
-            if (typeof choices1[sourceWord] == 'undefined' && typeof choices1[targetWord] == 'undefined') {   // test that no choices are provided
+            if (typeof choices3[sourceWord] == 'undefined' && typeof choices3[targetWord] == 'undefined') {   // test if all choices are provided
                 console.log("SKIP " + sourceWord);
-                continue; // skip this word
+                continue; // skip this word if not all 3 choices are provided
             }
 
             popoverContent += "<div class = \"row\">";
@@ -218,7 +216,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             joinString += "class = 'fypSpecialClass' ";
             joinString += "style='text-decoration:underline; font-weight: bold; ' ";
             joinString += "data-placement='above' ";
-            if(isTest[j] == 1) {
+            if (isTest[j] == 1) {
                 joinString += "title='Which of the following is the corresponding English word?' ";
             } else if (isTest[j] == 2) {
                 joinString += "title='Which of the following is the corresponding Chinese word?' ";
