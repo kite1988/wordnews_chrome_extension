@@ -15,6 +15,8 @@ var displayID = "";
 var appendContentDictionary = {};
 var websiteSetting = "";
 
+// startTime is used for logging, it is initialised after the user settings have been 
+// retrieved from chrome
 var startTime;
 
 var UserSettings = (function() {
@@ -119,7 +121,6 @@ function talkToHeroku(url, params, index){
                 }
             }
 
-            startTime = new Date();  // this is used to track the time between each click
 
             replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
         }
@@ -334,7 +335,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                         console.log("this is answer: "+answer);
                     });
 
-                    remembered.post(loggingUrl + 'myId_more_' + tempWordID, function(dummy) {
+                    remembered.post(loggingUrl + 'see_' + tempWordID, function(dummy) {
                         console.log("log sent");
                     });
                 }
@@ -484,7 +485,7 @@ chrome.storage.sync.get(null, function(result) {
 
     if (userAccount == undefined) {
         var d = new Date();
-        userAccount = "id"+d.getTime()+"_1";
+        userAccount = "id"+d.getTime() + "_1";
         chrome.storage.sync.set({'userAccount': userAccount});
     }
 
@@ -510,6 +511,8 @@ chrome.storage.sync.get(null, function(result) {
         chrome.storage.sync.set({'websiteSetting': websiteSetting});
     }
 
+    startTime = new Date();  // this is used to track the time between each click
+
     userSettings.updateNumWords(wordsReplaced);
 
     var remembered = new HttpClient();
@@ -534,16 +537,16 @@ chrome.storage.sync.get(null, function(result) {
 
         for (var i = 0; i < paragraphs.length; i++) {
 
-        var sourceWords = [];
-        var targetWords = [];
+            var sourceWords = [];
+            var targetWords = [];
 
-        var stringToServer = paragraphs[i];
-        stringToServer = stringToServer.innerText;
+            var stringToServer = paragraphs[i];
+            stringToServer = stringToServer.innerText;
 
-        var url = url_front + 'show';
-        var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
+            var url = url_front + 'show';
+            var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
 
-        talkToHeroku(url, params, i);
+            talkToHeroku(url, params, i);
         }
 
 

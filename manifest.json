@@ -3,7 +3,7 @@
 
   "name": "Learning a second language from news articles",
   "description": "Learn a second language by getting translations in articles, quizzes for words learned while tracking your learning history",
-  "version": "1.21",
+  "version": "1.22",
 
   "browser_action": {
     "default_icon": "icon.png",
