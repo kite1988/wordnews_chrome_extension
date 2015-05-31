@@ -188,16 +188,14 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                 append += '<source src="http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/'+splitedPinyin[k]+'.mp3" type="audio/mp3">';
                 append += '</audio>';
             }
+            var see_more_id = "myIDmore_" + sourceWord + "_" + wordID[j] + "_" + i.toString() + "_" + isTest[j];
+
             append += '</p>';
-            append += '<a id="myID_more" target="_blank" href="http://dict.youdao.com/search?q='+sourceWord+'&keyfrom=dict.index"  style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
+            append += '<a id="' + see_more_id + '" target="_blank" class="myIdMore" href="http://dict.cn/en/search?q=' + sourceWord + '" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
             append += '</div></div></div></div></div>';
             append += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
             append += '<div class="jfk-bubble-arrowimplbefore"></div>';
             append += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
-            append += '';
-            append += '';
-            append += '';
-            append += '';
 
             appendContentDictionary[id+"_popup"] = append;
 
@@ -296,9 +294,9 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         if (parts.length > 1) {
             var n = occurrences(parts[0],"\"");
             if(n%2 == 1)
-            result += parts[0] + '"' + joinString + '"';
+                result += parts[0] + '"' + joinString + '"';
             else
-            result += parts[0] + joinString;
+                result += parts[0] + joinString;
             parts.splice(0, 1);
         }
 
@@ -342,18 +340,17 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                 document.body.removeChild(container[0]);
             }
 
-            if (id === 'myID_more') {
+            if (thisClass === 'myIdMore') {
                 
+                id = container.attr('id');
+               
+                var englishWord = id.split('_')[1];
+                var tempWordID = id.split('_')[2];
+
                 remembered.post(loggingUrl + 'myId_more_wordID_' + tempWordID, function(dummy) {
                     console.log("log sent");
                 });
 
-                id = container.attr('id');
-               
-
-                var englishWord = id.split('_')[1];
-                var tempWordID = id.split('_')[2];
-                var remembered = new HttpClient();
 
                 remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
                     console.log("this is answer: "+answer);
