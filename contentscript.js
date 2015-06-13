@@ -16,6 +16,8 @@ var displayID = "";
 var appendContentDictionary = {};
 var websiteSetting = "";
 
+var translatedWords = {};
+
 // startTime is used for logging, it is initialised after the user settings have been 
 // retrieved from chrome
 var startTime;
@@ -77,8 +79,7 @@ function requestTranslatedWords(url, params, index){
 
                 if (obj[x].pronunciation != undefined) {
                     pronunciation.push(obj[x].pronunciation);
-                }
-                else {
+                } else {
                     pronunciation.push("/pronunciation/");
                 }
 
@@ -92,8 +93,7 @@ function requestTranslatedWords(url, params, index){
                     choices2[x.toLowerCase()] = obj[x]["choices"]["1"];
                     choices3[x.toLowerCase()] = obj[x]["choices"]["2"];
 
-                }
-                else {
+                } else {
                     choices1[x.toLowerCase()] = " ";
                     choices2[x.toLowerCase()] = " ";
                     choices3[x.toLowerCase()] = " ";
@@ -129,7 +129,7 @@ function requestTranslatedWords(url, params, index){
     xhr.send(params);
 }
 
-
+// access the global variable translatedWords
 function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, i) {
     var paragraphs = document.getElementsByTagName('p');
 
@@ -137,23 +137,33 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         var sourceWord = sourceWords[j];
         var targetWord = targetWords[j];
 
+        if (sourceWord in translatedWords) {
+            // only translate the same word 3 times
+            if (translatedWords[sourceWord] >= 3) {
+                continue;
+            }
+            translatedWords[sourceWord] += 1;
+        } else {
+            translatedWords[sourceWord] = 1;
+        }
+
         var paragraph = paragraphs[i];
         var text = paragraph.innerHTML;
 
-        var id = "myID_"+sourceWord+"_"+wordID[j]+"_"+i.toString()+"_"+isTest[j];
+        var id = 'myID_' + sourceWord + '_' + wordID[j] + '_' + i.toString() + '_' + isTest[j];
 
         var popoverContent = "";
         var joinString = "";
-        pronunciation[j] = pronunciation[j].replace("5","");
+        pronunciation[j] = pronunciation[j].replace('5','');
 
         if (isTest[j] == 0) { // no quiz for the i'th paragraph
 
-            var splitedPinyin = pronunciation[j].split(" ");
-            var chineseCharactors = targetWord.replace("(","").replace(")","").split("");
+            var splitedPinyin = pronunciation[j].split(' ');
+            var chineseCharactors = targetWord.replace('(','').replace(')','').split('');
 
 
             joinString += '  <span ';
-            joinString += "id = '"+id+"'";
+            joinString += "id = '" + id + "'";
             joinString += 'class = "fypSpecialClass" ';
             joinString += 'style="text-decoration:underline; font-weight: bold; "';
             joinString += 'data-placement="above" ';
@@ -291,10 +301,11 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         var result = "";
         if (parts.length > 1) {
             var n = occurrences(parts[0],"\"");
-            if(n%2 == 1)
+            if(n%2 == 1) {
                 result += parts[0] + '"' + joinString + '"';
-            else
+            } else {
                 result += parts[0] + joinString;
+            }
             parts.splice(0, 1);
         }
 
