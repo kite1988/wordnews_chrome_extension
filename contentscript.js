@@ -1,6 +1,7 @@
 'use strict';
 
-var url_front = "http://translatenews.herokuapp.com/";
+//var url_front = "http://translatenews.herokuapp.com/";
+var url_front = "http://young-cliffs-9171.herokuapp.com/";
 //var url_front = "http://localhost:3000/";
 
 // TODO: move into UserSettings
@@ -40,7 +41,7 @@ var UserSettings = (function() {
 
 var userSettings = new UserSettings();
 
-function talkToHeroku(url, params, index){
+function requestTranslatedWords(url, params, index){
     var xhr = new XMLHttpRequest();
     xhr.open('POST', url, true);
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
@@ -49,7 +50,7 @@ function talkToHeroku(url, params, index){
         if (xhr.readyState == 4 && xhr.status == 200) {
             var response = xhr.responseText.replace(/&quot;/g,'"');
             var obj = JSON.parse(response);
-            console.log(obj);
+           // console.log(obj);
 
             var sourceWords = [];
             var targetWords = [];
@@ -62,6 +63,7 @@ function talkToHeroku(url, params, index){
             var count = 0;
 
             for (var x in obj) {
+                console.log(x);
                 if (count >= wordsReplaced) {
                     count++;
                     continue;   // TODO: consider breaking here 
@@ -99,10 +101,9 @@ function talkToHeroku(url, params, index){
                 var isChoicesProvided = ('isChoicesProvided' in obj[x]) ? obj[x]['isChoicesProvided'] : false;
                     
                 if (obj[x].isTest > 0 && !isChoicesProvided) {
-                    //console.log("making request to obtain quiz options!");
-                    // make a seperate request to get the quiz options
-            $.ajax({url: url_front+'getQuiz.json?word='+ x.toLowerCase() +'&category='+'Technology'+'&level=3'})
-                .done(function(quizOptions) {
+                     // make a seperate request to get the quiz options
+                     $.ajax({url: url_front+'getQuiz.json?word='+ x.toLowerCase() +'&category='+'Technology'+'&level=3'})
+                     .done(function(quizOptions) {
                         // Callback for successful retrieval     
                         for (var quizStart in quizOptions) {
                             var choices = quizOptions[quizStart]['choices'];
@@ -114,6 +115,7 @@ function talkToHeroku(url, params, index){
                         console.log(quizOptions);
                     
                         replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
+
                      }).fail(function() {
                         console.log("Retrieving of quiz options failed!");
                      });
@@ -121,11 +123,7 @@ function talkToHeroku(url, params, index){
                 }
             }
 
-
             replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
-        }
-        else {// Show what went wrong
-            
         }
     }
     xhr.send(params);
@@ -543,7 +541,7 @@ chrome.storage.sync.get(null, function(result) {
             var url = url_front + 'show';
             var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
 
-            talkToHeroku(url, params, i);
+            requestTranslatedWords(url, params, i);
         }
 
 
