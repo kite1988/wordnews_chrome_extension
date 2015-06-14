@@ -83,20 +83,20 @@ function requestTranslatedWords(url, params, index){
                     pronunciation.push("/pronunciation/");
                 }
 
-                if(obj[x].wordID !== undefined){
-                    wordID.push(obj[x]["wordID"]);
+                if (obj[x].wordID !== undefined) {
+                    wordID.push(obj[x]['wordID']);
                 }
 
                 if (obj[x].isTest === 1 || obj[x].isTest === 2){
-                    console.log("key of choice is " + x.toLowerCase());
-                    choices1[x.toLowerCase()] = obj[x]["choices"]["0"];
-                    choices2[x.toLowerCase()] = obj[x]["choices"]["1"];
-                    choices3[x.toLowerCase()] = obj[x]["choices"]["2"];
+                    //console.log("key of choice is " + x.toLowerCase());
+                    choices1[x.toLowerCase()] = obj[x]['choices']['0'];
+                    choices2[x.toLowerCase()] = obj[x]['choices']['1'];
+                    choices3[x.toLowerCase()] = obj[x]['choices']['2'];
 
                 } else {
-                    choices1[x.toLowerCase()] = " ";
-                    choices2[x.toLowerCase()] = " ";
-                    choices3[x.toLowerCase()] = " ";
+                    choices1[x.toLowerCase()] = ' ';
+                    choices2[x.toLowerCase()] = ' ';
+                    choices3[x.toLowerCase()] = ' ';
                 }
                 var isChoicesProvided = ('isChoicesProvided' in obj[x]) ? obj[x]['isChoicesProvided'] : false;
                     
@@ -129,7 +129,7 @@ function requestTranslatedWords(url, params, index){
     xhr.send(params);
 }
 
-// access the global variable translatedWords
+// accesses the global variable translatedWords
 function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, i) {
     var paragraphs = document.getElementsByTagName('p');
 
@@ -138,8 +138,8 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         var targetWord = targetWords[j];
 
         if (sourceWord in translatedWords) {
-            // only translate the same word 3 times
-            if (translatedWords[sourceWord] >= 3) {
+            // only translate the same word 2 times at the most
+            if (translatedWords[sourceWord] >= 2) {
                 continue;
             }
             translatedWords[sourceWord] += 1;
@@ -163,7 +163,6 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
 
             joinString += '  <span ';
-            joinString += "id = '" + id + "'";
             joinString += 'class = "fypSpecialClass" ';
             joinString += 'style="text-decoration:underline; font-weight: bold; "';
             joinString += 'data-placement="above" ';
@@ -247,11 +246,11 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             append += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';
 
             for (var k=0; k<myArrayShuffle.length; k++) {
-                if (k == 0 || k == 2)
+                if (k == 0 || k == 2) {
                     append += '<div style="width: 100%;">';
+                }
                 var wordTouse = sourceWord.toLowerCase();
                 
-
                 switch (myArrayShuffle[k]) {
 
                 case 1:
@@ -297,11 +296,11 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
         $(document).off('click.translatenews').on('click.translatenews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
 
-        var parts = text.split(" " + sourceWord + " ");
+        var parts = text.split(new RegExp('\\b' + sourceWord + '\\b'));
         var result = "";
         if (parts.length > 1) {
             var n = occurrences(parts[0],"\"");
-            if(n%2 == 1) {
+            if (n%2 === 1) {
                 result += parts[0] + '"' + joinString + '"';
             } else {
                 result += parts[0] + joinString;
