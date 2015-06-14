@@ -137,14 +137,14 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         var sourceWord = sourceWords[j];
         var targetWord = targetWords[j];
 
-        if (sourceWord in translatedWords) {
+        if (sourceWord.toLowerCase() in translatedWords) {
             // only translate the same word 2 times at the most
-            if (translatedWords[sourceWord] >= 2) {
+            if (translatedWords[sourceWord.toLowerCase()] >= 2) {
                 continue;
             }
-            translatedWords[sourceWord] += 1;
+            translatedWords[sourceWord.toLowerCase()] += 1;
         } else {
-            translatedWords[sourceWord] = 1;
+            translatedWords[sourceWord.toLowerCase()] = 1;
         }
 
         var paragraph = paragraphs[i];
