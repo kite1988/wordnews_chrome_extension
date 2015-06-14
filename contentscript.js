@@ -1,7 +1,7 @@
 'use strict';
 
-//var url_front = "http://translatenews.herokuapp.com/";
-var url_front = "http://young-cliffs-9171.herokuapp.com/";
+var url_front = "http://translatenews.herokuapp.com/";
+//var url_front = "http://young-cliffs-9171.herokuapp.com/";
 //var url_front = "http://localhost:3000/";
 
 // TODO: move into UserSettings

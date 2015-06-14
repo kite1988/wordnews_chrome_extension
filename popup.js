@@ -10,7 +10,8 @@ var HttpClient = function() {
     }
 }
 
-var url_front = 'http://young-cliffs-9171.herokuapp.com/';
+//var url_front = 'http://young-cliffs-9171.herokuapp.com/';
+var url_front = 'http://translatenews.herokuapp.com/';
 //var url_front = 'http://localhost:3000/';
 
 var userAccount = '';
@@ -82,19 +83,23 @@ function onWindowLoad() {
 
     websiteSetting = result.websiteSetting;
     console.log('websiteSetting '+websiteSetting);
-    if(websiteSetting == undefined){
+    if (websiteSetting == undefined) {
         websiteSetting = 'cnn.com';
         console.log('Set to default website setting');
         chrome.storage.sync.set({'websiteSetting': websiteSetting});
     }
-    if(websiteSetting.indexOf('cnn.com') !== -1)
-    document.getElementById('inlineCheckbox1').checked = true;
-    if(websiteSetting.indexOf('chinadaily.com.cn') !== -1)
-    document.getElementById('inlineCheckbox2').checked = true;
-    if(websiteSetting.indexOf('bbc.com') !== -1)
-    document.getElementById('inlineCheckbox3').checked = true;
-    if(websiteSetting.indexOf('all') !== -1)
-    document.getElementById('inlineCheckbox4').checked = true;
+    if (websiteSetting.indexOf('cnn.com') !== -1) {
+        document.getElementById('inlineCheckbox1').checked = true;
+    }
+    if (websiteSetting.indexOf('chinadaily.com.cn') !== -1) {
+        document.getElementById('inlineCheckbox2').checked = true;
+    }
+    if (websiteSetting.indexOf('bbc.com') !== -1) {
+        document.getElementById('inlineCheckbox3').checked = true;
+    }
+    if (websiteSetting.indexOf('all') !== -1) {
+        document.getElementById('inlineCheckbox4').checked = true;
+    }
 
 
 
@@ -117,7 +122,7 @@ function onWindowLoad() {
     });
 
     $('#wordsReplaced').on('slide', function(slideEvt) {
-	chrome.storage.sync.set({'wordsReplaced': slideEvt.value});
+	    chrome.storage.sync.set({'wordsReplaced': slideEvt.value});
 	});
 
 
