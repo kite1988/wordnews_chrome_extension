@@ -412,7 +412,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
             }
         }
-    });
+    }); 
 
     $(".fypSpecialClass").off('click.translatenews').on('click.translatenews', appendPopUp);
 
@@ -511,7 +511,7 @@ chrome.storage.sync.get(null, function(result) {
     }
 
     if (websiteSetting == undefined) {
-        websiteSetting = "cnn.com";
+        websiteSetting = "cnn.com_bbc.co";
         console.log("Setting websites to use to : " + websiteSetting + " (default setting)");
         chrome.storage.sync.set({'websiteSetting': websiteSetting});
     }
@@ -528,9 +528,10 @@ chrome.storage.sync.get(null, function(result) {
     if(websiteSetting.indexOf('all') !== -1) { 
         isWebsiteForTranslation = 1;
     } else {
-        for(var k = 0; k < splitedWebsite.length; k++){
-        if(document.URL.indexOf(splitedWebsite[k]) !== -1 && websiteSetting !== "")
-            isWebsiteForTranslation = 1;
+        for (var k = 0; k < splitedWebsite.length; k++) {
+            if (document.URL.indexOf(splitedWebsite[k]) !== -1 && websiteSetting !== "") {
+                isWebsiteForTranslation = 1;
+            }
         } 
     }
 
@@ -619,3 +620,4 @@ var cumulativeOffset = function(element) {
         left: left
     };
 };
+

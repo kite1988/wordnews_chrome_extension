@@ -21,8 +21,9 @@ var wordDisplay = '';
 var wordsReplaced = '';
 var websiteSetting = '';
 
+
 function onWindowLoad() {
-    chrome.storage.sync.get(null, function(result){
+    chrome.storage.sync.get(null, function(result) {
 	    userAccount = result.userAccount;
 	    console.log('user acc: '+ result.userAccount);
 
@@ -44,8 +45,7 @@ function onWindowLoad() {
             document.getElementById('turnOff').className = 'btn btn-primary active';
             
             $('.website-checkbox input').prop('disabled', true);
-	    }
-	    else {
+	    } else {
             document.getElementById('turnOn').className = 'btn btn-primary active';
             document.getElementById('turnOff').className = 'btn btn-default';
             $('.website-checkbox input').prop('disabled', false);
@@ -60,8 +60,7 @@ function onWindowLoad() {
 	    if (wordDisplay == 0) {
             document.getElementById('displayEnglish').className = 'btn btn-default';
             document.getElementById('displayChinese').className = 'btn btn-primary active';
-	    }
-	    else{
+	    } else{
             document.getElementById('displayEnglish').className = 'btn btn-primary active';
             document.getElementById('displayChinese').className = 'btn btn-default';
 	    }
@@ -72,8 +71,7 @@ function onWindowLoad() {
             wordsReplaced = 2;
             console.log('Set to default wordsReplaced setting');
             chrome.storage.sync.set({'wordsReplaced': wordsReplaced});
-	    }
-        else {
+	    } else {
 		//document.getElementById('wordsReplaced').value = wordsReplaced;
             $('#wordsReplaced').slider({
 		    precision: 2,
@@ -81,36 +79,36 @@ function onWindowLoad() {
             });
         }
 
-    websiteSetting = result.websiteSetting;
-    console.log('websiteSetting '+websiteSetting);
-    if (websiteSetting == undefined) {
-        websiteSetting = 'cnn.com';
-        console.log('Set to default website setting');
-        chrome.storage.sync.set({'websiteSetting': websiteSetting});
-    }
-    if (websiteSetting.indexOf('cnn.com') !== -1) {
-        document.getElementById('inlineCheckbox1').checked = true;
-    }
-    if (websiteSetting.indexOf('chinadaily.com.cn') !== -1) {
-        document.getElementById('inlineCheckbox2').checked = true;
-    }
-    if (websiteSetting.indexOf('bbc.com') !== -1) {
-        document.getElementById('inlineCheckbox3').checked = true;
-    }
-    if (websiteSetting.indexOf('all') !== -1) {
-        document.getElementById('inlineCheckbox4').checked = true;
-    }
+        websiteSetting = result.websiteSetting;
+        console.log('websiteSetting '+websiteSetting);
+        if (websiteSetting == undefined) {
+            websiteSetting = 'cnn.com_bbc.co';
+            console.log('Set to default website setting');
+            chrome.storage.sync.set({'websiteSetting': websiteSetting});
+        }
+        if (websiteSetting.indexOf('cnn.com') !== -1) {
+            document.getElementById('inlineCheckbox1').checked = true;
+        }
+        if (websiteSetting.indexOf('chinadaily.com.cn') !== -1) {
+            document.getElementById('inlineCheckbox2').checked = true;
+        }
+        if (websiteSetting.indexOf('bbc.co') !== -1) {
+            document.getElementById('inlineCheckbox3').checked = true;
+        }
+        if (websiteSetting.indexOf('all') !== -1) {
+            document.getElementById('inlineCheckbox4').checked = true;
+        }
 
 
 
-    var remembered = new HttpClient();
-    var answer;
+        var remembered = new HttpClient();
+        var answer;
 
 
-    document.getElementById('learnt').innerHTML = '-';
-    document.getElementById('toLearn').innerHTML = '-';
+        document.getElementById('learnt').innerHTML = '-';
+        document.getElementById('toLearn').innerHTML = '-';
 
-    remembered.get(url_front+'/getNumber?name='+userAccount, function(answer) {
+        remembered.get(url_front+'/getNumber?name='+userAccount, function(answer) {
             var obj=JSON.parse(answer);
             if('learnt' in obj) {
                 document.getElementById('learnt').innerHTML = obj['learnt'];
@@ -228,3 +226,4 @@ function onWindowLoad() {
 }
 
 window.onload = onWindowLoad;
+
