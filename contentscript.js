@@ -52,7 +52,7 @@ function requestTranslatedWords(url, params, index){
         if (xhr.readyState == 4 && xhr.status == 200) {
             var response = xhr.responseText.replace(/&quot;/g,'"');
             var obj = JSON.parse(response);
-           // console.log(obj);
+           // //console.log(obj);
 
             var sourceWords = [];
             var targetWords = [];
@@ -65,7 +65,7 @@ function requestTranslatedWords(url, params, index){
             var count = 0;
 
             for (var x in obj) {
-                console.log(x);
+                //console.log(x);
                 if (count >= wordsReplaced) {
                     count++;
                     continue;   // TODO: consider breaking here 
@@ -88,7 +88,7 @@ function requestTranslatedWords(url, params, index){
                 }
 
                 if (obj[x].isTest === 1 || obj[x].isTest === 2){
-                    //console.log("key of choice is " + x.toLowerCase());
+                    ////console.log("key of choice is " + x.toLowerCase());
                     choices1[x.toLowerCase()] = obj[x]['choices']['0'];
                     choices2[x.toLowerCase()] = obj[x]['choices']['1'];
                     choices3[x.toLowerCase()] = obj[x]['choices']['2'];
@@ -111,13 +111,13 @@ function requestTranslatedWords(url, params, index){
                             choices2[quizStart.toLowerCase()] = choices['1'];
                             choices3[quizStart.toLowerCase()] = choices['2'];
                         }
-                        console.log("quiz options retrieved:");
-                        console.log(quizOptions);
+                        //console.log("quiz options retrieved:");
+                        //console.log(quizOptions);
                     
                         replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
 
                      }).fail(function() {
-                        console.log("Retrieving of quiz options failed!");
+                        //console.log("Retrieving of quiz options failed!");
                      });
  
                 }
@@ -209,7 +209,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         } else {  // has quiz
             // first check if the quiz options are provided, otherwise we must wait for the new xml http request to be completed
             if (typeof choices3[sourceWord] == 'undefined' && typeof choices3[targetWord] == 'undefined') {   // test if all choices are provided
-                console.log("SKIP " + sourceWord);
+                //console.log("SKIP " + sourceWord);
                 continue; // skip this word if not all 3 choices are provided
             }
 
@@ -338,11 +338,11 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                 if (mainOrTest === '0') {
                     // increase the number of words encountered
                     remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+'&url='+document.URL, function(answer) {
-                        //console.log("this is answer: "+answer);
+                        ////console.log("this is answer: "+answer);
                     });
 
                     remembered.post(loggingUrl + 'see_' + tempWordID, function(dummy) {
-                        console.log('log sent');
+                        //console.log('log sent');
                     });
                 }
                 document.body.removeChild(container[0]);
@@ -356,21 +356,21 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                 var tempWordID = id.split('_')[2];
 
                 remembered.post(loggingUrl + 'myId_more_wordID_' + tempWordID, function(dummy) {
-                    console.log('log sent');
+                    //console.log('log sent');
                 });
 
 
                 remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-                    //console.log("this is answer: "+answer);
+                    ////console.log("this is answer: "+answer);
                 });
             }
 
             if (thisClass === 'audioButton') {
-                //console.log("clicked id is "+id);
+                ////console.log("clicked id is "+id);
                 var myAudio = document.getElementById("myAudio_"+id);
 
                 remembered.post(loggingUrl + 'clickAudioButton_wordID_' + id, function(dummy) {
-                    console.log("log sent");
+                    //console.log("log sent");
                 });
 
                 if (myAudio.paused) {
@@ -387,11 +387,11 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                 var remembered = new HttpClient();
                 if (isCorrect === 'c') {
                     remembered.post(loggingUrl + 'correct_quiz_answer_wordId_' + tempWordID, function(dummy) {
-                        console.log("log sent");
+                        //console.log("log sent");
                     });
 
                     remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-                        console.log("select the correct answer");
+                        //console.log("select the correct answer");
                     });
 
                     $('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");                
@@ -401,10 +401,10 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                     $('.content').css("background-color", "#cafffb");
                 } else {
                     remembered.post(loggingUrl + 'wrong_quiz_answer_wordID_' + tempWordID, function(dummy) {
-                        console.log("log sent");
+                        //console.log("log sent");
                     });
                     remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-                        console.log("select the wrong answer");
+                        //console.log("select the wrong answer");
                     });
                     $('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");                
                     $('.jfk-bubble').css("background-size", "cover");
@@ -437,14 +437,14 @@ function documentClickOnInlineRadioButton() {
 
         if (document.getElementById('inlineRadioCorrect').checked) {
             remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-                console.log("selected the correct answer");
+                //console.log("selected the correct answer");
             });
 
             document.getElementById('alertSuccess').style.display = 'inline-flex';
             setTimeout(function() {$('.fypSpecialClass').popover('hide')},1000);
         } else {
             remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-                console.log("selected the wrong answer");
+                //console.log("selected the wrong answer");
             });
 
             document.getElementById('alertDanger').style.display = 'inline-flex';
@@ -458,7 +458,7 @@ function appendPopUp(event) {
 
     var element = document.getElementById(id);
     var rect = cumulativeOffset(element);
-    //console.log(event.pageX+' '+event.pageY+' '+rect.left+' '+rect.top);
+    ////console.log(event.pageX+' '+event.pageY+' '+rect.left+' '+rect.top);
     displayID = id+"_popup";
     var myElem = document.getElementById(displayID);
     if (myElem != null) {
@@ -482,11 +482,11 @@ chrome.storage.sync.get(null, function(result) {
     wordsReplaced = result.wordsReplaced;
     websiteSetting = result.websiteSetting;
 
-    console.log("user acc: "+ result.userAccount);
-    console.log("user isWorking: "+ result.isWorking);
-    console.log("user wordDisplay: "+ result.wordDisplay);
-    console.log("user wordsReplaced: "+ result.wordsReplaced);
-    console.log("user websiteSetting: "+ result.websiteSetting);
+    //console.log("user acc: "+ result.userAccount);
+    //console.log("user isWorking: "+ result.isWorking);
+    //console.log("user wordDisplay: "+ result.wordDisplay);
+    //console.log("user wordsReplaced: "+ result.wordsReplaced);
+    //console.log("user websiteSetting: "+ result.websiteSetting);
 
     if (userAccount == undefined) {
         var d = new Date();
@@ -506,13 +506,13 @@ chrome.storage.sync.get(null, function(result) {
 
     if (wordsReplaced == undefined) {
         wordsReplaced = 2;
-        console.log("Setting words to replace to : " + wordsReplaced + " (default setting)");
+        //console.log("Setting words to replace to : " + wordsReplaced + " (default setting)");
         chrome.storage.sync.set({'wordsReplaced': wordsReplaced});
     }
 
     if (websiteSetting == undefined) {
         websiteSetting = "cnn.com_bbc.co";
-        console.log("Setting websites to use to : " + websiteSetting + " (default setting)");
+        //console.log("Setting websites to use to : " + websiteSetting + " (default setting)");
         chrome.storage.sync.set({'websiteSetting': websiteSetting});
     }
 
@@ -535,7 +535,7 @@ chrome.storage.sync.get(null, function(result) {
         } 
     }
 
-    console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
+    //console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
 
     if (isWorking && isWebsiteForTranslation) {
 

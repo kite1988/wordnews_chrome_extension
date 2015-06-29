@@ -25,21 +25,21 @@ var websiteSetting = '';
 function onWindowLoad() {
     chrome.storage.sync.get(null, function(result) {
 	    userAccount = result.userAccount;
-	    console.log('user acc: '+ result.userAccount);
+	    //console.log('user acc: '+ result.userAccount);
 
 	    if (userAccount == undefined){
             var d = new Date();
             userAccount = 'id' + d.getTime() + '_1';
             chrome.storage.sync.set({'userAccount': userAccount}, function() {});
 	    }
-	    console.log('userAccount ' + userAccount);
+	    //console.log('userAccount ' + userAccount);
 
 	    isWorking = result.isWorking;
 	    if (isWorking == undefined) {
             isWorking = 1;
             chrome.storage.sync.set({'isWorking': isWorking});
 	    }
-	    console.log('isWorking '+isWorking);
+	    //console.log('isWorking '+isWorking);
 	    if (isWorking == 0) {
             document.getElementById('turnOn').className = 'btn btn-default';
             document.getElementById('turnOff').className = 'btn btn-primary active';
@@ -56,7 +56,7 @@ function onWindowLoad() {
             wordDisplay = 0;
             chrome.storage.sync.set({'wordDisplay': wordDisplay});
 	    }
-	    console.log('wordDisplay '+wordDisplay);
+	    //console.log('wordDisplay '+wordDisplay);
 	    if (wordDisplay == 0) {
             document.getElementById('displayEnglish').className = 'btn btn-default';
             document.getElementById('displayChinese').className = 'btn btn-primary active';
@@ -66,10 +66,10 @@ function onWindowLoad() {
 	    }
 
 	    wordsReplaced = result.wordsReplaced;
-	    console.log('wordsReplaced '+wordsReplaced);
+	    //console.log('wordsReplaced '+wordsReplaced);
 	    if (wordsReplaced == undefined) {
             wordsReplaced = 2;
-            console.log('Set to default wordsReplaced setting');
+            //console.log('Set to default wordsReplaced setting');
             chrome.storage.sync.set({'wordsReplaced': wordsReplaced});
 	    } else {
 		//document.getElementById('wordsReplaced').value = wordsReplaced;
@@ -80,10 +80,10 @@ function onWindowLoad() {
         }
 
         websiteSetting = result.websiteSetting;
-        console.log('websiteSetting '+websiteSetting);
+        //console.log('websiteSetting '+websiteSetting);
         if (websiteSetting == undefined) {
             websiteSetting = 'cnn.com_bbc.co';
-            console.log('Set to default website setting');
+            //console.log('Set to default website setting');
             chrome.storage.sync.set({'websiteSetting': websiteSetting});
         }
         if (websiteSetting.indexOf('cnn.com') !== -1) {
@@ -154,7 +154,7 @@ function onWindowLoad() {
         chrome.storage.sync.set({'websiteSetting': websiteSetting});
         chrome.storage.sync.get('websiteSetting', function(result){
             userAccount = result.websiteSetting;
-            console.log('user websiteSetting: '+ result.websiteSetting);
+            //console.log('user websiteSetting: '+ result.websiteSetting);
         });
     });
 
@@ -174,7 +174,7 @@ function onWindowLoad() {
 
             chrome.storage.sync.get(null, function(result){
                 isWorking = result.isWorking;
-                console.log('user isworking: '+ result.isWorking);
+                //console.log('user isworking: '+ result.isWorking);
             });
         }
 
@@ -190,7 +190,7 @@ function onWindowLoad() {
 
             chrome.storage.sync.get(null, function(result){
                 wordDisplay = result.wordDisplay;
-                console.log('user isworking: '+ result.wordDisplay);
+                //console.log('user isworking: '+ result.wordDisplay);
             });
         }
 
