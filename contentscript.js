@@ -546,13 +546,20 @@ chrome.storage.sync.get(null, function(result) {
             var sourceWords = [];
             var targetWords = [];
 
-            var stringToServer = paragraphs[i];
-            stringToServer = stringToServer.innerText;
+            var paragraph = paragraphs[i];
+            
+            // if the paragraph is followed or preceeded by another p, 
+            // then translate it
+            if ((paragraph.nextSibling && paragraph.nextSibling.nodeName.toLowerCase() === "p") || 
+                (paragraph.previousSibling && paragraph.previousSibling.nodeName.toLowerCase() === "p")) {
 
-            var url = url_front + 'show';
-            var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
+                var stringToServer = paragraph.innerText;
 
-            requestTranslatedWords(url, params, i);
+                var url = url_front + 'show';
+                var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
+
+                requestTranslatedWords(url, params, i);
+            }
         }
 
 
