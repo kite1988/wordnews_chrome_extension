@@ -1,20 +1,20 @@
 'use strict';
 
-var url_front = "http://translatenews.herokuapp.com/";
-//var url_front = "http://young-cliffs-9171.herokuapp.com/";
-//var url_front = "http://localhost:3000/";
+var hostUrl = 'http://translatenews.herokuapp.com/';
+//var hostUrl = "http://young-cliffs-9171.herokuapp.com/";
+//var hostUrl = "http://localhost:3000/";
 
 // TODO: move into UserSettings
-var userAccount = "";
-var isWorking = "";
-var categoryParameter = "";
-var wordDisplay = "";
-var wordsReplaced = "";
+var userAccount = '';
+var isWorking = '';
+var categoryParameter = '';
+var wordDisplay = '';
+var wordsReplaced = '';
 var pageDictionary = {};
 var vocabularyListDisplayed;
-var displayID = "";
+var displayID = '';
 var appendContentDictionary = {};
-var websiteSetting = "";
+var websiteSetting = '';
 
 var translatedWords = {};
 
@@ -102,7 +102,7 @@ function requestTranslatedWords(url, params, index){
                     
                 if (obj[x].isTest > 0 && !isChoicesProvided) {
                      // make a seperate request to get the quiz options
-                     $.ajax({url: url_front+'getQuiz.json?word='+ x.toLowerCase() +'&category='+'Technology'+'&level=3'})
+                     $.ajax({url: hostUrl+'getQuiz.json?word='+ x.toLowerCase() +'&category='+'Technology'+'&level=3'})
                      .done(function(quizOptions) {
                         // Callback for successful retrieval     
                         for (var quizStart in quizOptions) {
@@ -152,8 +152,8 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
 
         var id = 'myID_' + sourceWord + '_' + wordID[j] + '_' + i.toString() + '_' + isTest[j];
 
-        var popoverContent = "";
-        var joinString = "";
+        var popoverContent = '';
+        var joinString = '';
         pronunciation[j] = pronunciation[j].replace('5','');
 
         if (isTest[j] == 0) { // no quiz for the i'th paragraph
@@ -297,9 +297,9 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         $(document).off('click.translatenews').on('click.translatenews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
 
         var parts = text.split(new RegExp('\\b' + sourceWord + '\\b'));
-        var result = "";
+        var result = '';
         if (parts.length > 1) {
-            var n = occurrences(parts[0],"\"");
+            var n = occurrences(parts[0],'\"');
             if (n%2 === 1) {
                 result += parts[0] + '"' + joinString + '"';
             } else {
@@ -308,7 +308,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             parts.splice(0, 1);
         }
 
-        result += parts.join(" " + sourceWord + " ");
+        result += parts.join(' ' + sourceWord + ' ');
 
         paragraph.innerHTML = result;
     }
@@ -318,12 +318,12 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         e = e || window.event;
         var id = (e.target || e.srcElement).id;
         var thisClass = (e.target || e.srcElement).className;
-        var container = $(".jfk-bubble")
+        var container = $('.jfk-bubble')
 
         var currentTime = new Date();
         var timeElapsed = currentTime - startTime; 
 
-        var loggingUrl = url_front + 'log?' + 'id=' + encodeURIComponent(userAccount) +
+        var loggingUrl = hostUrl + 'log?' + 'id=' + encodeURIComponent(userAccount) +
                          '&time=' + encodeURIComponent(timeElapsed) + '&move=';  // missing move param, to be added when sending log
         var remembered = new HttpClient();
 
@@ -335,14 +335,14 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                 var tempWordID = id.split('_')[2];
                 var mainOrTest = id.split('_')[4];
                 
-                if (mainOrTest === "0") {
+                if (mainOrTest === '0') {
                     // increase the number of words encountered
-                    remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-                        console.log("this is answer: "+answer);
+                    remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+'&url='+document.URL, function(answer) {
+                        //console.log("this is answer: "+answer);
                     });
 
                     remembered.post(loggingUrl + 'see_' + tempWordID, function(dummy) {
-                        console.log("log sent");
+                        console.log('log sent');
                     });
                 }
                 document.body.removeChild(container[0]);
@@ -356,12 +356,12 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                 var tempWordID = id.split('_')[2];
 
                 remembered.post(loggingUrl + 'myId_more_wordID_' + tempWordID, function(dummy) {
-                    console.log("log sent");
+                    console.log('log sent');
                 });
 
 
-                remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-                    console.log("this is answer: "+answer);
+                remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
+                    //console.log("this is answer: "+answer);
                 });
             }
 
@@ -390,7 +390,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                         console.log("log sent");
                     });
 
-                    remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
+                    remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
                         console.log("select the correct answer");
                     });
 
@@ -403,7 +403,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                     remembered.post(loggingUrl + 'wrong_quiz_answer_wordID_' + tempWordID, function(dummy) {
                         console.log("log sent");
                     });
-                    remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
+                    remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
                         console.log("select the wrong answer");
                     });
                     $('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");                
@@ -436,14 +436,14 @@ function documentClickOnInlineRadioButton() {
         document.getElementById('inlineRadioCorrect').disabled = true;
 
         if (document.getElementById('inlineRadioCorrect').checked) {
-            remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
+            remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
                 console.log("selected the correct answer");
             });
 
             document.getElementById('alertSuccess').style.display = 'inline-flex';
             setTimeout(function() {$('.fypSpecialClass').popover('hide')},1000);
         } else {
-            remembered.get(url_front+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
+            remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
                 console.log("selected the wrong answer");
             });
 
@@ -555,7 +555,7 @@ chrome.storage.sync.get(null, function(result) {
 
                 var stringToServer = paragraph.innerText;
 
-                var url = url_front + 'show';
+                var url = hostUrl + 'show';
                 var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
 
                 requestTranslatedWords(url, params, i);

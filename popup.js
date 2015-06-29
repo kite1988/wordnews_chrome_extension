@@ -10,9 +10,9 @@ var HttpClient = function() {
     }
 }
 
-//var url_front = 'http://young-cliffs-9171.herokuapp.com/';
-var url_front = 'http://translatenews.herokuapp.com/';
-//var url_front = 'http://localhost:3000/';
+//var hostUrl = 'http://young-cliffs-9171.herokuapp.com/';
+var hostUrl = 'http://translatenews.herokuapp.com/';
+//var hostUrl = 'http://localhost:3000/';
 
 var userAccount = '';
 var isWorking = '';
@@ -108,7 +108,7 @@ function onWindowLoad() {
         document.getElementById('learnt').innerHTML = '-';
         document.getElementById('toLearn').innerHTML = '-';
 
-        remembered.get(url_front+'/getNumber?name='+userAccount, function(answer) {
+        remembered.get(hostUrl+'/getNumber?name='+userAccount, function(answer) {
             var obj=JSON.parse(answer);
             if('learnt' in obj) {
                 document.getElementById('learnt').innerHTML = obj['learnt'];
@@ -213,15 +213,15 @@ function onWindowLoad() {
     });
 
     $('.btn-block').click(function(){
-        window.open(url_front+'displayHistory?name='+userAccount);
+        window.open(hostUrl+'displayHistory?name='+userAccount);
         });
     //http://testnaijia.herokuapp.com/settings?name='+userAccount'
     $('#setting').click(function(){
-        window.open(url_front+'settings?name='+userAccount);
+        window.open(hostUrl+'settings?name='+userAccount);
         });
     //http://testnaijia.herokuapp.com/howtouse
     $('#documentation').click(function(){
-        window.open(url_front+'howtouse');
+        window.open(hostUrl+'howtouse');
         });
 }
 
