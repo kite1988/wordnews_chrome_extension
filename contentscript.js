@@ -257,7 +257,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                     append += '<div id="'+wordID[j] +  '_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices1[wordTouse]+'</div>';
                     break;
                 case 2:
-                    append += '<div id="'+wordID[j] + i +'_w2" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices2[wordTouse]+'</div>';
+                    append += '<div id="'+wordID[j] +'_w2" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices2[wordTouse]+'</div>';
                     break;
                 case 3:
                     append += '<div id="'+wordID[j] + '_w3" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">'+choices3[wordTouse]+'</div>';
