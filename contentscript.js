@@ -1,6 +1,6 @@
 'use strict';
 
-var hostUrl = 'http://translatenews.herokuapp.com/';
+var hostUrl = 'http://wordnews.herokuapp.com/';
 //var hostUrl = "http://young-cliffs-9171.herokuapp.com/";
 //var hostUrl = "http://localhost:3000/";
 
@@ -294,7 +294,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         }
 
 
-        $(document).off('click.translatenews').on('click.translatenews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
+        $(document).off('click.wordnews').on('click.wordnews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
 
         var parts = text.split(new RegExp('\\b' + sourceWord + '\\b'));
         var result = '';
@@ -314,7 +314,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
     }
 
 
-    $(document).off('mousedown.translatenews').on('mousedown.translatenews', function (e) {
+    $(document).off('mousedown.wordnews').on('mousedown.wordnews', function (e) {
         e = e || window.event;
         var id = (e.target || e.srcElement).id;
         var thisClass = (e.target || e.srcElement).className;
@@ -414,7 +414,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         }
     }); 
 
-    $(".fypSpecialClass").off('click.translatenews').on('click.translatenews', appendPopUp);
+    $(".fypSpecialClass").off('click.wordnews').on('click.wordnews', appendPopUp);
 
     $('.fypSpecialClass').mouseover(function(){
         $(this).css("color","#FF9900");

@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
 
-  "name": "Learning a second language from news articles",
-  "description": "Learn a second language by getting translations in articles, quizzes for words learned while tracking your learning history",
-  "version": "1.280",
+  "name": "WordNews",
+  "description": "Learn a second language by picking up new vocabulary in news articles. Answer MCQ questions based on your learning history.",
+  "version": "1.290",
 
   "browser_action": {
     "default_icon": "icon.png",

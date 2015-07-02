@@ -11,7 +11,7 @@ var HttpClient = function() {
 }
 
 //var hostUrl = 'http://young-cliffs-9171.herokuapp.com/';
-var hostUrl = 'http://translatenews.herokuapp.com/';
+var hostUrl = 'http://wordnews.herokuapp.com/';
 //var hostUrl = 'http://localhost:3000/';
 
 var userAccount = '';
