@@ -53,7 +53,7 @@ function onWindowLoad() {
 
 	    wordDisplay = result.wordDisplay;
 	    if (wordDisplay == undefined) {
-            wordDisplay = 0;
+            wordDisplay = 1;
             chrome.storage.sync.set({'wordDisplay': wordDisplay});
 	    }
 	    //console.log('wordDisplay '+wordDisplay);
@@ -178,12 +178,11 @@ function onWindowLoad() {
             });
         }
 
-        if($(this).attr('id') == 'englishchinese') {
+        if ($(this).attr('id') == 'englishchinese') {
             if(wordDisplay == 1){
                 wordDisplay = 0;
                 chrome.storage.sync.set({'wordDisplay': wordDisplay});
-            }
-            else {
+            } else {
                 wordDisplay = 1;
                 chrome.storage.sync.set({'wordDisplay': wordDisplay});
             }

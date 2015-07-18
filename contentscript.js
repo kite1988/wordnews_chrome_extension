@@ -478,7 +478,7 @@ chrome.storage.sync.get(null, function(result) {
 
     userAccount = result.userAccount;
     isWorking = result.isWorking;
-    wordDisplay = result.wordDisplay;
+    //wordDisplay = result.wordDisplay;
     wordsReplaced = result.wordsReplaced;
     websiteSetting = result.websiteSetting;
 
@@ -500,7 +500,7 @@ chrome.storage.sync.get(null, function(result) {
     }
 
     if (wordDisplay == undefined) {
-        wordDisplay = 0;
+        wordDisplay = 1;
         chrome.storage.sync.set({'wordDisplay': wordDisplay});
     }
 
