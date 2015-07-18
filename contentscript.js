@@ -414,7 +414,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         }
     }); 
 
-    $(".fypSpecialClass").off('click.wordnews').on('click.wordnews', appendPopUp);
+    $(".fypSpecialClass").off('hover.wordnews').on('hover.wordnews', appendPopUp);
 
     $('.fypSpecialClass').mouseover(function(){
         $(this).css("color","#FF9900");
