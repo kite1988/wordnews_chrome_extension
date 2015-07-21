@@ -56,11 +56,11 @@ function onWindowLoad() {
             wordDisplay = 1;
             chrome.storage.sync.set({'wordDisplay': wordDisplay});
 	    }
-	    //console.log('wordDisplay '+wordDisplay);
+	    console.log('wordDisplay '+wordDisplay);
 	    if (wordDisplay == 0) {
             document.getElementById('displayEnglish').className = 'btn btn-default';
             document.getElementById('displayChinese').className = 'btn btn-primary active';
-	    } else{
+	    } else {
             document.getElementById('displayEnglish').className = 'btn btn-primary active';
             document.getElementById('displayChinese').className = 'btn btn-default';
 	    }
@@ -108,12 +108,12 @@ function onWindowLoad() {
         document.getElementById('learnt').innerHTML = '-';
         document.getElementById('toLearn').innerHTML = '-';
 
-        remembered.get(hostUrl+'/getNumber?name='+userAccount, function(answer) {
-            var obj=JSON.parse(answer);
-            if('learnt' in obj) {
+        remembered.get(hostUrl + '/getNumber?name=' + userAccount, function(answer) {
+            var obj = JSON.parse(answer);
+            if ('learnt' in obj) {
                 document.getElementById('learnt').innerHTML = obj['learnt'];
             }
-            if('toLearn' in obj) {
+            if ('toLearn' in obj) {
                 document.getElementById('toLearn').innerHTML = obj['toLearn'];
             }
         });
@@ -179,7 +179,7 @@ function onWindowLoad() {
         }
 
         if ($(this).attr('id') == 'englishchinese') {
-            if(wordDisplay == 1){
+            if (wordDisplay === 1) {
                 wordDisplay = 0;
                 chrome.storage.sync.set({'wordDisplay': wordDisplay});
             } else {
@@ -195,20 +195,25 @@ function onWindowLoad() {
 
         $(this).find('.btn').toggleClass('active');	
 
-        if ($(this).find('.btn-primary').size()>0) {
+        if ($(this).find('.btn-primary').size() > 0) {
             $(this).find('.btn').toggleClass('btn-primary');
         }
-        if ($(this).find('.btn-danger').size()>0) {
+        if ($(this).find('.btn-danger').size() > 0) {
             $(this).find('.btn').toggleClass('btn-danger');
         }
-        if ($(this).find('.btn-success').size()>0) {
+        if ($(this).find('.btn-success').size() > 0) {
             $(this).find('.btn').toggleClass('btn-success');
         }
-        if ($(this).find('.btn-info').size()>0) {
+        if ($(this).find('.btn-info').size() > 0) {
             $(this).find('.btn').toggleClass('btn-info');
         }
 
         $(this).find('.btn').toggleClass('btn-default');
+
+        chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
+                var code = 'window.location.reload();';
+                chrome.tabs.executeScript(arrayOfTabs[0].id, {code: code});
+        });
     });
 
     $('.btn-block').click(function(){

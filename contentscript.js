@@ -8,7 +8,13 @@ var hostUrl = 'http://wordnews.herokuapp.com/';
 var userAccount = '';
 var isWorking = '';
 var categoryParameter = '';
-var wordDisplay = '';
+var wordDisplay;
+
+var TranslationDirection = {
+    CHINESE: 0,
+    ENGLISH: 1
+};
+
 var wordsReplaced = '';
 var pageDictionary = {};
 var vocabularyListDisplayed;
@@ -156,7 +162,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         var joinString = '';
         pronunciation[j] = pronunciation[j].replace('5','');
 
-        if (isTest[j] == 0) { // no quiz for the i'th paragraph
+        if (isTest[j] == 0) { // no quiz for the j'th paragraph
 
             var splitedPinyin = pronunciation[j].split(' ');
             var chineseCharactors = targetWord.replace('(','').replace(')','').split('');
@@ -186,15 +192,22 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             append += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
             append += '<p style = "margin: 0px;padding-left:10px;">';
 
-            for(var k = 0; k < splitedPinyin.length; k++){
+            for (var k = 0; k < splitedPinyin.length; k++){
                 append += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  id="'+splitedPinyin[k]+'" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
-                append += chineseCharactors[k];
+                append += chineseCharactors[k] + ' ';
             }
-            for(var k = 0; k < splitedPinyin.length; k++){
+            for (var k = 0; k < splitedPinyin.length; k++){
                 append += '<audio id="myAudio_'+splitedPinyin[k]+'" style = "display: none;">'
                 append += '<source src="http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/'+splitedPinyin[k]+'.mp3" type="audio/mp3">';
                 append += '</audio>';
             }
+            append += '<div class="row" style="margin-left:10px">';
+            for (var k = 0; k < splitedPinyin.length; k++){
+                append += '<div style="height:21px;width:15px;display:inline-block;"> </div>'; 
+                append += '<small>' + splitedPinyin[k] + '</small> ';
+            }
+            append += '</div>';
+
             var see_more_id = "myIDmore_" + sourceWord + "_" + wordID[j] + "_" + i.toString() + "_" + isTest[j];
 
             append += '</p>';
@@ -218,25 +231,25 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
             var myArrayShuffle = [1, 2, 3, 4];
             myArrayShuffle = shuffle(myArrayShuffle);
 
-            joinString += "  <span ";
-            joinString += "class = 'fypSpecialClass' ";
-            joinString += "style='text-decoration:underline; font-weight: bold; ' ";
-            joinString += "data-placement='above' ";
+            joinString += ' <span ';
+            joinString += 'class = "fypSpecialClass" ';
+            joinString += 'style="text-decoration:underline; font-weight: bold; " ';
+            joinString += 'data-placement="above" ';
             if (isTest[j] == 1) {
-                joinString += "title='Which of the following is the corresponding English word?' ";
+                joinString += 'title="Which of the following is the corresponding English word?" ';
             } else if (isTest[j] == 2) {
-                joinString += "title='Which of the following is the corresponding Chinese word?' ";
+                joinString += 'title="Which of the following is the corresponding Chinese word?" ';
             }
 
-            joinString += "href='#' ";
-            joinString += "id = '" + id + "' >";
+            joinString += 'href="#" ';
+            joinString += 'id = "' + id + '" >';
 
             if (isTest[j] == 1) {
                 joinString += targetWord;
             } else {
                 joinString += sourceWord;
             }
-            joinString += "</span>  ";
+            joinString += '</span> ';
 
 
             var append = '<div id=\"'+ id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">';
@@ -300,11 +313,11 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         var result = '';
         if (parts.length > 1) {
             var n = occurrences(parts[0],'\"');
-            if (n%2 === 1) {
-                result += parts[0] + '"' + joinString + '"';
-            } else {
+            //if (n%2 === 1) {  // TODO figure out the goal of this code
+                //result += parts[0] + '"' + joinString + '"';
+            //} else {
                 result += parts[0] + joinString;
-            }
+            //}
             parts.splice(0, 1);
         }
 
@@ -414,7 +427,7 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
         }
     }); 
 
-    $(".fypSpecialClass").off('hover.wordnews').on('hover.wordnews', appendPopUp);
+    $(".fypSpecialClass").off('click.wordnews').on('click.wordnews', appendPopUp);
 
     $('.fypSpecialClass').mouseover(function(){
         $(this).css("color","#FF9900");
@@ -478,7 +491,7 @@ chrome.storage.sync.get(null, function(result) {
 
     userAccount = result.userAccount;
     isWorking = result.isWorking;
-    //wordDisplay = result.wordDisplay;
+    wordDisplay = result.wordDisplay;
     wordsReplaced = result.wordsReplaced;
     websiteSetting = result.websiteSetting;
 
@@ -490,7 +503,7 @@ chrome.storage.sync.get(null, function(result) {
 
     if (userAccount == undefined) {
         var d = new Date();
-        userAccount = "id"+d.getTime() + "_1";
+        userAccount = 'id' + d.getTime() + '_1';
         chrome.storage.sync.set({'userAccount': userAccount});
     }
 
@@ -500,7 +513,7 @@ chrome.storage.sync.get(null, function(result) {
     }
 
     if (wordDisplay == undefined) {
-        wordDisplay = 1;
+        wordDisplay = TranslationDirection.ENGLISH; 
         chrome.storage.sync.set({'wordDisplay': wordDisplay});
     }
 
@@ -525,7 +538,7 @@ chrome.storage.sync.get(null, function(result) {
     var isWebsiteForTranslation = 0;
     var splitedWebsite = websiteSetting.split("_");
 
-    if(websiteSetting.indexOf('all') !== -1) { 
+    if (websiteSetting.indexOf('all') !== -1) { 
         isWebsiteForTranslation = 1;
     } else {
         for (var k = 0; k < splitedWebsite.length; k++) {
@@ -550,8 +563,8 @@ chrome.storage.sync.get(null, function(result) {
             
             // if the paragraph is followed or preceeded by another p, 
             // then translate it
-            if ((paragraph.nextSibling && paragraph.nextSibling.nodeName.toLowerCase() === "p") || 
-                (paragraph.previousSibling && paragraph.previousSibling.nodeName.toLowerCase() === "p")) {
+            if ((paragraph.nextSibling && (paragraph.nextSibling.nodeName.toLowerCase() === "p" || paragraph.nextSibling.nodeName.toLowerCase() === "#text")) || 
+                (paragraph.previousSibling && (paragraph.previousSibling.nodeName.toLowerCase() === "p" || paragraph.previousSibling.nodeName.toLowerCase() === "#text"))) {
 
                 var stringToServer = paragraph.innerText;
 
@@ -559,7 +572,7 @@ chrome.storage.sync.get(null, function(result) {
                 var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
 
                 requestTranslatedWords(url, params, i);
-            }
+            } 
         }
 
 
