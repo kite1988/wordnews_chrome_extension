@@ -16,13 +16,19 @@ var TranslationDirection = {
 };
 
 var wordsReplaced = '';
+// a dictionary of english to chinese words 
 var pageDictionary = {};
 var vocabularyListDisplayed;
 var displayID = '';
 var appendContentDictionary = {};
 var websiteSetting = '';
 
+var idToOriginalWordDictionary = {};
+
+// a dictionary of word : times returned by server for translation
 var translatedWords = {};
+
+var pageWordsLearned = new Set();
 
 // startTime is used for logging, it is initialised after the user settings have been 
 // retrieved from chrome
@@ -91,6 +97,7 @@ function requestTranslatedWords(url, params, index){
 
                 if (obj[x].wordID !== undefined) {
                     wordID.push(obj[x]['wordID']);
+                    idToOriginalWordDictionary[obj[x]['wordID']] = x;
                 }
 
                 if (obj[x].isTest === 1 || obj[x].isTest === 2){
@@ -357,7 +364,11 @@ function replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, c
                     remembered.post(loggingUrl + 'see_' + tempWordID, function(dummy) {
                         //console.log('log sent');
                     });
+
+                    // add to page's learned words
+                    pageWordsLearned.add(tempWordID);
                 }
+
                 document.body.removeChild(container[0]);
             }
 
@@ -551,6 +562,7 @@ chrome.storage.sync.get(null, function(result) {
     //console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
 
     if (isWorking && isWebsiteForTranslation) {
+        spawnNotification(null, null, 'This article is getting processed by WordNews');
 
         var paragraphs = document.getElementsByTagName('p');
 
@@ -640,4 +652,36 @@ var cumulativeOffset = function(element) {
         left: left
     };
 };
+
+
+// request at the start
+Notification.requestPermission();
+
+// creates a notification
+function spawnNotification(bodyOfNotification, iconOfNotification, titleOfNotification) {
+  var actualBody = bodyOfNotification ? bodyOfNotification : '';
+  var options = {
+      body: actualBody,
+      icon: iconOfNotification
+  }
+
+  var n = new Notification(titleOfNotification, options);
+  window.setTimeout(function() {n.close();}, 5000);
+}
+
+
+$(window).scroll(function() {
+    // if the user scrolls to the button of the page, display the list of words learned
+    if ($(window).scrollTop() + $(window).height() === $(document).height() - 300) {
+        var wordList = []; 
+
+        for (var key of pageWordsLearned) {
+            var value = idToOriginalWordDictionary[key];
+            wordList.push(value.toLowerCase());
+        }
+
+        var titleOfNotification = 'Words looked at in this article:';
+        spawnNotification(wordList.join(', '), null, titleOfNotification);
+    }
+});
 
