@@ -562,7 +562,7 @@ chrome.storage.sync.get(null, function(result) {
     //console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
 
     if (isWorking && isWebsiteForTranslation) {
-        spawnNotification(null, null, 'This article is getting processed by WordNews');
+        spawnNotification(null, null, 'WordNews is replacing some words in this article');
 
         var paragraphs = document.getElementsByTagName('p');
 
