@@ -165,10 +165,13 @@ function onWindowLoad() {
                 isWorking = 0;
                 chrome.storage.sync.set({'isWorking': isWorking});
                 $('.website-checkbox input').prop('disabled', true);
-            }
-            else {
+                $('#displayEnglish').prop('disabled', true);
+                $('#displayChinese').prop('disabled', true);
+            } else {
                 isWorking = 1;
                 chrome.storage.sync.set({'isWorking': isWorking});
+                $('#displayEnglish').prop('disabled', false);
+                $('#displayChinese').prop('disabled', false);
                 $('.website-checkbox input').prop('disabled', false);
             }
 
@@ -176,7 +179,35 @@ function onWindowLoad() {
                 isWorking = result.isWorking;
                 //console.log('user isworking: '+ result.isWorking);
             });
+
+            $(this).find('.btn').toggleClass('btn-default');
+            $(this).find('.btn').toggleClass('active');	
+
+            if ($(this).find('.btn-primary').size() > 0) {
+                $(this).find('.btn').toggleClass('btn-primary');
+            }
+            if ($(this).find('.btn-danger').size() > 0) {
+                $(this).find('.btn').toggleClass('btn-danger');
+            }
+            if ($(this).find('.btn-success').size() > 0) {
+                $(this).find('.btn').toggleClass('btn-success');
+            }
+            if ($(this).find('.btn-info').size() > 0) {
+                $(this).find('.btn').toggleClass('btn-info');
+            }
+            chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
+                    var code = 'window.location.reload();';
+                    chrome.tabs.executeScript(arrayOfTabs[0].id, {code: code});
+            });
+
+            return;
         }
+
+        if (!isWorking) {
+            return;
+        }
+        $(this).find('.btn').toggleClass('btn-default');
+        $(this).find('.btn').toggleClass('active');	
 
         if ($(this).attr('id') == 'englishchinese') {
             if (wordDisplay === 1) {
@@ -193,7 +224,6 @@ function onWindowLoad() {
             });
         }
 
-        $(this).find('.btn').toggleClass('active');	
 
         if ($(this).find('.btn-primary').size() > 0) {
             $(this).find('.btn').toggleClass('btn-primary');
@@ -208,7 +238,6 @@ function onWindowLoad() {
             $(this).find('.btn').toggleClass('btn-info');
         }
 
-        $(this).find('.btn').toggleClass('btn-default');
 
         chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
                 var code = 'window.location.reload();';
