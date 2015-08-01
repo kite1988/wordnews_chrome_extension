@@ -562,6 +562,8 @@ chrome.storage.sync.get(null, function(result) {
     //console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
 
     if (isWorking && isWebsiteForTranslation) {
+        // request at the start
+        Notification.requestPermission();
         spawnNotification(null, null, 'WordNews is replacing some words in this article');
 
         var paragraphs = document.getElementsByTagName('p');
@@ -654,8 +656,6 @@ var cumulativeOffset = function(element) {
 };
 
 
-// request at the start
-Notification.requestPermission();
 
 // creates a notification
 function spawnNotification(bodyOfNotification, iconOfNotification, titleOfNotification) {
