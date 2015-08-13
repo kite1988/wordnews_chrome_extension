@@ -565,6 +565,22 @@ chrome.storage.sync.get(null, function(result) {
         // request at the start
         Notification.requestPermission();
         spawnNotification(null, null, 'WordNews is replacing some words in this article');
+        $(window).scroll(function() {
+            // if the user scrolls to the button of the page, display the list of words learned
+            if ($(window).scrollTop() + $(window).height() === $(document).height() - 300) {
+                var wordList = []; 
+
+                for (var key of pageWordsLearned) {
+                    var value = idToOriginalWordDictionary[key];
+                    wordList.push(value.toLowerCase());
+                }
+
+                var titleOfNotification = 'Words looked at in this article:';
+                if (wordList) {
+                    spawnNotification(wordList.join(', '), null, titleOfNotification);
+                }
+            }
+        });
 
         var paragraphs = document.getElementsByTagName('p');
 
@@ -670,18 +686,4 @@ function spawnNotification(bodyOfNotification, iconOfNotification, titleOfNotifi
 }
 
 
-$(window).scroll(function() {
-    // if the user scrolls to the button of the page, display the list of words learned
-    if ($(window).scrollTop() + $(window).height() === $(document).height() - 300) {
-        var wordList = []; 
-
-        for (var key of pageWordsLearned) {
-            var value = idToOriginalWordDictionary[key];
-            wordList.push(value.toLowerCase());
-        }
-
-        var titleOfNotification = 'Words looked at in this article:';
-        spawnNotification(wordList.join(', '), null, titleOfNotification);
-    }
-});
 
