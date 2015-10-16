@@ -1,7 +1,7 @@
 'use strict';
 
-var hostUrl = 'http://wordnews.herokuapp.com/';
-//var hostUrl = "http://young-cliffs-9171.herokuapp.com/";
+//var hostUrl = 'http://wordnews.herokuapp.com/';
+var hostUrl = "http://young-cliffs-9171.herokuapp.com/";
 //var hostUrl = "http://localhost:3000/";
 
 // TODO: move into UserSettings
@@ -10,10 +10,13 @@ var isWorking = '';
 var categoryParameter = '';
 var wordDisplay;
 
+var translationUrl = 'http://young-cliffs-9171.herokuapp.com/show';
+
 var TranslationDirection = {
     CHINESE: 0,
     ENGLISH: 1
 };
+var isTranslatingByParagraph = true;
 
 var wordsReplaced = '';
 // a dictionary of english to chinese words 
@@ -64,7 +67,7 @@ function requestTranslatedWords(url, params, index){
         if (xhr.readyState == 4 && xhr.status == 200) {
             var response = xhr.responseText.replace(/&quot;/g,'"');
             var obj = JSON.parse(response);
-           // //console.log(obj);
+            console.log(obj);
 
             var sourceWords = [];
             var targetWords = [];
@@ -78,10 +81,10 @@ function requestTranslatedWords(url, params, index){
 
             for (var x in obj) {
                 //console.log(x);
-                if (count >= wordsReplaced) {
-                    count++;
-                    continue;   // TODO: consider breaking here 
-                }
+                //if (count >= wordsReplaced) {
+                //    count++;
+                //    continue;  
+                //}
 
                 count++;
                 sourceWords.push(x);
@@ -127,7 +130,9 @@ function requestTranslatedWords(url, params, index){
                         //console.log("quiz options retrieved:");
                         //console.log(quizOptions);
                     
+                        //replaceWordsWithoutQuiz(sourceWords, targetWords);
                         replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
+                        //
 
                      }).fail(function() {
                         //console.log("Retrieving of quiz options failed!");
@@ -136,10 +141,100 @@ function requestTranslatedWords(url, params, index){
                 }
             }
 
+            //replaceWordsWithoutQuiz(sourceWords, targetWords)
             replaceWords(sourceWords, targetWords, isTest, pronunciation, wordID, choices1, choices2 , choices3, index);
+
         }
     }
     xhr.send(params);
+}
+
+function replaceWordsWithoutQuiz(sourceWords, targetWords) {
+    var paragraphs = document.getElementsByTagName('p');
+
+    for (var j = 0; j < sourceWords.length; j++) {
+        var sourceWord = sourceWords[j];
+        var targetWord = targetWords[j];
+
+        console.log(sourceWord);
+        console.log(targetWord);
+        /*if (sourceWord.toLowerCase() in translatedWords) {
+            // only translate the same word 1 time(s) at the most
+            if (translatedWords[sourceWord.toLowerCase()] >= 1) {
+                continue;
+            }
+            translatedWords[sourceWord.toLowerCase()] += 1;
+        } else {
+            translatedWords[sourceWord.toLowerCase()] = 1;
+        }*/
+
+        for (var i = 0; i < paragraphs.length; i++) {
+            var paragraph = paragraphs[i];
+            var text = paragraph.innerHTML;
+
+            var id = 'myID_' + sourceWord + '_' + i.toString() + '_';
+
+            var popoverContent = '';
+            var joinString = '';
+
+            joinString += '  <span ';
+            joinString += 'class = "fypSpecialClass" ';
+            joinString += 'style="text-decoration:underline; font-weight: bold; "';
+            joinString += 'data-placement="above" ';
+
+            joinString += 'id = "' + id + '" >';
+            if (wordDisplay == 1) {
+                joinString += sourceWord;
+            } else {
+                joinString += targetWord;
+            }
+            joinString += '</span>  ';
+
+
+            var append = '<div id=\"'+ id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1;">';
+            append += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
+            append += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
+            append += '<div class="content" style="border: 0px; margin: 0">';
+            append += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
+            append += '<div class="gtx-language">ENGLISH</div>';
+            append += '<div class="gtx-body" style="padding-left:21px;">'+sourceWord+'</div><br>';
+            append += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
+            append += '<p style = "margin: 0px;padding-left:10px;">';
+
+            append += '</div>';
+
+            var see_more_id = "myIDmore_" + sourceWord + "_" + "_" + i.toString();
+
+            append += '</p>';
+            append += '<a id="' + see_more_id + '" target="_blank" class="myIdMore" href="http://dict.cn/en/search?q=' + sourceWord + '" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
+            append += '</div></div></div></div></div>';
+            append += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
+            append += '<div class="jfk-bubble-arrowimplbefore"></div>';
+            append += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
+
+            appendContentDictionary[id+"_popup"] = append;
+
+            
+
+            $(document).off('click.wordnews').on('click.wordnews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
+
+            var parts = text.split(new RegExp('\\b' + sourceWord + '\\b'));
+            var result = '';
+            if (parts.length > 1) {
+                var n = occurrences(parts[0],'\"');
+                //if (n%2 === 1) {  // TODO figure out the goal of this code
+                    //result += parts[0] + '"' + joinString + '"';
+                //} else {
+                    result += parts[0] + joinString;
+                //}
+                parts.splice(0, 1);
+            }
+
+            result += parts.join(' ' + sourceWord + ' ');
+
+            paragraph.innerHTML = result;
+        }   
+    }
 }
 
 // accesses the global variable translatedWords
@@ -506,6 +601,10 @@ chrome.storage.sync.get(null, function(result) {
     wordsReplaced = result.wordsReplaced;
     websiteSetting = result.websiteSetting;
 
+    if (typeof result.translationUrl !== 'undefined') {
+        translationUrl = result.translationUrl;
+    }
+
     //console.log("user acc: "+ result.userAccount);
     //console.log("user isWorking: "+ result.isWorking);
     //console.log("user wordDisplay: "+ result.wordDisplay);
@@ -583,7 +682,7 @@ chrome.storage.sync.get(null, function(result) {
         });
 
         var paragraphs = document.getElementsByTagName('p');
-
+        var articleText = "";
         for (var i = 0; i < paragraphs.length; i++) {
 
             var sourceWords = [];
@@ -598,14 +697,25 @@ chrome.storage.sync.get(null, function(result) {
 
                 var stringToServer = paragraph.innerText;
 
-                var url = hostUrl + 'show';
-                var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
+                var url = (typeof translationUrl === 'undefined' ? hostUrl + 'show' : translationUrl) ;
+                articleText += stringToServer;
 
-                requestTranslatedWords(url, params, i);
+                if (isTranslatingByParagraph) {
+                    var stringToServer = paragraph.innerText;
+
+                    var url = hostUrl + 'show';
+                    var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
+
+                    requestTranslatedWords(url, params, i);
+                }
             } 
         }
+        
+        if (!isTranslatingByParagraph) {
+            var params = 'text=' + encodeURIComponent(articleText) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
 
-
+            requestTranslatedWords(url, params, i);
+        }
     }
 
 });
