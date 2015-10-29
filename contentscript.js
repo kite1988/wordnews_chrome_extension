@@ -601,6 +601,7 @@ chrome.storage.sync.get(null, function(result) {
     wordsReplaced = result.wordsReplaced;
     websiteSetting = result.websiteSetting;
 
+    console.log(result.translationUrl);
     if (typeof result.translationUrl !== 'undefined') {
         translationUrl = result.translationUrl;
     }
@@ -703,7 +704,6 @@ chrome.storage.sync.get(null, function(result) {
                 if (isTranslatingByParagraph) {
                     var stringToServer = paragraph.innerText;
 
-                    var url = hostUrl + 'show';
                     var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
 
                     requestTranslatedWords(url, params, i);

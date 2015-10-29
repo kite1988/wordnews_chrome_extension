@@ -67,13 +67,22 @@ function onWindowLoad() {
             document.getElementById('displayChinese').className = 'btn btn-default';
 	    }
 
-        translationUrl = result.translationUrl;
-	    if (translationUrl.indexOf('wordnews') >= 0) {
-            document.getElementById('wordnewsTranslations').className = 'btn btn-primary active';
+        translationUrl = result.translationUrl || "http://young-cliffs-9171.herokuapp.com/";
+        console.log('transUrl', translationUrl);
+	    if (translationUrl.indexOf('showbybing') >= 0) {
+            document.getElementById('dictionaryTranslations').className = 'btn btn-default';
             document.getElementById('imsTranslations').className = 'btn btn-default';
+            document.getElementById('bingTranslations').className = 'btn btn-primary active';
+
+        } else if (translationUrl.indexOf('wordnews') >= 0 && translationUrl.indexOf('ims') < 0) {
+
+            document.getElementById('dictionaryTranslations').className = 'btn btn-primary active';
+            document.getElementById('imsTranslations').className = 'btn btn-default';
+            document.getElementById('bingTranslations').className = 'btn btn-default';
 	    } else {
-            document.getElementById('wordnewsTranslations').className = 'btn btn-default';
+            document.getElementById('dictionaryTranslations').className = 'btn btn-default';
             document.getElementById('imsTranslations').className = 'btn btn-primary active';
+            document.getElementById('bingTranslations').className = 'btn btn-default';
 	    }
 
 
@@ -110,7 +119,6 @@ function onWindowLoad() {
         if (websiteSetting.indexOf('all') !== -1) {
             document.getElementById('inlineCheckbox4').checked = true;
         }
-
 
 
         var remembered = new HttpClient();
@@ -170,6 +178,25 @@ function onWindowLoad() {
         });
     });
 
+    $('#translationUrl .btn').click(function() {
+        
+
+        translationUrl = $(this).attr('id');
+            console.log(translationUrl);
+        if (translationUrl.indexOf('ims') >= 0) {
+            chrome.storage.sync.set({'translationUrl': 'http://imsforwordnews.herokuapp.com/show'});
+        } else if (translationUrl.indexOf('dictionary') >= 0) {
+            chrome.storage.sync.set({'translationUrl': 'http://wordnews.herokuapp.com/show'});
+        } else {
+            chrome.storage.sync.set({'translationUrl': 'http://young-cliffs-9171.herokuapp.com/showbybing'});
+        }
+
+        chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
+                var code = 'window.location.reload();';
+                chrome.tabs.executeScript(arrayOfTabs[0].id, {code: code});
+        });
+    });
+
     $('.btn-toggle ').click(function() {
 
         if ($(this).attr('id') == 'onoff') {
@@ -207,11 +234,11 @@ function onWindowLoad() {
             if ($(this).find('.btn-info').size() > 0) {
                 $(this).find('.btn').toggleClass('btn-info');
             }
+
             chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
                     var code = 'window.location.reload();';
                     chrome.tabs.executeScript(arrayOfTabs[0].id, {code: code});
             });
-
             return;
         }
 
@@ -236,19 +263,6 @@ function onWindowLoad() {
             });
         }
 
-        if ($(this).attr('id') === 'translationUrl') {
-            if (typeof translationUrl == 'undefined' || translationUrl.indexOf('wordnews') >= 0) {
-                chrome.storage.sync.set({'translationUrl': 'http://imsforwordnews.herokuapp.com/show'});
-            } else {
-                chrome.storage.sync.set({'translationUrl': 'http://wordnews.herokuapp.com/show'});
-            }
-
-            chrome.storage.sync.get(null, function(result){
-                wordDisplay = result.wordDisplay;
-                //console.log('user isworking: '+ result.wordDisplay);
-            });
-
-        }
 
 
         if ($(this).find('.btn-primary').size() > 0) {
