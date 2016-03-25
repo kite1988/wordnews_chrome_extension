@@ -10,7 +10,7 @@ var HttpClient = function() {
     }
 }
 
-//var hostUrl = 'http://young-cliffs-9171.herokuapp.com/';
+//var hostUrl = 'http://wordnews-mobile.herokuapp.com/';
 var hostUrl = 'http://wordnews.herokuapp.com/';
 //var hostUrl = 'http://localhost:3000/';
 
@@ -67,7 +67,7 @@ function onWindowLoad() {
             document.getElementById('displayChinese').className = 'btn btn-default';
 	    }
 
-        translationUrl = result.translationUrl || "http://young-cliffs-9171.herokuapp.com/";
+        translationUrl = result.translationUrl || "http://wordnews-mobile.herokuapp.com/";
         console.log('transUrl', translationUrl);
 	    if (translationUrl.indexOf('showbybing') >= 0) {
             document.getElementById('dictionaryTranslations').className = 'btn btn-default';
@@ -188,7 +188,7 @@ function onWindowLoad() {
         } else if (translationUrl.indexOf('dictionary') >= 0) {
             chrome.storage.sync.set({'translationUrl': 'http://wordnews.herokuapp.com/show'});
         } else {
-            chrome.storage.sync.set({'translationUrl': 'http://young-cliffs-9171.herokuapp.com/showbybing'});
+            chrome.storage.sync.set({'translationUrl': 'http://wordnews-mobile.herokuapp.com/showbybing'});
         }
 
         chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {

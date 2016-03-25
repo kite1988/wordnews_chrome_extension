@@ -42,7 +42,7 @@ var UserSettings = (function() {
     var _isWorking;
 
     function UserSettings() {
-        _numWordsToTranslate = 2;
+        _numWordsToTranslate = 4;
     }
 
     UserSettings.prototype.updateNumWords = function(newNumWords) {
@@ -326,7 +326,7 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
             append += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
 
             append += '<p style = "margin: 0px;padding-left:10px;">';
-            for (var k = 0; k < splitPinyin.length; k++){
+            for (var k = 0; k < chineseCharacters.length; k++){
                 append += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  id="'+splitPinyin[k]+'" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
                 append += chineseCharacters[k] + ' ';
             }
@@ -337,7 +337,7 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
             }
             append += '<div class="row" style="margin-left:10px">';
             for (var k = 0; k < splitPinyin.length; k++){
-                continue; // skip this word if not all 3 choices are provided
+                
                 append += '<div style="height:21px;width:15px;display:inline-block;"> </div>';
                 append += '<small>' + splitPinyin[k] + '</small> ';
             }
@@ -621,7 +621,7 @@ chrome.storage.sync.get(null, function(result) {
     }
 
     if (wordsReplaced == undefined) {
-        wordsReplaced = 2;
+        wordsReplaced = 6;
         //console.log("Setting words to replace to : " + wordsReplaced + " (default setting)");
         chrome.storage.sync.set({'wordsReplaced': wordsReplaced});
     }
@@ -651,9 +651,9 @@ chrome.storage.sync.get(null, function(result) {
         } 
     }
 
-    //console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
+    console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
 
-    if (isWorking && isWebsiteForTranslation) {
+    if (isWorking ) {
         // request at the start
         Notification.requestPermission();
         spawnNotification(null, null, 'WordNews is replacing some words in this article');
