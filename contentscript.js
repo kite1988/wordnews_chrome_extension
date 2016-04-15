@@ -137,7 +137,7 @@ function requestTranslatedWords(url, params, index){
 }
 
 function replaceWordsWithoutQuiz(sourceWords, targetWords) {
-    var paragraphs = document.getElementsByTagName('p');
+    var paragraphs = paragraphsInArticle();
 
     for (var j = 0; j < sourceWords.length; j++) {
         var sourceWord = sourceWords[j];
@@ -229,7 +229,7 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
     const CHINESE_TO_ENGLISH_QUIZ = 1;
     const ENGLISH_TO_CHINESE_QUIZ = 2;
 
-    var paragraphs = document.getElementsByTagName('p');
+    var paragraphs = paragraphsInArticle();
 
     function addOptionsForQuiz() {
         var myArrayShuffle = shuffle([1, 2, 3, 4]);
@@ -583,6 +583,19 @@ function appendPopUp(event) {
 
 
 vocabularyListDisplayed = 0;
+
+
+function paragraphsInArticle() {
+    var paragraphs;
+    if (document.URL.indexOf('cnn.com') !== -1) {
+        paragraphs = $('.zn-body__paragraph').get();
+    } else {
+        paragraphs = document.getElementsByTagName('p');
+    }
+    return paragraphs;
+}
+
+
 chrome.storage.sync.get(null, function(result) {
 
     var allKeys = Object.keys(result);
@@ -653,10 +666,10 @@ chrome.storage.sync.get(null, function(result) {
 
     console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
 
-    if (isWorking ) {
+    if (isWorking && isWebsiteForTranslation) {
         // request at the start
-        Notification.requestPermission();
-        spawnNotification(null, null, 'WordNews is replacing some words in this article');
+        //Notification.requestPermission();
+        //spawnNotification(null, null, 'WordNews is replacing some words in this article');
         $(window).scroll(function() {
             // if the user scrolls to the button of the page, display the list of words learned
             if ($(window).scrollTop() + $(window).height() === $(document).height() - 300) {
@@ -668,13 +681,14 @@ chrome.storage.sync.get(null, function(result) {
                 }
 
                 var titleOfNotification = 'Words looked at in this article:';
-                if (wordList) {
-                    spawnNotification(wordList.join(', '), null, titleOfNotification);
-                }
+                //if (wordList) {
+                //    spawnNotification(wordList.join(', '), null, titleOfNotification);
+                //}
             }
         });
 
-        var paragraphs = document.getElementsByTagName('p');
+        var paragraphs = paragraphsInArticle();
+
         var articleText = "";
         for (var i = 0; i < paragraphs.length; i++) {
 
@@ -685,8 +699,8 @@ chrome.storage.sync.get(null, function(result) {
             
             // if the paragraph is followed or preceeded by another p, 
             // then translate it
-            if ((paragraph.nextSibling && (paragraph.nextSibling.nodeName.toLowerCase() === "p" || paragraph.nextSibling.nodeName.toLowerCase() === "#text")) || 
-                (paragraph.previousSibling && (paragraph.previousSibling.nodeName.toLowerCase() === "p" || paragraph.previousSibling.nodeName.toLowerCase() === "#text"))) {
+            //if ((paragraph.nextSibling && (paragraph.nextSibling.nodeName.toLowerCase() === "p" || paragraph.nextSibling.nodeName.toLowerCase() === "#text")) || 
+             //   (paragraph.previousSibling && (paragraph.previousSibling.nodeName.toLowerCase() === "p" || paragraph.previousSibling.nodeName.toLowerCase() === "#text"))) {
 
                 var stringToServer = paragraph.innerText;
 
@@ -700,7 +714,7 @@ chrome.storage.sync.get(null, function(result) {
 
                     requestTranslatedWords(url, params, i);
                 }
-            } 
+            //} 
         }
         
         if (!isTranslatingByParagraph) {
