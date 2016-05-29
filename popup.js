@@ -69,7 +69,7 @@ function onWindowLoad() {
 
         translationUrl = result.translationUrl || "http://wordnews-mobile.herokuapp.com/";
         console.log('transUrl', translationUrl);
-	    if (translationUrl.indexOf('showbybing') >= 0) {
+	    if (translationUrl.indexOf('mobile') >= 0) {
             document.getElementById('dictionaryTranslations').className = 'btn btn-default';
             document.getElementById('imsTranslations').className = 'btn btn-default';
             document.getElementById('bingTranslations').className = 'btn btn-primary active';
@@ -180,15 +180,15 @@ function onWindowLoad() {
 
     $('#translationUrl .btn').click(function() {
         
-
         translationUrl = $(this).attr('id');
-            console.log(translationUrl);
+
         if (translationUrl.indexOf('ims') >= 0) {
             chrome.storage.sync.set({'translationUrl': 'http://imsforwordnews.herokuapp.com/show'});
         } else if (translationUrl.indexOf('dictionary') >= 0) {
             chrome.storage.sync.set({'translationUrl': 'http://wordnews.herokuapp.com/show'});
         } else {
-            chrome.storage.sync.set({'translationUrl': 'http://wordnews-mobile.herokuapp.com/showbybing'});
+            // this one uses Bing translator
+            chrome.storage.sync.set({'translationUrl': 'http://wordnews-mobile.herokuapp.com/show'});
         }
 
         chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
@@ -285,18 +285,17 @@ function onWindowLoad() {
         });
     });
 
-    $('.btn-block').click(function(){
+    $('.btn-block').click(function() {
         window.open(hostUrl+'displayHistory?name='+userAccount);
-        });
+    });
     //http://testnaijia.herokuapp.com/settings?name='+userAccount'
-    $('#setting').click(function(){
+    $('#setting').click(function() {
         window.open(hostUrl+'settings?name='+userAccount);
-        });
+    });
     //http://testnaijia.herokuapp.com/howtouse
-    $('#documentation').click(function(){
+    $('#documentation').click(function() {
         window.open(hostUrl+'howtouse');
-        });
+    });
 }
 
 window.onload = onWindowLoad;
-

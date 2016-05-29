@@ -50,7 +50,8 @@ var UserSettings = (function() {
     }
 
     UserSettings.prototype.readNumWords = function() {
-        return _numWordsToTranslate;
+        //return _numWordsToTranslate;
+        return 6;
     }
 
     return UserSettings;
@@ -722,7 +723,7 @@ chrome.storage.sync.get(null, function(result) {
 
             requestTranslatedWords(url, params, i);
         }
-    }
+        }
 
 });
 
