@@ -3,7 +3,7 @@
 
   "name": "WordNews_Demo",
   "description": "Learn a second language by picking up new vocabulary in news articles. Answer MCQ questions based on your learning history.",
-  "version": "1.312",
+  "version": "1.3171",
 
   "browser_action": {
     "default_icon": "logo.png",
@@ -11,7 +11,7 @@
   },
 
   "background":{
-    "page": "background.html"
+    "scripts": ["jquery-2.1.1.min.js", "background.js"]
   },
   "content_scripts": [
     {
@@ -46,5 +46,13 @@
   ],
   "permissions": [
     "tabs","<all_urls>","identity","storage","http://*/*"
-  ]
+  ],
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAim+IQbK+ZzcY8IAnuLs5/zNWbZC3n54lowQlN6N/e35X1Dey/vGJwUr5oGtN0HwpX2K3uW4p4Oxn21nfjmOGqGNFi1iQXG7LrBt4nn7LwISsOj3w5ILMpjEJAQceEscgOJdhvn9J3aAOMTfWWPAwKVKtbFZ8ixoFakuxeNjjgmcCXP4inSDZOV2MJJkwYydThzCKOX4k6qStJu1OjVoBeZuQrZ+ISZYlXlvBmKXIFpDVieq+wPBOjgX/3IUEmce+CRlw0xa8iYwCNs0or25pDQujmXY0Wno9DXA3uo/AaYUnrVNCx70KHt2x6KvDIElDwmCV/eFljxNP4ExYQUU8GQIDAQAB",
+
+  "oauth2": {
+    "client_id": "373169587674-g6sdqobs2qhgmp2qgc9r4naf3902qjr7.apps.googleusercontent.com",
+    "scopes": [
+      "openid", "email", "profile"
+    ]
+  }
 }
