@@ -30,8 +30,7 @@
       "js":[
         "jquery-2.1.1.min.js",
         "contentscript.js",
-        "slider/js/bootstrap-slider.js",
-        "annotate.js"
+        "slider/js/bootstrap-slider.js"
       ],
       "html":["bing.html"],
       "run_at": "document_end",
