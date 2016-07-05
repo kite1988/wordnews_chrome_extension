@@ -667,7 +667,7 @@ chrome.storage.sync.get(null, function(result) {
 
     console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
 
-    if (isWorking && isWebsiteForTranslation) {
+    if (isWorking==1 && isWebsiteForTranslation) {
         // request at the start
         //Notification.requestPermission();
         //spawnNotification(null, null, 'WordNews is replacing some words in this article');
@@ -723,7 +723,7 @@ chrome.storage.sync.get(null, function(result) {
 
             requestTranslatedWords(url, params, i);
         }
-        }
+    }
 
 });
 
