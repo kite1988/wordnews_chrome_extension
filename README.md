@@ -1,6 +1,6 @@
 WordNews Chrome Extension
 ====================
 
-Link to current backend: https://github.com/kanghj/wordnews_server
+Link to code of current backend: https://github.com/kanghj/wordnews_server
 
-I will update this readme with a link to an alternative backend soon.
+Alternative backend code using IMS: https://github.com/kanghj/ImsForWordNews
