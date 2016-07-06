@@ -3,7 +3,7 @@
 
   "name": "WordNews_Demo",
   "description": "Learn a second language by picking up new vocabulary in news articles. Answer MCQ questions based on your learning history.",
-  "version": "1.3172",
+  "version": "1.3175",
 
   "browser_action": {
     "default_icon": "logo.png",

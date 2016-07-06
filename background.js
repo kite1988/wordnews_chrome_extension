@@ -6,7 +6,7 @@
 chrome.storage.sync.get(null, function(result) {
     var url = makeUrlForGoogleOAuth();
 
-    if (!result.hasOwnProperty('userAccount')) {
-        launchGoogleLoginFlow(url);
-    }
+    //if (!result.hasOwnProperty('userAccount')) {
+       // launchGoogleLoginFlow(url);
+    //}
 });
