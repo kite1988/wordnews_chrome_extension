@@ -303,7 +303,6 @@ function setMode() {
 			// removeAnnotationContextMenu();
 			// addAnnotationContextMenu();
 			paintCursor();
-			reload();
 			window.close();
 
 		} else { // disable
@@ -328,7 +327,7 @@ function setMode() {
 
 		// TODO: this function does not execute sometimes
 		// alert("before");
-		reload();
+		//reload();
 	});
 }
 
@@ -358,8 +357,15 @@ function paintCursor() {
 	}, function(arrayOfTabs) {
 		var cursor = chrome.extension.getURL('highlighter-orange.cur');
 		console.log(cursor);
-		chrome.tabs.insertCSS({
-			code : "body p { cursor: url(" + cursor + "), auto}"
+		//chrome.tabs.insertCSS({
+		//	code : "body p { cursor: url(" + cursor + "), auto}"
+		//});
+		
+		//chrome.tabs.executeScript(arrayOfTabs[0].id, {
+			//code : "document.body.style.cursor = 'url(" + cursor + "),auto';"
+			//file: "annotate.js"
+		//});
+		chrome.tabs.sendMessage(arrayOfTabs[0].id, {mode: "annotate"}, function(response) {
 		});
 
 	});
@@ -371,13 +377,15 @@ function unpaintCursor() {
 		active : true,
 		currentWindow : true
 	}, function(arrayOfTabs) {
-		chrome.tabs.executeScript(arrayOfTabs[0].id, {
-			// code : "document.body.style.cursor =
-			// url('chrome-extension://__MSG_@@extension_id__/highlighter-orange.cur');"
-			code : "document.body.style.cursor = 'default';"
+		//chrome.tabs.executeScript(arrayOfTabs[0].id, {
+			//code : "document.body.style.cursor = 'default';"
+			//file: "unannotate.js"
+		//});
+		chrome.tabs.sendMessage(arrayOfTabs[0].id, {mode: "unannotate"}, function(response) {
 		});
 	});
 }
+
 
 // TODO: refine code
 function setReplace() {
