@@ -15,8 +15,8 @@ function selectHTML() {
 /*
  * 1. Highlight the selected text 
  * 2. Insert JS for annotation panel 
- * 3. Verify the lenght of text (min and max) 
- * 4. Automatically extend to the nearest textual words if the selection contains partial word
+ * 3. Verify the length of text (min and max) (TODO)
+ * 4. Automatically extend to the nearest textual words if the selection contains partial word (TODO)
  */
 function highlight() {
 	var id = generateId();
@@ -24,22 +24,23 @@ function highlight() {
     if(textNode.toString().length > 1){
 		var sNode = document.createElement("span");
 		sNode.id = id;
-		sNode.style.background="yellow";
+		sNode.className = "annotate-highlight";
 	
 		textNode.surroundContents(sNode);
-		//var panel = appendPanel(id);
-	
-		/*
+		var panel = appendPanel(id);
+		
 		$("#" + id).mouseenter(function() {
+			console.log(id + " mouse enter");
 			if (panel.is(':hidden')) {
 				panel.show();
 			}
 		});
-		*/
+		
 		return id;
     }
 }
 
+// TODO: show the system's translation in the textarea
 function appendPanel(id) {
 	var highlightWords = $("#" + id);
 	var rect = cumulativeOffset2(id);
@@ -48,22 +49,26 @@ function appendPanel(id) {
 	var panelID = id + "_panel";
 	var antId = id + "_ant";
 
-	var panelHtml = '<div id=\"' + panelID + '\">';
-	panelHtml += '<textarea id=\"' + antId + '\"></textarea>';
-	panelHtml += '<br> <button type=\"delete\">Delete</button><button type=\"cancel\">Cancel</button><button type=\"submit\">Submit</submit> </div>';
-
+	var panelHtml = '<div id=\"' + panelID + '\" class=\"panel\">';
+	panelHtml += '<textarea id=\"' + antId + '\" style="background:yellow"></textarea><br>';
+	panelHtml += '<div class=\"btn-group\" style=\"margin:5px;\">'
+	panelHtml += '<button type=\"delete\" class=\"btn btn-info btn-xs\">Delete</button> &nbsp;';
+	panelHtml += '<button type=\"cancel\" class=\"btn btn-info btn-xs\">Cancel</button> &nbsp;';
+	panelHtml += '<button type=\"submit\" class=\"btn btn-info btn-xs\">Submit</button>';
+	panelHtml += '</div></div>';
+		
 	$("body").append(panelHtml);
 
 	var panel = document.getElementById(panelID);
 	panel.style.position = "absolute";
 	panel.style.left = (rect.left - 20) + 'px';
 	panel.style.top = (rect.top + 20) + 'px';
-	panel.style.background = 'yellow';
-	//panel.show();
+	panel.className = "annotate-panel";
+	
 	panel = $(panel);
 
 	$("#" + panelID + " button").click(function() {
-		mode = $(this).attr('type');
+		var mode = $(this).attr('type');
 		if (mode == 'cancel') {
 			panel.hide();
 		} else if (mode == 'delete') {

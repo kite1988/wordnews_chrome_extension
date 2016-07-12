@@ -26,6 +26,7 @@
         "gt_popup_css_compiled.css",
         "gt_bubble_gss.css",
         "slider/css/slider.css",
+        "bootstrap/css/bootstrap.min.css",
         "annotate.css"
       ],
       "js":[
