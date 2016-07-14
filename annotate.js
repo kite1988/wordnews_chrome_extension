@@ -1,6 +1,6 @@
 'use strict';
 
-//var paragraphs = document.getElementsByTagName('p');
+var paragraphs = document.getElementsByTagName('p');
 
 
 function selectHTML() {
@@ -20,7 +20,7 @@ function selectHTML() {
  * 2. Insert JS for annotation panel 
  * 3. Verify the length of text (min and max) (TODO)
  * 4. Automatically extend to the nearest textual words if the selection contains partial word (TODO)
- http://stackoverflow.com/questions/7563169/detect-which-word-has-been-clicked-on-within-a-text
+ 	  http://stackoverflow.com/questions/7563169/detect-which-word-has-been-clicked-on-within-a-text
  * 5. Can not highlight a string with existing highlighted words (TODO)
  */
 function highlight() {
@@ -33,7 +33,6 @@ function highlight() {
 
         textNode.surroundContents(sNode);
         var panel = appendPanel(id);
-
 
         var parent = getSelection().anchorNode.parentNode;
         while (parent != null && parent.localName.toLowerCase() != "p") {
@@ -59,12 +58,7 @@ function highlight() {
     }
 }
 
-
-// Return the paragraph idx (starts at 0) and occurrence idx (starts at 1).
-
 function getParagraphIndex(p) {
-    var paragraphs = document.getElementsByTagName('p');
-    console.log("total paras " + paragraphs.length);
     var i = 0;
     for (; i < paragraphs.length; i++) {
         if (p.isSameNode(paragraphs[i])) {
@@ -75,7 +69,7 @@ function getParagraphIndex(p) {
 }
 
 
-// find the occurence of the word in preceding string. 
+// find the occurrence of the selected text in preceding string. 
 function getWordIndex(p, textNode) {
     var precedingRange = document.createRange();
     precedingRange.setStartBefore(p.firstChild);
@@ -94,8 +88,6 @@ function getWordIndex(p, textNode) {
     }
     return count;
 }
-
-
 
 
 // TODO: show the system's translation in the textarea
@@ -154,7 +146,6 @@ function saveAnnotation(editorID) {
         a.privateEditOn(false);
         a.privateEditing = false
     }
-
 }
 
 function showPanel() {
