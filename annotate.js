@@ -139,14 +139,64 @@ function appendPanel(id) {
     return panel;
 }
 
+
+var annotation = {
+		uid: '', // user id
+		aid: '', // annotation id
+		text: '',
+		translation: '',
+		lang: '', // language of the translation
+		timestamp: '', // time of creating/updating the annotation
+		pidx: -1, // paragraph idx
+		tidx: -1, // the idx in the occurrence of the paragraph 
+		url: '' // url of the article
+	}
+
+
+// TODO: send to server
 function saveAnnotation(editorID) {
-    // not empty
-    if (!$("#F" + editorID).val().match(/^\s*$/)) {
-        a.ann.onlyInGroup || !a.ann.saved || a.getCommentCount("private", a.ann.comments) == 0 ? a.addPrivateComment() : a.uploadPrivateComment();
-        a.privateEditOn(false);
-        a.privateEditing = false
-    }
+	
+    
 }
+
+// TODO： show all the highlights and annotations
+function showAnnotations() {
+
+	
+}
+
+
+// TODO: inject annotation panel div as well
+function showAnnotation(ann) {
+    if (paragraphs.length < ann.pidx) {
+        console.log("layout changed");
+        return;
+    }
+
+    var para = paragraphs[pidx];
+    var innerHtml = para.innerHTML;
+    console.log(para);
+
+    var count = 0;
+    for (var i=0; i<innerHtml.length; ) {
+        var idx = innerHtml.indexOf(ann.text, i);
+        if (idx>0) {
+            count++;
+            if (count==ann.tidx) {
+                var before = innerHtml.slice(0, idx);
+                var after = innerHtml.slice(idx+ann.text.length);
+                // TODO: inject annotation div as well
+                var html = '<span class=\"highlight\">' + ann.text + '</span>';
+                para.innerHTML = before + html + after;
+                return;
+            } 
+        } 
+        i++;
+    }
+    console.log("Cannot find the " + text + "  in paragraph " + pid);
+	
+}
+
 
 function showPanel() {
     $(this).style.visibility = "visible";
@@ -177,10 +227,6 @@ function generateId() {
     return (new Date).getTime().toString() + Math.floor(Math.random() * 100000)
 }
 
-function showDiv() {
-    $("#test").toggle();
-}
-
 
 function paintCursor() {
     var cursor = chrome.extension.getURL('highlighter-orange.cur');
@@ -192,6 +238,7 @@ function unpaintCursor() {
     window.location.reload();
     $('body').unbind("mouseup", 'p');
 }
+
 
 
 // add listeners
