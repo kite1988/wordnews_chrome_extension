@@ -2,6 +2,8 @@
 
 var paragraphs = document.getElementsByTagName('p');
 
+var selectionMaxLength = 5;
+var selectionMinLength = 1;
 
 function selectHTML() {
     try {
@@ -15,18 +17,117 @@ function selectHTML() {
     }
 }
 
+function isValidString(str)
+{
+    return !/[~`!#$%\^&*+=\\[\]\\';,./{}|\\":<>\?\s]/g.test(str);
+}
+
+// This function will get the whole word from selection. 
+// If the selection is incomplete, e.g "ar" from "harm" is selected, 
+// it will get the word "harm"
+function getTextNodeFromSelection()
+{
+    //Get the selection
+    var textNode = getSelection();
+    var range = textNode.getRangeAt(0);
+    var node = textNode.anchorNode;        
+    var offset = true; // Bool check for offsetting
+    //If there is more than one whitespace in the selection
+    if ((range.toString().match(/\s/g) || []).length > 1)
+    {
+        var str = range.toString();        
+        //Check whether the whitespaces are at the extreme end of the selection
+        if (!isValidString(str[0])  && !isValidString(str[str.length - 1]) )
+        {
+            //console.log("Has more than one whitespaces")
+            //Set the error to true and return an invalid selection
+            return [true, range];
+        }
+    }
+    //Loop backwards until we find the special character to break
+    while (isValidString(range.toString()))
+    {
+        //If the start offset is 0, break the loop since offset cannot be < 0
+        if( range.startOffset == 0)
+        {
+            offset = false;
+            break;
+        }
+        range.setStart(node, (range.startOffset - 1));
+    }
+    
+    //Align to first character after the special character
+    if (offset)
+    {
+        range.setStart(node, range.startOffset + 1);
+    }
+
+    offset = true; //Reset bool to true
+    
+    //Loop forward until we find the special character to break
+    do {        
+        if (range.endOffset + 1 > node.length)
+        {
+            offset = false;
+            break;
+        }
+        range.setEnd(node, range.endOffset + 1);        
+    } while (isValidString(range.toString()));
+    
+    //Align to last character before the special character
+    if (offset)
+    {
+        range.setEnd(node, range.endOffset - 1);
+    }    
+    console.log(range.toString());
+    
+    return [false, range];
+}
+
+//Function to check whehter class exist with a given name
+function hasClass(element, cls) {
+    return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
+}
+
+//This function will take in the text node and check whether is there any annoation existed under this node
+function checkAnnoationExisted(node)
+{
+    var parentElem = null;
+    
+    //Get the parent node element
+    parentElem = node.commonAncestorContainer;
+    if (parentElem.nodeType != 1) {
+        parentElem = parentElem.parentNode;
+    }
+    
+    if (hasClass(parentElem, "annotate-highlight"))
+    {
+        //console.log("annotate class existed")        
+        return true;
+    }    
+}
 /*
  * 1. Highlight the selected text 
  * 2. Insert JS for annotation panel 
- * 3. Verify the length of text (min and max) (TODO)
- * 4. Automatically extend to the nearest textual words if the selection contains partial word (TODO)
+ * 3. Verify the length of text (min and max)
+ * 4. Automatically extend to the nearest textual words if the selection contains partial word 
  	  http://stackoverflow.com/questions/7563169/detect-which-word-has-been-clicked-on-within-a-text
- * 5. Can not highlight a string with existing highlighted words (TODO)
+ * 5. Can not highlight a string with existing highlighted words 
+ 
  */
-function highlight() {
-    var id = generateId();
-    var textNode = getSelection().getRangeAt(0);
-    if (textNode.toString().length > 1) {
+function highlight() {    
+    
+    var result =  getTextNodeFromSelection();
+    var textNode = result[1];
+    var error = result[0]
+    error = error || checkAnnoationExisted(textNode);
+    
+    if (!error && 
+        textNode.toString().length > selectionMinLength && 
+        textNode.toString().length <= selectionMaxLength ) 
+    {            
+        //Generate an unique ID for the annotation 
+        var id = generateId(); 
         var sNode = document.createElement("span");
         sNode.id = id;
         sNode.className = "annotate-highlight";
@@ -56,6 +157,10 @@ function highlight() {
 
         return id;
     }
+    else if (textNode.toString().length != 0 ) {
+        //TODO: Show a proper UI such as notification for error
+        console.log("ERROR");
+    }    
 }
 
 function getParagraphIndex(p) {
@@ -123,12 +228,13 @@ function appendPanel(id) {
             panel.hide();
         } else if (mode == 'delete') {
             panel.remove();
-            highlightWords.contents().unwrap();
+            highlightWords.contents().unwrap();            
+            deleteAnnotation(id)
         } else {
             // TODO: fix bug
             console.log("save");
             panel.hide();
-            saveAnnotation(editorID);
+            saveAnnotation(id);
         }
     })
 
@@ -153,21 +259,20 @@ var annotation = {
 	}
 
 
-// TODO: send to server
-function saveAnnotation(editorID) {
-	
+// TODO: send to server to add annoation
+function saveAnnotation(annotationID) {	
     
+}
+
+// TODO: send to server to remove annoation
+function deleteAnnotation(annotationID) {	
+
+	
 }
 
 // TODO： show all the highlights and annotations
 function showAnnotations() {
 
-	
-}
-
-// TODO: 
-// id is the internal id in database
-function deleteAnnotation(id) {
 	
 }
 
