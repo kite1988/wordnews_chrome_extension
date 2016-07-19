@@ -141,14 +141,14 @@ function appendPanel(id) {
 
 
 var annotation = {
-		uid: '', // user id
-		aid: '', // annotation id
-		text: '',
+		id: -1,  // the internal id in database
+		user_id: -1, // user id
+		ann_id: -1, // annotation id
+		selected_text: '',
 		translation: '',
-		lang: '', // language of the translation
-		timestamp: '', // time of creating/updating the annotation
-		pidx: -1, // paragraph idx
-		tidx: -1, // the idx in the occurrence of the paragraph 
+		lang: 'zh', // language of the translation, obtained from user's configuration. set default to zh (Chinese)
+		paragraph_idx: -1, // paragraph idx
+		text_idx: -1, // the idx in the occurrence of the paragraph 
 		url: '' // url of the article
 	}
 
@@ -165,10 +165,16 @@ function showAnnotations() {
 	
 }
 
+// TODO: 
+// id is the internal id in database
+function deleteAnnotation(id) {
+	
+}
+
 
 // TODO: inject annotation panel div as well
 function showAnnotation(ann) {
-    if (paragraphs.length < ann.pidx) {
+    if (paragraphs.length < ann.paragraph_idx) {
         console.log("layout changed");
         return;
     }
@@ -179,14 +185,14 @@ function showAnnotation(ann) {
 
     var count = 0;
     for (var i=0; i<innerHtml.length; ) {
-        var idx = innerHtml.indexOf(ann.text, i);
+        var idx = innerHtml.indexOf(ann.selected_text, i);
         if (idx>0) {
             count++;
-            if (count==ann.tidx) {
+            if (count==ann.text_idx) {
                 var before = innerHtml.slice(0, idx);
-                var after = innerHtml.slice(idx+ann.text.length);
+                var after = innerHtml.slice(idx+ann.selected_text.length);
                 // TODO: inject annotation div as well
-                var html = '<span class=\"highlight\">' + ann.text + '</span>';
+                var html = '<span class=\"highlight\">' + ann.selected_text + '</span>';
                 para.innerHTML = before + html + after;
                 return;
             } 
@@ -206,6 +212,8 @@ function hidePanel() {
     $(this).style.visibility = "hidden";
 }
 
+// Duplicate with the cumulativeOffset() in contentscript.js
+// TODO: Remove
 function cumulativeOffset2(id) {
     var element = document.getElementById(id);
     console.log("id " + element);
