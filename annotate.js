@@ -2,8 +2,8 @@
 
 var paragraphs = document.getElementsByTagName('p');
 
-var selectionMaxLength = 5;
-var selectionMinLength = 1;
+var selectionMaxNoOfWords = 5;
+var selectionMinNoOfWords = 1;
 
 function selectHTML() {
     try {
@@ -32,20 +32,23 @@ function getTextNodeFromSelection()
     var range = textNode.getRangeAt(0);
     var node = textNode.anchorNode;        
     var offset = true; // Bool check for offsetting
-    //If there is more than one whitespace in the selection
-    if ((range.toString().match(/\s/g) || []).length > 1)
+    
+    //If the number of words is more than selectionMaxNoOfWords
+    var noOfWords = range.toString().split(" ").length;
+    
+    if (noOfWords >= selectionMaxNoOfWords)
     {
-        var str = range.toString();        
-        //Check whether the whitespaces are at the extreme end of the selection
-        if (!isValidString(str[0])  && !isValidString(str[str.length - 1]) )
-        {
-            //console.log("Has more than one whitespaces")
-            //Set the error to true and return an invalid selection
-            return [true, range];
-        }
+        console.log("More than 5 words")
+        return [true, range];
     }
+    
+    if (range.startOffset > range.endOffset)
+    {
+        return [true, range];
+    }
+
     //Loop backwards until we find the special character to break
-    while (isValidString(range.toString()))
+    while (isValidString(range.toString()[0]))
     {
         //If the start offset is 0, break the loop since offset cannot be < 0
         if( range.startOffset == 0)
@@ -54,6 +57,7 @@ function getTextNodeFromSelection()
             break;
         }
         range.setStart(node, (range.startOffset - 1));
+        //console.log(range.toString());
     }
     
     //Align to first character after the special character
@@ -63,7 +67,7 @@ function getTextNodeFromSelection()
     }
 
     offset = true; //Reset bool to true
-    
+    var lastIndex = range.toString().length - 1;
     //Loop forward until we find the special character to break
     do {        
         if (range.endOffset + 1 > node.length)
@@ -71,15 +75,17 @@ function getTextNodeFromSelection()
             offset = false;
             break;
         }
-        range.setEnd(node, range.endOffset + 1);        
-    } while (isValidString(range.toString()));
+        range.setEnd(node, range.endOffset + 1);     
+        lastIndex++;
+        //console.log(range.toString());
+    } while (isValidString(range.toString()[lastIndex]));
     
     //Align to last character before the special character
     if (offset)
     {
         range.setEnd(node, range.endOffset - 1);
     }    
-    console.log(range.toString());
+    //console.log(range.toString());
     
     return [false, range];
 }
@@ -102,9 +108,10 @@ function checkAnnoationExisted(node)
     
     if (hasClass(parentElem, "annotate-highlight"))
     {
-        //console.log("annotate class existed")        
+        console.log("annotate class existed")        
         return true;
     }    
+    return false;
 }
 /*
  * 1. Highlight the selected text 
@@ -115,52 +122,60 @@ function checkAnnoationExisted(node)
  * 5. Can not highlight a string with existing highlighted words 
  
  */
-function highlight() {    
+function highlight(userId ) {    
     
     var result =  getTextNodeFromSelection();
     var textNode = result[1];
     var error = result[0]
     error = error || checkAnnoationExisted(textNode);
     
-    if (!error && 
-        textNode.toString().length > selectionMinLength && 
-        textNode.toString().length <= selectionMaxLength ) 
+    if (!error && textNode.toString().length > 1) 
     {            
         //Generate an unique ID for the annotation 
-        var id = generateId(); 
+        var annotationId = generateId(); 
         var sNode = document.createElement("span");
-        sNode.id = id;
-        sNode.className = "annotate-highlight";
-
-        textNode.surroundContents(sNode);
-        var panel = appendPanel(id);
-
+        sNode.id = annotationId;
+        sNode.className = "annotate-highlight";      
+        try
+        {
+            textNode.surroundContents(sNode);        
+        }
+        catch(err)
+        {
+            console.log(err);
+            return -1
+        }        
+        
         var parent = getSelection().anchorNode.parentNode;
         while (parent != null && parent.localName.toLowerCase() != "p") {
             parent = parent.parentNode;
         }
-
+        var pidx = 0;
+        var widx = 0;
         if (parent != null) {
-            var pidx = getParagraphIndex(parent);
+            pidx = getParagraphIndex(parent);
             console.log(pidx);
-            var widx = getWordIndex(parent, textNode);
+            widx = getWordIndex(parent, textNode);
 
             sNode.setAttribute('value', pidx + ',' + widx);
         }
-
-        $("#" + id).mouseenter(function() {
-            console.log(id + " mouse enter");
+        
+        var panel = appendPanel(annotationId, textNode.toString(), userId, pidx, widx);
+        
+        $("#" + annotationId).mouseenter(function() {
+            console.log(annotationId + " mouse enter");
             if (panel.is(':hidden')) {
                 panel.show();
             }
         });
 
-        return id;
+        return annotationId;
     }
     else if (textNode.toString().length != 0 ) {
         //TODO: Show a proper UI such as notification for error
-        console.log("ERROR");
-    }    
+        
+        return -1;
+    }        
 }
 
 function getParagraphIndex(p) {
@@ -172,7 +187,6 @@ function getParagraphIndex(p) {
     }
     return -1;
 }
-
 
 // find the occurrence of the selected text in preceding string. 
 function getWordIndex(p, textNode) {
@@ -194,15 +208,44 @@ function getWordIndex(p, textNode) {
     return count;
 }
 
+//This function will remove current element which contains annotation and 
+//combine the data with previous and next
+function removeAnnotationElement(elem)
+{
+    var addNext = false;    
+    var nextElem = elem.nextSibling;
+    
+    if (!hasClass(nextElem, "annotate-highlight"))
+    {       
+        nextElem.data = elem.innerHTML + nextElem.data;
+        addNext = true;
+    }
+    
+    var prevElem = elem.previousSibling;
+    //if the previous sibings is not an annotation class
+    if (!hasClass(nextElem, "annotate-highlight"))
+    {
+        if (addNext) //if there is a need to add in next
+        {
+            prevElem.data +=  nextElem.data
+            nextElem.remove();
+        }
+        else //just add in the current element text
+        {
+            prevElem.data +=  elem.innerHTML
+        }
+    }
+    elem.remove()
+}
 
 // TODO: show the system's translation in the textarea
-function appendPanel(id) {
-    var highlightWords = $("#" + id);
-    var rect = cumulativeOffset2(id);
+function appendPanel(annotationId, word, userId, paragrahIndex, wordIndex) {
+    var highlightWords = $("#" + annotationId);
+    var rect = cumulativeOffset2(annotationId);
     console.log("rect: " + rect.left + " " + rect.top);
 
-    var panelID = id + "_panel";
-    var editorID = id + "_editor";
+    var panelID  = annotationId + "_panel";
+    var editorID = annotationId + "_editor";
 
     var panelHtml = '<div id=\"' + panelID + '\" class=\"panel\">';
     panelHtml += '<textarea id=\"' + editorID + '\" style="background:yellow"></textarea><br>';
@@ -227,14 +270,17 @@ function appendPanel(id) {
         if (mode == 'cancel') {
             panel.hide();
         } else if (mode == 'delete') {
+            var elem = document.getElementById(annotationId);            
+            removeAnnotationElement(elem)
+            //Remove the panel HTML
             panel.remove();
             highlightWords.contents().unwrap();            
-            deleteAnnotation(id)
+            deleteAnnotation(annotationId)
         } else {
             // TODO: fix bug
             console.log("save");
             panel.hide();
-            saveAnnotation(id);
+            saveAnnotation(annotationId, word, userId, paragrahIndex, wordIndex);
         }
     })
 
@@ -256,12 +302,37 @@ var annotation = {
 		paragraph_idx: -1, // paragraph idx
 		text_idx: -1, // the idx in the occurrence of the paragraph 
 		url: '' // url of the article
-	}
+}
 
 
 // TODO: send to server to add annoation
-function saveAnnotation(annotationID) {	
+function saveAnnotation(annotationId, word, userId, paragrahIndex, wordIndex) {	
+    console.log(annotationId);
+    //Get the translated word
+//    var result = $.post("http://imsforwordnews.herokuapp.com/show", );
+    $.post( "https://wordnews-server-kite19881.c9users.io/create_annotation", 
     
+        {
+            
+            annotation:{
+                ann_id: annotationId, 
+                user_id: userId,
+                selected_text: word,
+                translation: '新闻',
+                lang: "zh",
+                url: window.location.href,
+                paragraph_idx: paragrahIndex,
+                text_idx: wordIndex
+            }
+            
+        }
+    )
+    .done(function() {
+        alert( "success" );
+    })
+    .fail(function() {
+        alert( "error" );
+    });  
 }
 
 // TODO: send to server to remove annoation
@@ -336,8 +407,12 @@ function cumulativeOffset2(id) {
     };
 }
 
-function generateId() {
-    return (new Date).getTime().toString() + Math.floor(Math.random() * 100000)
+function generateId() {    
+    //This method creates semi-unique ID
+    var i = new Date().getTime();
+    i = i & 0xffffffff;
+    //console.log(i);
+    return (i + Math.floor(Math.random() * i));
 }
 
 
@@ -360,7 +435,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.mode == "annotate") {
         console.log("annotate");
         $('body').on("mouseup", 'p', function(e) {
-            var id = highlight();
+            var id = highlight(request.user_id);
+            if (id == -1)
+            {
+                console.log("Error: Unable to create annotation");
+            }
             console.log($("#" + id));
         });
         paintCursor();
