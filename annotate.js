@@ -238,7 +238,8 @@ function removeAnnotationElement(elem)
     elem.remove()
 }
 
-// TODO: show the system's translation in the textarea
+// TODO: To save annotator's effort, we will show the system's translation 
+// in the textarea as default translation, and thus annotator can edit it.
 function appendPanel(annotationId, word, userId, paragrahIndex, wordIndex) {
     var highlightWords = $("#" + annotationId);
     var rect = cumulativeOffset2(annotationId);
@@ -305,13 +306,14 @@ var annotation = {
 }
 
 
-// TODO: send to server to add annoation
+// TODO: send to server to add annotation
+
 function saveAnnotation(annotationId, word, userId, paragrahIndex, wordIndex) {	
     console.log(annotationId);
     //Get the translated word
 //    var result = $.post("http://imsforwordnews.herokuapp.com/show", );
-    $.post( "https://wordnews-server-kite19881.c9users.io/create_annotation", 
-    
+    //$.post( "https://wordnews-server-kite19881.c9users.io/create_annotation", // for experiments
+    $.post{"https://wordnews-annotate.herokuapp.com/create_annotation"}, // stable server
         {
             
             annotation:{
