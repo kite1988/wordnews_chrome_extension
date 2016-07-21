@@ -365,7 +365,7 @@ function paintCursor() {
 			//code : "document.body.style.cursor = 'url(" + cursor + "),auto';"
 			//file: "annotate.js"
 		//});
-		chrome.tabs.sendMessage(arrayOfTabs[0].id, {mode: "annotate"}, function(response) {
+		chrome.tabs.sendMessage(arrayOfTabs[0].id, {mode: "annotate", user_id: userAccount}, function(response) {
 		});
 
 	});
