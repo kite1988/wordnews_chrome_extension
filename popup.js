@@ -29,188 +29,194 @@ var translationUrl = '';
 
 
 function syncUser() {
-    chrome.storage.sync
-        .get(
-            null,
-            function(result) {
-                userAccount = result.userAccount;
-                userId = result.userId;
-                // console.log('user acc: '+ result.userAccount);
+	chrome.storage.sync
+			.get(
+					null,
+					function(result) {
+						userAccount = result.userAccount;
+						// console.log('user acc: '+ result.userAccount);
 
-                if (userAccount == undefined) {
-                    var d = new Date();
-                    userAccount = 'id' + d.getTime() + '_1';
+						if (userAccount == undefined || typeof userAccount == "string") {
+                            //TODO: Need to get the server to generate the User ID
+                            
+                            //This temporary method of generating will not create a true unique ID
+							var i = new Date().getTime();;
+                            i = i & 0xffffffff;
+							userAccount = (i + Math.floor(Math.random() * i));//'id' + d.getTime() + '_1';
+                            
+							chrome.storage.sync.set({
+								'userAccount' : userAccount
+							}, function() {
+							});
+						}
+						// console.log('userAccount ' + userAccount);
+						
+						if (userId == undefined) {
+		                    console.log('get user id');
+		                    var client = new HttpClient();
+		                    client
+		                        .get(
+		                            hostUrl + '/get_user_id_by_user_name?user_name=' + userAccount,
+		                            function(answer) {
+		                                console.log(answer);
 
-                    chrome.storage.sync.set({
-                        'userAccount': userAccount
-                    }, function() {});
-                }
-                // console.log('userAccount ' + userAccount);
+		                                var obj = JSON.parse(answer);
+		                                if ('user_id' in obj) {
+		                                    userId = obj['user_id'];
+		                                    console.log('id: ' + userId + ', user name: ' + userAccount);
 
-                // TODO: It seems the client is unable to receive the response?
-                // get user id
-                if (userId == undefined) {
-                    console.log('get user id');
-                    var client = new HttpClient();
-                    client
-                        .get(
-                            hostUrl + '/get_user_id_by_user_name?user_name=' + userAccount,
-                            function(answer) {
-                                console.log(answer);
+		                                    chrome.storage.sync.set({
+		                                        'userId': userId
+		                                    }, function() {});
+		                                }
+		                            });
+		                }
+						
 
-                                var obj = JSON.parse(answer);
-                                if ('user_id' in obj) {
-                                    userId = obj['user_id'];
-                                    console.log('id: ' + userId + ', user name: ' + userAccount);
+						isWorking = result.isWorking;
+						if (isWorking == undefined) {
+							isWorking = 1;
+							chrome.storage.sync.set({
+								'isWorking' : isWorking
+							});
+						}
+						// console.log('isWorking '+isWorking);
 
-                                    chrome.storage.sync.set({
-                                        'userId': userId
-                                    }, function() {});
-                                }
-                            });
-                }
+						$("#mode .btn").removeClass('active');
+						$("#mode .btn").removeClass('btn-primary');
+						$("#mode .btn").addClass('btn-default');
 
+						if (isWorking == 0) { // disable
+							$('.website-checkbox input').prop('disabled', true);
+							$('#displayEnglish').prop('disabled', true);
+							$('#displayChinese').prop('disabled', true);
+							$("#translationUrl .btn").prop('disabled', true);
 
-                isWorking = result.isWorking;
-                if (isWorking == undefined) {
-                    isWorking = 1;
-                    chrome.storage.sync.set({
-                        'isWorking': isWorking
-                    });
-                }
-                // console.log('isWorking '+isWorking);
+							$("#mode #disable").addClass('active btn-primary');
+							unpaintCursor();
 
-                $("#mode .btn").removeClass('active');
-                $("#mode .btn").removeClass('btn-primary');
-                $("#mode .btn").addClass('btn-default');
+						} else if (isWorking == 1) { // learn
+							$('.website-checkbox input')
+									.prop('disabled', false);
+							$('#displayEnglish').prop('disabled', false);
+							$('#displayChinese').prop('disabled', false);
+							$("#translationUrl .btn").prop('disabled', false);
 
-                if (isWorking == 0) { // disable
-                    $('.website-checkbox input').prop('disabled', true);
-                    $('#displayEnglish').prop('disabled', true);
-                    $('#displayChinese').prop('disabled', true);
-                    $("#translationUrl .btn").prop('disabled', true);
+							$("#mode #learn").addClass('active btn-primary');
+							unpaintCursor();
 
-                    $("#mode #disable").addClass('active btn-primary');
-                    unpaintCursor();
+						} else { // annotate
+							$('#displayEnglish').prop('disabled', true);
+							$('#displayChinese').prop('disabled', true);
+							$('.website-checkbox input')
+									.prop('disabled', false);
+							$('#translationUrl .btn').prop('disabled', true);
 
-                } else if (isWorking == 1) { // learn
-                    $('.website-checkbox input')
-                        .prop('disabled', false);
-                    $('#displayEnglish').prop('disabled', false);
-                    $('#displayChinese').prop('disabled', false);
-                    $("#translationUrl .btn").prop('disabled', false);
+							$("#mode #annotate").addClass('active btn-primary');
+							// removeAnnotationContextMenu();
+							// addAnnotationContextMenu();
+							paintCursor();
+						}
 
-                    $("#mode #learn").addClass('active btn-primary');
-                    unpaintCursor();
+						wordDisplay = result.wordDisplay;
+						if (wordDisplay == undefined) {
+							wordDisplay = 1;
+							chrome.storage.sync.set({
+								'wordDisplay' : wordDisplay
+							});
+						}
+						console.log('wordDisplay ' + wordDisplay);
+						if (wordDisplay == 0) {
+							document.getElementById('displayEnglish').className = 'btn btn-default';
+							document.getElementById('displayChinese').className = 'btn btn-primary active';
+						} else {
+							document.getElementById('displayEnglish').className = 'btn btn-primary active';
+							document.getElementById('displayChinese').className = 'btn btn-default';
+						}
 
-                } else { // annotate
-                    $('#displayEnglish').prop('disabled', true);
-                    $('#displayChinese').prop('disabled', true);
-                    $('.website-checkbox input')
-                        .prop('disabled', false);
-                    $('#translationUrl .btn').prop('disabled', true);
+						translationUrl = result.translationUrl
+								|| "http://wordnews-mobile.herokuapp.com/";
+						console.log('transUrl', translationUrl);
+						if (translationUrl.indexOf('mobile') >= 0) {
+							document.getElementById('dictionaryTranslations').className = 'btn btn-default';
+							document.getElementById('imsTranslations').className = 'btn btn-default';
+							document.getElementById('bingTranslations').className = 'btn btn-primary active';
+						} else if (translationUrl.indexOf('wordnews') >= 0
+								&& translationUrl.indexOf('ims') < 0) {
+							document.getElementById('dictionaryTranslations').className = 'btn btn-primary active';
+							document.getElementById('imsTranslations').className = 'btn btn-default';
+							document.getElementById('bingTranslations').className = 'btn btn-default';
+						} else {
+							document.getElementById('dictionaryTranslations').className = 'btn btn-default';
+							document.getElementById('imsTranslations').className = 'btn btn-primary active';
+							document.getElementById('bingTranslations').className = 'btn btn-default';
+						}
 
-                    $("#mode #annotate").addClass('active btn-primary');
-                    // removeAnnotationContextMenu();
-                    // addAnnotationContextMenu();
-                    paintCursor();
-                }
+						wordsReplaced = result.wordsReplaced;
+						// console.log('wordsReplaced '+wordsReplaced);
+						if (wordsReplaced == undefined) {
+							wordsReplaced = 2;
+							// console.log('Set to default wordsReplaced
+							// setting');
+							chrome.storage.sync.set({
+								'wordsReplaced' : wordsReplaced
+							});
+						} else {
+							// document.getElementById('wordsReplaced').value =
+							// wordsReplaced;
+							$('#wordsReplaced').slider({
+								precision : 2,
+								value : wordsReplaced
+							// Slider will instantiate showing 8.12 due to
+							// specified precision
+							});
+						}
 
-                wordDisplay = result.wordDisplay;
-                if (wordDisplay == undefined) {
-                    wordDisplay = 1;
-                    chrome.storage.sync.set({
-                        'wordDisplay': wordDisplay
-                    });
-                }
-                console.log('wordDisplay ' + wordDisplay);
-                if (wordDisplay == 0) {
-                    document.getElementById('displayEnglish').className = 'btn btn-default';
-                    document.getElementById('displayChinese').className = 'btn btn-primary active';
-                } else {
-                    document.getElementById('displayEnglish').className = 'btn btn-primary active';
-                    document.getElementById('displayChinese').className = 'btn btn-default';
-                }
+						websiteSetting = result.websiteSetting;
+						// console.log('websiteSetting '+websiteSetting);
+						if (websiteSetting == undefined) {
+							websiteSetting = 'cnn.com_bbc.co';
+							// console.log('Set to default website setting');
+							chrome.storage.sync.set({
+								'websiteSetting' : websiteSetting
+							});
+						}
+						if (websiteSetting.indexOf('cnn.com') !== -1) {
+							document.getElementById('inlineCheckbox1').checked = true;
+						}
+						if (websiteSetting.indexOf('chinadaily.com.cn') !== -1) {
+							document.getElementById('inlineCheckbox2').checked = true;
+						}
+						if (websiteSetting.indexOf('bbc.co') !== -1) {
+							document.getElementById('inlineCheckbox3').checked = true;
+						}
+						if (websiteSetting.indexOf('all') !== -1) {
+							document.getElementById('inlineCheckbox4').checked = true;
+						}
 
-                translationUrl = result.translationUrl || "http://wordnews-mobile.herokuapp.com/";
-                console.log('transUrl', translationUrl);
-                if (translationUrl.indexOf('mobile') >= 0) {
-                    document.getElementById('dictionaryTranslations').className = 'btn btn-default';
-                    document.getElementById('imsTranslations').className = 'btn btn-default';
-                    document.getElementById('bingTranslations').className = 'btn btn-primary active';
-                } else if (translationUrl.indexOf('wordnews') >= 0 && translationUrl.indexOf('ims') < 0) {
-                    document.getElementById('dictionaryTranslations').className = 'btn btn-primary active';
-                    document.getElementById('imsTranslations').className = 'btn btn-default';
-                    document.getElementById('bingTranslations').className = 'btn btn-default';
-                } else {
-                    document.getElementById('dictionaryTranslations').className = 'btn btn-default';
-                    document.getElementById('imsTranslations').className = 'btn btn-primary active';
-                    document.getElementById('bingTranslations').className = 'btn btn-default';
-                }
+						var remembered = new HttpClient();
+						var answer;
 
-                wordsReplaced = result.wordsReplaced;
-                // console.log('wordsReplaced '+wordsReplaced);
-                if (wordsReplaced == undefined) {
-                    wordsReplaced = 2;
-                    // console.log('Set to default wordsReplaced
-                    // setting');
-                    chrome.storage.sync.set({
-                        'wordsReplaced': wordsReplaced
-                    });
-                } else {
-                    // document.getElementById('wordsReplaced').value =
-                    // wordsReplaced;
-                    $('#wordsReplaced').slider({
-                        precision: 2,
-                        value: wordsReplaced
-                            // Slider will instantiate showing 8.12 due to
-                            // specified precision
-                    });
-                }
+						document.getElementById('learnt').innerHTML = '-';
+						document.getElementById('toLearn').innerHTML = '-';
 
-                websiteSetting = result.websiteSetting;
-                // console.log('websiteSetting '+websiteSetting);
-                if (websiteSetting == undefined) {
-                    websiteSetting = 'cnn.com_bbc.co';
-                    // console.log('Set to default website setting');
-                    chrome.storage.sync.set({
-                        'websiteSetting': websiteSetting
-                    });
-                }
-                if (websiteSetting.indexOf('cnn.com') !== -1) {
-                    document.getElementById('inlineCheckbox1').checked = true;
-                }
-                if (websiteSetting.indexOf('chinadaily.com.cn') !== -1) {
-                    document.getElementById('inlineCheckbox2').checked = true;
-                }
-                if (websiteSetting.indexOf('bbc.co') !== -1) {
-                    document.getElementById('inlineCheckbox3').checked = true;
-                }
-                if (websiteSetting.indexOf('all') !== -1) {
-                    document.getElementById('inlineCheckbox4').checked = true;
-                }
-
-                var remembered = new HttpClient();
-                var answer;
-
-                document.getElementById('learnt').innerHTML = '-';
-                document.getElementById('toLearn').innerHTML = '-';
-
-                remembered
-                    .get(
-                        hostUrl + '/getNumber?name=' + userAccount,
-                        function(answer) {
-                            var obj = JSON.parse(answer);
-                            if ('learnt' in obj) {
-                                document
-                                    .getElementById('learnt').innerHTML = obj['learnt'];
-                            }
-                            if ('toLearn' in obj) {
-                                document
-                                    .getElementById('toLearn').innerHTML = obj['toLearn'];
-                            }
-                        });
-            });
+						remembered
+								.get(
+										hostUrl + '/getNumber?name='
+												+ userAccount,
+										function(answer) {
+											var obj = JSON.parse(answer);
+											if ('learnt' in obj) {
+												document
+														.getElementById('learnt').innerHTML = obj['learnt'];
+											}
+											if ('toLearn' in obj) {
+												document
+														.getElementById('toLearn').innerHTML = obj['toLearn'];
+											}
+										});
+					});
+>>>>>>> f159b20af4cc8acd5f20d4bb65d9a52aee010013
 }
 
 function setWordReplace() {

@@ -113,15 +113,16 @@ function checkAnnoationExisted(node)
     }    
     return false;
 }
+
 /*
  * 1. Highlight the selected text 
  * 2. Insert JS for annotation panel 
  * 3. Verify the length of text (min and max)
  * 4. Automatically extend to the nearest textual words if the selection contains partial word 
  	  http://stackoverflow.com/questions/7563169/detect-which-word-has-been-clicked-on-within-a-text
- * 5. Can not highlight a string with existing highlighted words 
- 
+ * 5. Can not highlight a string with existing highlighted words  
  */
+ 
 function highlight(userId ) {    
     
     var result =  getTextNodeFromSelection();
@@ -172,8 +173,7 @@ function highlight(userId ) {
         return annotationId;
     }
     else if (textNode.toString().length != 0 ) {
-        //TODO: Show a proper UI such as notification for error
-        
+        //TODO: Show a proper UI such as notification for error        
         return -1;
     }        
 }
@@ -251,9 +251,9 @@ function appendPanel(annotationId, word, userId, paragrahIndex, wordIndex) {
     var panelHtml = '<div id=\"' + panelID + '\" class=\"panel\">';
     panelHtml += '<textarea id=\"' + editorID + '\" style="background:yellow"></textarea><br>';
     panelHtml += '<div class=\"btn-group\" style=\"margin:5px;\">'
-    panelHtml += '<button type=\"delete\" class=\"btn btn-info btn-xs\">Delete</button> &nbsp;';
-    panelHtml += '<button type=\"cancel\" class=\"btn btn-info btn-xs\">Cancel</button> &nbsp;';
-    panelHtml += '<button type=\"submit\" class=\"btn btn-info btn-xs\">Submit</button>';
+    panelHtml += '<button id=\"annontation-delete-btn' + annotationId + '\" type=\"delete\" class=\"btn btn-info btn-xs\">Delete</button> &nbsp;';
+    panelHtml += '<button id=\"annontation-cancel-btn' + annotationId + '\" type=\"cancel\" class=\"btn btn-info btn-xs\">Cancel</button> &nbsp;';
+    panelHtml += '<button id=\"annontation-submit-btn' + annotationId + '\" type=\"submit\" class=\"btn btn-info btn-xs\">Submit</button>';
     panelHtml += '</div></div>';
 
     $("body").append(panelHtml);
@@ -281,59 +281,76 @@ function appendPanel(annotationId, word, userId, paragrahIndex, wordIndex) {
             // TODO: fix bug
             console.log("save");
             panel.hide();
-            saveAnnotation(annotationId, word, userId, paragrahIndex, wordIndex);
+            saveAnnotation(annotationId, word, userId, editorID, paragrahIndex, wordIndex);
         }
-    })
+    });
 
     panel.mouseleave(function() {
         panel.hide();
-    })
+    });
+    
+    //Set submit botton to be disabled as default
+    $('#annontation-submit-btn' + annotationId).prop('disabled', true);    
+    
+    //Toggle disable of submit button according the text entered in text field
+    $('#' + editorID).on('keyup', function() {         
+            
+        if (this.value.length > 0) {
+            $('#annontation-submit-btn' + annotationId).prop('disabled', false);    
+        }    
+        else {
+            $('#annontation-submit-btn' + annotationId).prop('disabled', true);    
+        }
+    });      
 
     return panel;
 }
 
+var annotationState = {
+    NEW: 1,
+    EXISTED: 2    
+};
 
 var annotation = {
 		id: -1,  // the internal id in database
 		user_id: -1, // user id
-		ann_id: -1, // annotation id
+		ann_id: -1, // annotation id - TODO: the server needs to generate a unique ID for annotation
 		selected_text: '',
-		translation: '',
+		translation: '', //This variable cannot be empty
 		lang: 'zh', // language of the translation, obtained from user's configuration. set default to zh (Chinese)
 		paragraph_idx: -1, // paragraph idx
 		text_idx: -1, // the idx in the occurrence of the paragraph 
-		url: '' // url of the article
-}
-
+		url: '', // url of the article
+        state: annotationState.NEW // state to determine whether the annontation existed in the database
+};
 
 // TODO: send to server to add annotation
-
-function saveAnnotation(annotationId, word, userId, paragrahIndex, wordIndex) {	
+function saveAnnotation(annotationId, word, userId, editorID, paragrahIndex, wordIndex) {	
     console.log(annotationId);
     //Get the translated word
-//    var result = $.post("http://imsforwordnews.herokuapp.com/show", );
-    //$.post( "https://wordnews-server-kite19881.c9users.io/create_annotation", // for experiments
-    $.post("https://wordnews-annotate.herokuapp.com/create_annotation", // stable server
-        {
-            
+    var textAreaElem = document.getElementById(editorID);
+    $.post( "https://wordnews-server-kite19881.c9users.io/create_annotation", // for experiments
+    
+    //TODO: Have not supported unicode for non-english input in textarea
+    //$.post("https://wordnews-annotate.herokuapp.com/create_annotation", // stable server
+        {            
             annotation:{
                 ann_id: annotationId, 
                 user_id: userId,
                 selected_text: word,
-                translation: '新闻',
+                translation: textAreaElem.value,
                 lang: "zh",
                 url: window.location.href,
                 paragraph_idx: paragrahIndex,
                 text_idx: wordIndex
-            }
-            
+            }            
         }
     )
     .done(function() {
-        alert( "success" );
+        console.log( "add annotaiton post success" );
     })
     .fail(function() {
-        alert( "error" );
+        console.log( "add annotation post error" );
     });  
 }
 
@@ -377,8 +394,7 @@ function showAnnotation(ann) {
         } 
         i++;
     }
-    console.log("Cannot find the " + text + "  in paragraph " + pid);
-	
+    console.log("Cannot find the " + text + "  in paragraph " + pid);	
 }
 
 
