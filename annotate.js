@@ -313,7 +313,7 @@ function saveAnnotation(annotationId, word, userId, paragrahIndex, wordIndex) {
     //Get the translated word
 //    var result = $.post("http://imsforwordnews.herokuapp.com/show", );
     //$.post( "https://wordnews-server-kite19881.c9users.io/create_annotation", // for experiments
-    $.post{"https://wordnews-annotate.herokuapp.com/create_annotation"}, // stable server
+    $.post("https://wordnews-annotate.herokuapp.com/create_annotation", // stable server
         {
             
             annotation:{
