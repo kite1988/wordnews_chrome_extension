@@ -31,9 +31,14 @@ function syncUser() {
 						userAccount = result.userAccount;
 						// console.log('user acc: '+ result.userAccount);
 
-						if (userAccount == undefined) {
-							var d = new Date();
-							userAccount = 'id' + d.getTime() + '_1';
+						if (userAccount == undefined || typeof userAccount == "string") {
+                            //TODO: Need to get the server to generate the User ID
+                            
+                            //This temporary method of generating will not create a true unique ID
+							var i = new Date().getTime();;
+                            i = i & 0xffffffff;
+							userAccount = (i + Math.floor(Math.random() * i));//'id' + d.getTime() + '_1';
+                            
 							chrome.storage.sync.set({
 								'userAccount' : userAccount
 							}, function() {
