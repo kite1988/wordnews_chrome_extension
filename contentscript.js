@@ -606,6 +606,7 @@ chrome.storage.sync.get(null, function(result) {
     wordDisplay = result.wordDisplay;
     wordsReplaced = result.wordsReplaced;
     websiteSetting = result.websiteSetting;
+    
 
     console.log(result.translationUrl);
     if (typeof result.translationUrl !== 'undefined') {
