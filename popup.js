@@ -34,10 +34,10 @@ function syncUser() {
 					null,
 					function(result) {
 						userAccount = result.userAccount;
+						userId = result.userId;
 						// console.log('user acc: '+ result.userAccount);
 
 						if (userAccount == undefined || typeof userAccount == "string") {
-                            //TODO: Need to get the server to generate the User ID
                             
                             //This temporary method of generating will not create a true unique ID
 							var i = new Date().getTime();;
@@ -51,19 +51,17 @@ function syncUser() {
 						}
 						// console.log('userAccount ' + userAccount);
 						
+                        // Ask the server to generate the User ID
 						if (userId == undefined) {
-		                    console.log('get user id');
-		                    var client = new HttpClient();
-		                    client
+		                    $
 		                        .get(
 		                            hostUrl + '/get_user_id_by_user_name?user_name=' + userAccount,
-		                            function(answer) {
-		                                console.log(answer);
+		                            function(obj) {
 
-		                                var obj = JSON.parse(answer);
+		                                //var obj = JSON.parse(answer);
 		                                if ('user_id' in obj) {
 		                                    userId = obj['user_id'];
-		                                    console.log('id: ' + userId + ', user name: ' + userAccount);
+		                                    // console.log('id: ' + userId + ', user name: ' + userAccount);
 
 		                                    chrome.storage.sync.set({
 		                                        'userId': userId
@@ -216,7 +214,6 @@ function syncUser() {
 											}
 										});
 					});
->>>>>>> f159b20af4cc8acd5f20d4bb65d9a52aee010013
 }
 
 function setWordReplace() {
