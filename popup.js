@@ -29,178 +29,184 @@ var translationUrl = '';
 
 
 function syncUser() {
-	chrome.storage.sync
-			.get(
-					null,
-					function(result) {
-						userAccount = result.userAccount;
-						userId = result.userId;
-						// console.log('user acc: '+ result.userAccount);
+    chrome.storage.sync
+        .get(
+            null,
+            function(result) {
+                userAccount = result.userAccount;
+                userId = result.userId;
+                // console.log('user acc: '+ result.userAccount);
 
-						if (userAccount == undefined || typeof userAccount == "string") {
-                            
-                            //This temporary method of generating will not create a true unique ID
-							var i = new Date().getTime();;
-                            i = i & 0xffffffff;
-							userAccount = (i + Math.floor(Math.random() * i));//'id' + d.getTime() + '_1';
-                            
-							chrome.storage.sync.set({
-								'userAccount' : userAccount
-							}, function() {
-							});
-						}
-						// console.log('userAccount ' + userAccount);
-						
-                        // Ask the server to generate the User ID
-						if (userId == undefined) {
-		                    $
-		                        .get(
-		                            hostUrl + '/get_user_id_by_user_name?user_name=' + userAccount,
-		                            function(obj) {
+                if (userAccount == undefined || typeof userAccount == "string") {
 
-		                                //var obj = JSON.parse(answer);
-		                                if ('user_id' in obj) {
-		                                    userId = obj['user_id'];
-		                                    // console.log('id: ' + userId + ', user name: ' + userAccount);
+                    //This temporary method of generating will not create a true unique ID
+                    var i = new Date().getTime();;
+                    i = i & 0xffffffff;
+                    userAccount = (i + Math.floor(Math.random() * i)); //'id' + d.getTime() + '_1';
 
-		                                    chrome.storage.sync.set({
-		                                        'userId': userId
-		                                    }, function() {});
-		                                }
-		                            });
-		                }
-						
+                    chrome.storage.sync.set({
+                        'userAccount': userAccount
+                    }, function() {});
+                }
+                // console.log('userAccount ' + userAccount);
 
-						isWorking = result.isWorking;
-						if (isWorking == undefined) {
-							isWorking = 1;
-							chrome.storage.sync.set({
-								'isWorking' : isWorking
-							});
-						}
-						// console.log('isWorking '+isWorking);
+                // Ask the server to generate the User ID
+                if (userId == undefined) {
+                    $
+                        .get(
+                            hostUrl + '/get_user_id_by_user_name?user_name=' + userAccount,
+                            function(obj) {
 
-						$("#mode .btn").removeClass('active');
-						$("#mode .btn").removeClass('btn-primary');
-						$("#mode .btn").addClass('btn-default');
+                                //var obj = JSON.parse(answer);
+                                if ('user_id' in obj) {
+                                    userId = obj['user_id'];
+                                    // console.log('id: ' + userId + ', user name: ' + userAccount);
 
-						if (isWorking == 0) { // disable
-							$("#mode #disable").addClass('active btn-primary');
-							unpaintCursor();
-							showDivByMode('disable');
+                                    chrome.storage.sync.set({
+                                        'userId': userId
+                                    }, function() {});
+                                }
+                            });
+                }
 
-						} else if (isWorking == 1) { // learn
-							$("#mode #learn").addClass('active btn-primary');
-							unpaintCursor();
-							showDivByMode('learn');
 
-						} else { // annotate
+                isWorking = result.isWorking;
+                if (isWorking == undefined) {
+                    isWorking = 1;
+                    chrome.storage.sync.set({
+                        'isWorking': isWorking
+                    });
+                }
+                // console.log('isWorking '+isWorking);
 
-							$("#mode #annotate").addClass('active btn-primary');
-							// removeAnnotationContextMenu();
-							// addAnnotationContextMenu();
-							paintCursor();
-							showDivByMode('annotate');
-						}
+                $("#mode .btn").removeClass('active');
+                $("#mode .btn").removeClass('btn-primary');
+                $("#mode .btn").addClass('btn-default');
 
-						wordDisplay = result.wordDisplay;
-						if (wordDisplay == undefined) {
-							wordDisplay = 1;
-							chrome.storage.sync.set({
-								'wordDisplay' : wordDisplay
-							});
-						}
-						console.log('wordDisplay ' + wordDisplay);
-						if (wordDisplay == 0) {
-							document.getElementById('displayEnglish').className = 'btn btn-default';
-							document.getElementById('displayChinese').className = 'btn btn-primary active';
-						} else {
-							document.getElementById('displayEnglish').className = 'btn btn-primary active';
-							document.getElementById('displayChinese').className = 'btn btn-default';
-						}
+                if (isWorking == 0) { // disable
+                    $("#mode #disable").addClass('active btn-primary');
+                    unpaintCursor();
+                    showDivByMode('disable');
 
-						translationUrl = result.translationUrl
-								|| "http://wordnews-mobile.herokuapp.com/";
-						console.log('transUrl', translationUrl);
-						if (translationUrl.indexOf('mobile') >= 0) {
-							document.getElementById('dictionaryTranslations').className = 'btn btn-default';
-							document.getElementById('imsTranslations').className = 'btn btn-default';
-							document.getElementById('bingTranslations').className = 'btn btn-primary active';
-						} else if (translationUrl.indexOf('wordnews') >= 0
-								&& translationUrl.indexOf('ims') < 0) {
-							document.getElementById('dictionaryTranslations').className = 'btn btn-primary active';
-							document.getElementById('imsTranslations').className = 'btn btn-default';
-							document.getElementById('bingTranslations').className = 'btn btn-default';
-						} else {
-							document.getElementById('dictionaryTranslations').className = 'btn btn-default';
-							document.getElementById('imsTranslations').className = 'btn btn-primary active';
-							document.getElementById('bingTranslations').className = 'btn btn-default';
-						}
+                } else if (isWorking == 1) { // learn
+                    $("#mode #learn").addClass('active btn-primary');
+                    unpaintCursor();
+                    showDivByMode('learn');
 
-						wordsReplaced = result.wordsReplaced;
-						// console.log('wordsReplaced '+wordsReplaced);
-						if (wordsReplaced == undefined) {
-							wordsReplaced = 2;
-							// console.log('Set to default wordsReplaced
-							// setting');
-							chrome.storage.sync.set({
-								'wordsReplaced' : wordsReplaced
-							});
-						} else {
-							// document.getElementById('wordsReplaced').value =
-							// wordsReplaced;
-							$('#wordsReplaced').slider({
-								precision : 2,
-								value : wordsReplaced
-							// Slider will instantiate showing 8.12 due to
-							// specified precision
-							});
-						}
+                } else { // annotate
 
-						websiteSetting = result.websiteSetting;
-						// console.log('websiteSetting '+websiteSetting);
-						if (websiteSetting == undefined) {
-							websiteSetting = 'cnn.com_bbc.co';
-							// console.log('Set to default website setting');
-							chrome.storage.sync.set({
-								'websiteSetting' : websiteSetting
-							});
-						}
-						if (websiteSetting.indexOf('cnn.com') !== -1) {
-							document.getElementById('inlineCheckbox1').checked = true;
-						}
-						if (websiteSetting.indexOf('chinadaily.com.cn') !== -1) {
-							document.getElementById('inlineCheckbox2').checked = true;
-						}
-						if (websiteSetting.indexOf('bbc.co') !== -1) {
-							document.getElementById('inlineCheckbox3').checked = true;
-						}
-						if (websiteSetting.indexOf('all') !== -1) {
-							document.getElementById('inlineCheckbox4').checked = true;
-						}
+                    $("#mode #annotate").addClass('active btn-primary');
+                    paintCursor();
+                    showDivByMode('annotate');
+                }
 
-						var remembered = new HttpClient();
-						var answer;
+                wordDisplay = result.wordDisplay;
+                if (wordDisplay == undefined) {
+                    wordDisplay = 1;
+                    chrome.storage.sync.set({
+                        'wordDisplay': wordDisplay
+                    });
+                }
+                console.log('wordDisplay ' + wordDisplay);
+                if (wordDisplay == 0) {
+                    document.getElementById('displayEnglish').className = 'btn btn-default';
+                    document.getElementById('displayChinese').className = 'btn btn-primary active';
+                } else {
+                    document.getElementById('displayEnglish').className = 'btn btn-primary active';
+                    document.getElementById('displayChinese').className = 'btn btn-default';
+                }
 
-						document.getElementById('learnt').innerHTML = '-';
-						document.getElementById('toLearn').innerHTML = '-';
+                translationUrl = result.translationUrl || "http://wordnews-mobile.herokuapp.com/";
+                console.log('transUrl', translationUrl);
+                if (translationUrl.indexOf('mobile') >= 0) {
+                    document.getElementById('dictionaryTranslations').className = 'btn btn-default';
+                    document.getElementById('imsTranslations').className = 'btn btn-default';
+                    document.getElementById('bingTranslations').className = 'btn btn-primary active';
+                } else if (translationUrl.indexOf('wordnews') >= 0 && translationUrl.indexOf('ims') < 0) {
+                    document.getElementById('dictionaryTranslations').className = 'btn btn-primary active';
+                    document.getElementById('imsTranslations').className = 'btn btn-default';
+                    document.getElementById('bingTranslations').className = 'btn btn-default';
+                } else {
+                    document.getElementById('dictionaryTranslations').className = 'btn btn-default';
+                    document.getElementById('imsTranslations').className = 'btn btn-primary active';
+                    document.getElementById('bingTranslations').className = 'btn btn-default';
+                }
 
-						remembered
-								.get(
-										hostUrl + '/getNumber?name='
-												+ userAccount,
-										function(answer) {
-											var obj = JSON.parse(answer);
-											if ('learnt' in obj) {
-												document
-														.getElementById('learnt').innerHTML = obj['learnt'];
-											}
-											if ('toLearn' in obj) {
-												document
-														.getElementById('toLearn').innerHTML = obj['toLearn'];
-											}
-										});
-					});
+                wordsReplaced = result.wordsReplaced;
+                // console.log('wordsReplaced '+wordsReplaced);
+                if (wordsReplaced == undefined) {
+                    wordsReplaced = 2;
+                    // console.log('Set to default wordsReplaced
+                    // setting');
+                    chrome.storage.sync.set({
+                        'wordsReplaced': wordsReplaced
+                    });
+                } else {
+                    // document.getElementById('wordsReplaced').value =
+                    // wordsReplaced;
+                    $('#wordsReplaced').slider({
+                        precision: 2,
+                        value: wordsReplaced
+                            // Slider will instantiate showing 8.12 due to
+                            // specified precision
+                    });
+                }
+
+                websiteSetting = result.websiteSetting;
+                // console.log('websiteSetting '+websiteSetting);
+                if (websiteSetting == undefined) {
+                    websiteSetting = 'cnn.com_bbc.co';
+                    // console.log('Set to default website setting');
+                    chrome.storage.sync.set({
+                        'websiteSetting': websiteSetting
+                    });
+                }
+                if (websiteSetting.indexOf('cnn.com') !== -1) {
+                    document.getElementById('inlineCheckbox1').checked = true;
+                }
+                if (websiteSetting.indexOf('chinadaily.com.cn') !== -1) {
+                    document.getElementById('inlineCheckbox2').checked = true;
+                }
+                if (websiteSetting.indexOf('bbc.co') !== -1) {
+                    document.getElementById('inlineCheckbox3').checked = true;
+                }
+                if (websiteSetting.indexOf('all') !== -1) {
+                    document.getElementById('inlineCheckbox4').checked = true;
+                }
+
+
+                // TODO: use $.get()
+                var remembered = new HttpClient();
+                var answer;
+
+                document.getElementById('learnt').innerHTML = '-';
+                document.getElementById('toLearn').innerHTML = '-';
+
+                remembered
+                    .get(
+                        hostUrl + '/getNumber?name=' + userAccount,
+                        function(answer) {
+                            var obj = JSON.parse(answer);
+                            if ('learnt' in obj) {
+                                document
+                                    .getElementById('learnt').innerHTML = obj['learnt'];
+                            }
+                            if ('toLearn' in obj) {
+                                document
+                                    .getElementById('toLearn').innerHTML = obj['toLearn'];
+                            }
+                        });
+
+                // Obtain user's annotation learning from server
+                $.get(hostUrl + '/show_user_annotation_history?user_id=' + userId,
+                    function(obj) {
+                        if ('history' in obj) {
+                            document.getElementById('annotations').innerHTML = obj['history']['annotation'];
+                            document.getElementById('articles').innerHTML = obj['history']['url'];
+                        }
+                    });
+
+            });
 }
 
 function setWordReplace() {
@@ -297,9 +303,9 @@ function setMode() {
             chrome.storage.sync.set({
                 'isWorking': isWorking
             });
-            
+
             $("#mode #learn").addClass('active btn-primary');
-			showDivByMode('learn');
+            showDivByMode('learn');
             unpaintCursor();
 
         } else if (mode == 'annotate') {
@@ -307,9 +313,9 @@ function setMode() {
             chrome.storage.sync.set({
                 'isWorking': isWorking
             });
-            
+
             $("#mode #annotate").addClass('active btn-primary');
-			showDivByMode('annotate');
+            showDivByMode('annotate');
 
             paintCursor();
             //window.close();
@@ -324,10 +330,10 @@ function setMode() {
             $('#displayEnglish').prop('disabled', true);
             $('#displayChinese').prop('disabled', true);
             $("#translationUrl .btn").prop('disabled', true);*/
-            
+
             $("#mode #disable").addClass('active btn-primary');
-			showDivByMode('disable');
-			
+            showDivByMode('disable');
+
             // removeAnnotationContextMenu();
             unpaintCursor();
         }
@@ -386,23 +392,24 @@ function unpaintCursor() {
 }
 
 function showDivByMode(mode) {
-	var learn = document.getElementById('learn-panel');
-	var annotate = document.getElementById('annotate-panel');
-	var disable = document.getElementById('disable-panel');
-	
-	if (mode=='learn') {
-		learn.style.display = 'block';
-		annotate.style.display = 'none';
-		disable.style.display = 'none';
-	} else if (mode=='annotate') {
-		learn.style.display = 'none';
-		annotate.style.display = 'block';
-		disable.style.display = 'none';
-	} if (mode=='disable') {
-		learn.style.display = 'none';
-		annotate.style.display = 'none';
-		disable.style.display = 'block';
-	}
+    var learn = document.getElementById('learn-panel');
+    var annotate = document.getElementById('annotate-panel');
+    var disable = document.getElementById('disable-panel');
+
+    if (mode == 'learn') {
+        learn.style.display = 'block';
+        annotate.style.display = 'none';
+        disable.style.display = 'none';
+    } else if (mode == 'annotate') {
+        learn.style.display = 'none';
+        annotate.style.display = 'block';
+        disable.style.display = 'none';
+    }
+    if (mode == 'disable') {
+        learn.style.display = 'none';
+        annotate.style.display = 'none';
+        disable.style.display = 'block';
+    }
 }
 
 
