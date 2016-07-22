@@ -85,35 +85,22 @@ function syncUser() {
 						$("#mode .btn").addClass('btn-default');
 
 						if (isWorking == 0) { // disable
-							$('.website-checkbox input').prop('disabled', true);
-							$('#displayEnglish').prop('disabled', true);
-							$('#displayChinese').prop('disabled', true);
-							$("#translationUrl .btn").prop('disabled', true);
-
 							$("#mode #disable").addClass('active btn-primary');
 							unpaintCursor();
+							showDivByMode('disable');
 
 						} else if (isWorking == 1) { // learn
-							$('.website-checkbox input')
-									.prop('disabled', false);
-							$('#displayEnglish').prop('disabled', false);
-							$('#displayChinese').prop('disabled', false);
-							$("#translationUrl .btn").prop('disabled', false);
-
 							$("#mode #learn").addClass('active btn-primary');
 							unpaintCursor();
+							showDivByMode('learn');
 
 						} else { // annotate
-							$('#displayEnglish').prop('disabled', true);
-							$('#displayChinese').prop('disabled', true);
-							$('.website-checkbox input')
-									.prop('disabled', false);
-							$('#translationUrl .btn').prop('disabled', true);
 
 							$("#mode #annotate").addClass('active btn-primary');
 							// removeAnnotationContextMenu();
 							// addAnnotationContextMenu();
 							paintCursor();
+							showDivByMode('annotate');
 						}
 
 						wordDisplay = result.wordDisplay;
@@ -310,12 +297,9 @@ function setMode() {
             chrome.storage.sync.set({
                 'isWorking': isWorking
             });
-            $('#displayEnglish').prop('disabled', false);
-            $('#displayChinese').prop('disabled', false);
-            $('.website-checkbox input').prop('disabled', false);
-            $("#translationUrl .btn").prop('disabled', false);
+            
             $("#mode #learn").addClass('active btn-primary');
-            // removeAnnotationContextMenu();
+			showDivByMode('learn');
             unpaintCursor();
 
         } else if (mode == 'annotate') {
@@ -323,28 +307,27 @@ function setMode() {
             chrome.storage.sync.set({
                 'isWorking': isWorking
             });
-            // TODO: check the design
-            $('#displayEnglish').prop('disabled', true);
-            $('#displayChinese').prop('disabled', true);
-            $('.website-checkbox input').prop('disabled', false);
-            $("#translationUrl .btn").prop('disabled', true);
+            
             $("#mode #annotate").addClass('active btn-primary');
+			showDivByMode('annotate');
 
-            // removeAnnotationContextMenu();
-            // addAnnotationContextMenu();
             paintCursor();
-            window.close();
+            //window.close();
 
         } else { // disable
             isWorking = 0;
             chrome.storage.sync.set({
                 'isWorking': isWorking
             });
+            /*
             $('.website-checkbox input').prop('disabled', true);
             $('#displayEnglish').prop('disabled', true);
             $('#displayChinese').prop('disabled', true);
-            $("#translationUrl .btn").prop('disabled', true);
+            $("#translationUrl .btn").prop('disabled', true);*/
+            
             $("#mode #disable").addClass('active btn-primary');
+			showDivByMode('disable');
+			
             // removeAnnotationContextMenu();
             unpaintCursor();
         }
@@ -400,6 +383,26 @@ function unpaintCursor() {
     }, function(arrayOfTabs) {
         chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "unannotate" }, function(response) {});
     });
+}
+
+function showDivByMode(mode) {
+	var learn = document.getElementById('learn-panel');
+	var annotate = document.getElementById('annotate-panel');
+	var disable = document.getElementById('disable-panel');
+	
+	if (mode=='learn') {
+		learn.style.display = 'block';
+		annotate.style.display = 'none';
+		disable.style.display = 'none';
+	} else if (mode=='annotate') {
+		learn.style.display = 'none';
+		annotate.style.display = 'block';
+		disable.style.display = 'none';
+	} if (mode=='disable') {
+		learn.style.display = 'none';
+		annotate.style.display = 'none';
+		disable.style.display = 'block';
+	}
 }
 
 
