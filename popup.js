@@ -3,7 +3,6 @@ var HttpClient = function() {
         anHttpRequest = new XMLHttpRequest();
         anHttpRequest.onreadystatechange = function() {
             if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
-                console.log('response ' + aUrl + ' ' + anHttpRequest.responseText);
                 aCallback(anHttpRequest.responseText);
             }
 
@@ -26,6 +25,7 @@ var wordDisplay = '';
 var wordsReplaced = '';
 var websiteSetting = '';
 var translationUrl = '';
+var annotationLanguage = '';
 
 
 function syncUser() {
@@ -197,7 +197,7 @@ function syncUser() {
                             }
                         });
 
-                // Obtain user's annotation learning from server
+                // Obtain user's annotation history from server
                 $.get(hostUrl + '/show_user_annotation_history?user_id=' + userId,
                     function(obj) {
                         if ('history' in obj) {
@@ -205,6 +205,14 @@ function syncUser() {
                             document.getElementById('articles').innerHTML = obj['history']['url'];
                         }
                     });
+                
+                // Annotation language
+                annotationLanguage = result.annotationLanguage;
+                if (annotationLanguage==null) {
+	                chrome.storage.sync.set({
+	                    'annotationLanguage': 'zh_CN'
+	                }, function() {});
+            	}
 
             });
 }
@@ -249,6 +257,7 @@ function setWebsite() {
             'websiteSetting': websiteSetting
         });
         chrome.storage.sync.get('websiteSetting', function(result) {
+            // TODO: why? should be websiteSetting = result.websiteSetting
             userAccount = result.websiteSetting;
             // console.log('user websiteSetting: '+ result.websiteSetting);
         });
@@ -274,7 +283,7 @@ function setTranslation() {
                 } else if (translationUrl.indexOf('dictionary') >= 0) {
                     chrome.storage.sync
                         .set({
-                            'translationUrl': 'http://wordnews.herokuapp.com/show'
+                            'translationUrl': 'http://wordnews.herokuapp.com/show_by_dictionary'
                         });
                     $("#translationUrl #dictionaryTranslations")
                         .addClass('active btn-primary');
@@ -282,7 +291,7 @@ function setTranslation() {
                     // this one uses Bing translator
                     chrome.storage.sync
                         .set({
-                            'translationUrl': 'http://wordnews-mobile.herokuapp.com/show'
+                            'translationUrl': translationUrl + '/show'
                         });
                     $("#translationUrl #bingTranslations").addClass(
                         'active btn-primary');
@@ -376,7 +385,7 @@ function paintCursor() {
     }, function(arrayOfTabs) {
         var cursor = chrome.extension.getURL('highlighter-orange.cur');
         console.log(cursor);
-        chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "annotate", user_id: userId }, function(response) {});
+        chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "annotate", user_id: userId, ann_lang: annotationLanguage}, function(response) {});
 
     });
 }
@@ -412,6 +421,16 @@ function showDivByMode(mode) {
     }
 }
 
+function setAnnotationLanguage(){
+	$('.bfh-selectbox').on('change.bfhselectbox', function() {
+		annotationLanguage = $(this).val();
+        console.log("annotation language: " + annotationLanguage);
+        chrome.storage.sync.set({
+            'annotationLanguage': annotationLanguage
+        });
+        
+    });
+}
 
 // TODO: refine code
 function setReplace() {
@@ -482,6 +501,7 @@ function onWindowLoad() {
     setTranslation();
     setMode();
     setReplace();
+    setAnnotationLanguage();
 
     $('.btn-block').click(function() {
         window.open(hostUrl + 'displayHistory?name=' + userAccount);

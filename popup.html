@@ -10,6 +10,7 @@
     <script src="jquery-2.1.1.min.js"></script>
     <!-- Bootstrap -->
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+    <link href="bootstrap/css/bootstrap-formhelpers.min.css" rel="stylesheet" media="screen">
     <link rel="stylesheet" href="slider/css/slider.css" />
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -19,12 +20,14 @@
   <![endif]-->
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <script src="slider/js/bootstrap-slider.js"></script>
+    <script src="bootstrap/js/bootstrap-formhelpers.min.js"></script>
     <script src="popup.js"></script>
 </head>
 
 <body>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <div style="min-width:350px;min-height:300px;">
+        <!-- TODO: change button to tab style -->
         <!-- Mode -->
         <div class="row" style="margin:10px;">
             <div class="col-xs-2">
@@ -177,11 +180,20 @@
                     </div>
                 </div>
             </div>
+            <br>
+            <div class="row" style="margin:10px;">
+                Language of annotation:
+                <div class="form-group">
+                    <div class="bfh-selectbox bfh-languages" data-language="zh_CN" 
+                    	 data-available="zh_CN,en_US,de_DE,fr_FR,it_IT,ru_RU" data-flags="true">
+                    </div>
+                </div>
+            </div>
         </div>
+        
         <!-- End of annotation-->
-
         <div id="disable-panel">
-          The extension is disabled.
+            The extension is disabled.
         </div>
 </body>
 

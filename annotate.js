@@ -5,6 +5,9 @@ var paragraphs = document.getElementsByTagName('p');
 var selectionMaxNoOfWords = 5;
 var selectionMinNoOfWords = 1;
 
+var hostUrl = "https://wordnews-server-kite19881.c9users.io";
+//var hostUrl = "https://wordnews-annotate.herokuapp.com";
+
 function selectHTML() {
     try {
 
@@ -329,7 +332,7 @@ function saveAnnotation(annotationId, word, userId, editorID, paragrahIndex, wor
     console.log(annotationId);
     //Get the translated word
     var textAreaElem = document.getElementById(editorID);
-    $.post( "https://wordnews-server-kite19881.c9users.io/create_annotation", // for experiments
+    $.post( hostUrl + "/create_annotation", // for experiments
     
     //TODO: Have not supported unicode for non-english input in textarea
     //$.post("https://wordnews-annotate.herokuapp.com/create_annotation", // stable server

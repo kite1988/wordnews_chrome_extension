@@ -2,6 +2,7 @@
 
 //var hostUrl = 'http://wordnews.herokuapp.com/';
 var hostUrl = "http://wordnews-mobile.herokuapp.com/";
+//var hostUrl = "http://wordnews-annotate.herokuapp.com/";
 //var hostUrl = "http://localhost:3000/";
 
 // TODO: move into UserSettings
@@ -11,6 +12,7 @@ var categoryParameter = '';
 var wordDisplay;
 
 var translationUrl = 'http://wordnews-mobile.herokuapp.com/show';
+
 
 var TranslationDirection = {
     CHINESE: 0,
