@@ -87,17 +87,19 @@ function syncUser() {
                     $("#mode #disable").addClass('active btn-primary');
                     unpaintCursor();
                     showDivByMode('disable');
+                    switchLogo('disable');
 
                 } else if (isWorking == 1) { // learn
                     $("#mode #learn").addClass('active btn-primary');
                     unpaintCursor();
                     showDivByMode('learn');
+                    switchLogo('learn');
 
                 } else { // annotate
-
                     $("#mode #annotate").addClass('active btn-primary');
                     paintCursor();
                     showDivByMode('annotate');
+                    switchLogo('annotate');
                 }
 
                 wordDisplay = result.wordDisplay;
@@ -315,6 +317,7 @@ function setMode() {
 
             $("#mode #learn").addClass('active btn-primary');
             showDivByMode('learn');
+            switchLogo('learn');
             unpaintCursor();
 
         } else if (mode == 'annotate') {
@@ -325,7 +328,7 @@ function setMode() {
 
             $("#mode #annotate").addClass('active btn-primary');
             showDivByMode('annotate');
-
+            switchLogo('annotate');
             paintCursor();
             //window.close();
 
@@ -334,14 +337,10 @@ function setMode() {
             chrome.storage.sync.set({
                 'isWorking': isWorking
             });
-            /*
-            $('.website-checkbox input').prop('disabled', true);
-            $('#displayEnglish').prop('disabled', true);
-            $('#displayChinese').prop('disabled', true);
-            $("#translationUrl .btn").prop('disabled', true);*/
 
             $("#mode #disable").addClass('active btn-primary');
             showDivByMode('disable');
+            switchLogo('disable');
 
             // removeAnnotationContextMenu();
             unpaintCursor();
@@ -383,7 +382,7 @@ function paintCursor() {
         active: true,
         currentWindow: true
     }, function(arrayOfTabs) {
-        var cursor = chrome.extension.getURL('highlighter-orange.cur');
+        var cursor = chrome.extension.getURL('images/highlighter-orange.cur');
         console.log(cursor);
         chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "annotate", user_id: userId, ann_lang: annotationLanguage}, function(response) {});
 
@@ -430,6 +429,20 @@ function setAnnotationLanguage(){
         });
         
     });
+}
+
+// TODO: a new logo for annotation?
+function switchLogo(mode) {
+	if (mode=='disable') {
+		var imgURL = chrome.extension.getURL("images/logo-gray.png");
+		chrome.browserAction.setIcon({path: imgURL});
+	} else if (mode=='annotate'){
+		var imgURL = chrome.extension.getURL("images/logo.png");
+		chrome.browserAction.setIcon({path: imgURL});
+	} else {
+		var imgURL = chrome.extension.getURL("images/logo.png");
+		chrome.browserAction.setIcon({path: imgURL});
+	}
 }
 
 // TODO: refine code

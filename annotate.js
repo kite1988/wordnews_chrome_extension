@@ -438,7 +438,7 @@ function generateId() {
 
 
 function paintCursor() {
-    var cursor = chrome.extension.getURL('highlighter-orange.cur');
+    var cursor = chrome.extension.getURL('images/highlighter-orange.cur');
     console.log(cursor);
     document.body.style.cursor = "url(" + cursor + "),auto";
 }
