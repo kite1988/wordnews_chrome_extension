@@ -330,40 +330,55 @@ function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex) 
 
 // TODO: send to server to add annotation
 function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex, wordIndex) {	
-    console.log(annotationPanelID);
+    
     //Get the translated word
     var textAreaElem = document.getElementById(editorID);
-    //TODO: Have not supported unicode for non-english input in textarea
-    $.post( hostUrl + "/create_annotation", // for experiments        
-        {            
-            annotation: {
-                ann_id: annotationPanelID, 
-                user_id: userId,
-                selected_text: word,
-                translation: textAreaElem.value,
-                lang: "zh",
-                url: window.location.href,
-                paragraph_idx: paragrahIndex,
-                text_idx: wordIndex
-            }            
-        }, 
-        function (result) { // success        
-            console.log( "add annotaiton post success", result );          
-            if (result.msg == "OK") {
+    
+    var state = $('#' + annotationPanelID + "_panel").data('state');
+    //If the annotation is newly created, send data to server to add into database
+    if(state == annotationState.NEW) {
+        //TODO: Have not supported unicode for non-english input in textarea
+        $.post( hostUrl + "/create_annotation", 
+            {            
+                annotation: {
+                    ann_id: annotationPanelID, //This is annotation panel id
+                    user_id: userId,
+                    selected_text: word,
+                    translation: textAreaElem.value,
+                    lang: "zh",
+                    url: window.location.href,
+                    paragraph_idx: paragrahIndex,
+                    text_idx: wordIndex
+                }            
+            }, 
+            function (result) { // post successful and result returned by server
+                console.log( "add annotaiton post success", result );          
+                
                 //Change the state of the annotation from new to existed
                 var panelID  = annotationPanelID + "_panel";
                 $('#' + panelID).data('state', annotationState.EXISTED);
                 $('#' + panelID).data('id', result.id); // add the annotation id from server
             }
-            else {
-                console.log(result.msg);
-            }
-            
-        }
-    )
-    .fail(function(result) {
-        console.log( "add annotation post error", result );
-    });  
+        )
+        .fail(function(result) {
+            console.log( "add annotation post error", result );
+        });
+    }        
+    else {
+        var annotation_id = $('#' + annotationPanelID + "_panel").data('id');
+        $.get( hostUrl + "/update_annotation",
+            {
+                id: annotation_id,
+                translation: textAreaElem.value  
+            },
+            function (result) { // get successful and result returned by server
+                console.log( "update annotaiton get success", result );      
+            }        
+        )
+        .fail(function(result) {
+            console.log( "update annotation get error", result );
+        });
+    }
 }
 
 //Send to server to remove annoation
