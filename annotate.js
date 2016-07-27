@@ -4,6 +4,7 @@ var paragraphs = document.getElementsByTagName('p');
 
 var selectionMaxNoOfWords = 5;
 var selectionMinNoOfWords = 1;
+var annotationLanguage = '';
 
 var hostUrl = "https://wordnews-server-kite19881.c9users.io";
 //var hostUrl = "https://wordnews-annotate.herokuapp.com";
@@ -241,6 +242,7 @@ function removeAnnotationElement(elem)
     elem.remove()
 }
 
+
 // TODO: To save annotator's effort, we will show the system's translation 
 // in the textarea as default translation, and thus annotator can edit it.
 function appendPanel(annotationId, word, userId, paragrahIndex, wordIndex) {
@@ -250,8 +252,14 @@ function appendPanel(annotationId, word, userId, paragrahIndex, wordIndex) {
 
     var panelID  = annotationId + "_panel";
     var editorID = annotationId + "_editor";
-
+    
+    var lang = BFHLanguagesList[annotationLanguage.split('_')[0]]; // in native language
+    var country = annotationLanguage.split('_')[1];
+    
     var panelHtml = '<div id=\"' + panelID + '\" class=\"panel\">';
+    panelHtml += '<span class=\"bfh-languages\" data-language=\"' + 
+    			 annotationLanguage + '\" data-flags=\"true\">' + 
+    			 '<i class="glyphicon bfh-flag-'+country+ '" title="' + lang + '"></i></span><br>';
     panelHtml += '<textarea id=\"' + editorID + '\" style="background:yellow"></textarea><br>';
     panelHtml += '<div class=\"btn-group\" style=\"margin:5px;\">'
     panelHtml += '<button id=\"annontation-delete-btn' + annotationId + '\" type=\"delete\" class=\"btn btn-info btn-xs\">Delete</button> &nbsp;';
@@ -453,20 +461,26 @@ function unpaintCursor() {
 // add listeners
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
-    if (request.mode == "annotate") {
-        console.log("annotate");
-        $('body').on("mouseup", 'p', function(e) {
-            var id = highlight(request.user_id);
-            if (id == -1)
-            {
-                console.log("Error: Unable to create annotation");
-            }
-            console.log($("#" + id));
-        });
-        paintCursor();
-    } else {
-        console.log(request.mode);
-        unpaintCursor();
+    //console.log(request);
+    if ('mode' in request) {
+	    if (request.mode == "annotate") {
+            annotationLanguage = request.ann_lang;
+	        console.log("annotate mode lang:" + annotationLanguage);
+	        $('body').on("mouseup", 'p', function(e) {
+	            var id = highlight(request.user_id);
+	            if (id == -1)
+	            {
+	                console.log("Error: Unable to create annotation");
+	            }
+	            console.log($("#" + id));
+	        });
+	        paintCursor();
+	    } else if (request.mode == "unannotate"){
+	        console.log(request.mode);
+	        unpaintCursor();
+	    }
+    } else if ('ann_lang' in request) {
+        annotationLanguage = request.ann_lang;
+    	console.log("update lang to " + annotationLanguage);
     }
-
 });

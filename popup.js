@@ -215,7 +215,7 @@ function syncUser() {
 	                    'annotationLanguage': 'zh_CN'
 	                }, function() {});
             	}
-
+                $('.bfh-selectbox').val(annotationLanguage);
             });
 }
 
@@ -382,9 +382,11 @@ function paintCursor() {
         active: true,
         currentWindow: true
     }, function(arrayOfTabs) {
-        var cursor = chrome.extension.getURL('images/highlighter-orange.cur');
-        console.log(cursor);
-        chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "annotate", user_id: userId, ann_lang: annotationLanguage}, function(response) {});
+        //var cursor = chrome.extension.getURL('images/highlighter-orange.cur');
+        //console.log(cursor);
+        chrome.tabs.sendMessage(arrayOfTabs[0].id, 
+        		{ mode: "annotate", user_id: userId, ann_lang: annotationLanguage}, 
+        		function(response) {});
 
     });
 }
@@ -423,11 +425,19 @@ function showDivByMode(mode) {
 function setAnnotationLanguage(){
 	$('.bfh-selectbox').on('change.bfhselectbox', function() {
 		annotationLanguage = $(this).val();
-        console.log("annotation language: " + annotationLanguage);
+        console.log("set annotation language on popup.html: " + annotationLanguage);
         chrome.storage.sync.set({
             'annotationLanguage': annotationLanguage
         });
         
+        chrome.tabs.query({
+            active: true,
+            currentWindow: true
+        }, function(arrayOfTabs) {
+            chrome.tabs.sendMessage(arrayOfTabs[0].id, { ann_lang: annotationLanguage}, function(response) {});
+        });     
+        
+        //window.close();
     });
 }
 
