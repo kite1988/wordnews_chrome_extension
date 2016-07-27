@@ -137,9 +137,9 @@ function highlight(userId ) {
     if (!error && textNode.toString().length > 1) 
     {            
         //Generate an unique ID for the annotation 
-        var annotationId = generateId(); 
+        var annotationPanelID = generateId(); 
         var sNode = document.createElement("span");
-        sNode.id = annotationId;
+        sNode.id = annotationPanelID;
         sNode.className = "annotate-highlight";      
         try
         {
@@ -165,16 +165,16 @@ function highlight(userId ) {
             sNode.setAttribute('value', pidx + ',' + widx);
         }
         
-        var panel = appendPanel(annotationId, textNode.toString(), userId, pidx, widx);
+        var panel = appendPanel(annotationPanelID, textNode.toString(), userId, pidx, widx);
         
-        $("#" + annotationId).mouseenter(function() {
-            console.log(annotationId + " mouse enter");
+        $("#" + annotationPanelID).mouseenter(function() {
+            console.log(annotationPanelID + " mouse enter");
             if (panel.is(':hidden')) {
                 panel.show();
             }
         });
 
-        return annotationId;
+        return annotationPanelID;
     }
     else if (textNode.toString().length != 0 ) {
         //TODO: Show a proper UI such as notification for error        
@@ -242,81 +242,6 @@ function removeAnnotationElement(elem)
     elem.remove()
 }
 
-
-// TODO: To save annotator's effort, we will show the system's translation 
-// in the textarea as default translation, and thus annotator can edit it.
-function appendPanel(annotationId, word, userId, paragrahIndex, wordIndex) {
-    var highlightWords = $("#" + annotationId);
-    var rect = cumulativeOffset2(annotationId);
-    console.log("rect: " + rect.left + " " + rect.top);
-
-    var panelID  = annotationId + "_panel";
-    var editorID = annotationId + "_editor";
-    
-    var lang = BFHLanguagesList[annotationLanguage.split('_')[0]]; // in native language
-    var country = annotationLanguage.split('_')[1];
-    
-    var panelHtml = '<div id=\"' + panelID + '\" class=\"panel\">';
-    panelHtml += '<span class=\"bfh-languages\" data-language=\"' + 
-    			 annotationLanguage + '\" data-flags=\"true\">' + 
-    			 '<i class="glyphicon bfh-flag-'+country+ '" title="' + lang + '"></i></span><br>';
-    panelHtml += '<textarea id=\"' + editorID + '\" style="background:yellow"></textarea><br>';
-    panelHtml += '<div class=\"btn-group\" style=\"margin:5px;\">'
-    panelHtml += '<button id=\"annontation-delete-btn' + annotationId + '\" type=\"delete\" class=\"btn btn-info btn-xs\">Delete</button> &nbsp;';
-    panelHtml += '<button id=\"annontation-cancel-btn' + annotationId + '\" type=\"cancel\" class=\"btn btn-info btn-xs\">Cancel</button> &nbsp;';
-    panelHtml += '<button id=\"annontation-submit-btn' + annotationId + '\" type=\"submit\" class=\"btn btn-info btn-xs\">Submit</button>';
-    panelHtml += '</div></div>';
-
-    $("body").append(panelHtml);
-
-    var panel = document.getElementById(panelID);
-    panel.style.position = "absolute";
-    panel.style.left = (rect.left - 20) + 'px';
-    panel.style.top = (rect.top + 20) + 'px';
-    panel.className = "annotate-panel";
-
-    panel = $(panel);
-
-    $("#" + panelID + " button").click(function() {
-        var mode = $(this).attr('type');
-        if (mode == 'cancel') {
-            panel.hide();
-        } else if (mode == 'delete') {
-            var elem = document.getElementById(annotationId);            
-            removeAnnotationElement(elem)
-            //Remove the panel HTML
-            panel.remove();
-            highlightWords.contents().unwrap();            
-            deleteAnnotation(annotationId)
-        } else {
-            // TODO: fix bug
-            console.log("save");
-            panel.hide();
-            saveAnnotation(annotationId, word, userId, editorID, paragrahIndex, wordIndex);
-        }
-    });
-
-    panel.mouseleave(function() {
-        panel.hide();
-    });
-    
-    //Set submit botton to be disabled as default
-    $('#annontation-submit-btn' + annotationId).prop('disabled', true);    
-    
-    //Toggle disable of submit button according the text entered in text field
-    $('#' + editorID).on('keyup', function() {         
-            
-        if (this.value.length > 0) {
-            $('#annontation-submit-btn' + annotationId).prop('disabled', false);    
-        }    
-        else {
-            $('#annontation-submit-btn' + annotationId).prop('disabled', true);    
-        }
-    });      
-
-    return panel;
-}
-
 var annotationState = {
     NEW: 1,
     EXISTED: 2    
@@ -335,40 +260,154 @@ var annotation = {
         state: annotationState.NEW // state to determine whether the annontation existed in the database
 };
 
-// TODO: send to server to add annotation
-function saveAnnotation(annotationId, word, userId, editorID, paragrahIndex, wordIndex) {	
-    console.log(annotationId);
-    //Get the translated word
-    var textAreaElem = document.getElementById(editorID);
-    $.post( hostUrl + "/create_annotation", // for experiments
+// TODO: To save annotator's effort, we will show the system's translation 
+// in the textarea as default translation, and thus annotator can edit it.
+function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex) {
+    var highlightWords = $("#" + annotationPanelID);
+    var rect = cumulativeOffset2(annotationPanelID);
+    console.log("rect: " + rect.left + " " + rect.top);
+
+    var panelID  = annotationPanelID + "_panel";
+    var editorID = annotationPanelID + "_editor";
     
-    //TODO: Have not supported unicode for non-english input in textarea
-    //$.post("https://wordnews-annotate.herokuapp.com/create_annotation", // stable server
-        {            
-            annotation:{
-                ann_id: annotationId, 
-                user_id: userId,
-                selected_text: word,
-                translation: textAreaElem.value,
-                lang: "zh",
-                url: window.location.href,
-                paragraph_idx: paragrahIndex,
-                text_idx: wordIndex
-            }            
+    var lang = BFHLanguagesList[annotationLanguage.split('_')[0]]; // in native language
+    var country = annotationLanguage.split('_')[1];
+    
+    var panelHtml = '<div id=\"' + panelID + '\" class=\"panel\" data-state=\"' + annotationState.NEW  + ' \"data-id=\"0\">';
+    panelHtml += '<span class=\"bfh-languages\" data-language=\"' + 
+    			 annotationLanguage + '\" data-flags=\"true\">' + 
+    			 '<i class="glyphicon bfh-flag-'+country+ '" title="' + lang + '"></i></span><br>';
+    panelHtml += '<textarea id=\"' + editorID + '\" style="background:yellow"></textarea><br>';
+    panelHtml += '<div class=\"btn-group\" style=\"margin:5px;\">'
+    panelHtml += '<button id=\"annontation-delete-btn' + annotationPanelID + '\" type=\"delete\" class=\"btn btn-info btn-xs\">Delete</button> &nbsp;';
+    panelHtml += '<button id=\"annontation-cancel-btn' + annotationPanelID + '\" type=\"cancel\" class=\"btn btn-info btn-xs\">Cancel</button> &nbsp;';
+    panelHtml += '<button id=\"annontation-submit-btn' + annotationPanelID + '\" type=\"submit\" class=\"btn btn-info btn-xs\">Submit</button>';
+    panelHtml += '</div></div>';
+
+    $("body").append(panelHtml);
+
+    var panel = document.getElementById(panelID);
+    panel.style.position = "absolute";
+    panel.style.left = (rect.left - 20) + 'px';
+    panel.style.top = (rect.top + 20) + 'px';
+    panel.className = "annotate-panel";
+
+    panel = $(panel);
+
+    $("#" + panelID + " button").click(function() {
+        var mode = $(this).attr('type');
+        if (mode == 'cancel') {
+            panel.hide();
+        } else if (mode == 'delete') {
+            deleteAnnotationFromServer(annotationPanelID);
+            var elem = document.getElementById(annotationPanelID);            
+            removeAnnotationElement(elem)
+            //Remove the panel HTML
+            panel.remove();
+            highlightWords.contents().unwrap();            
+            
+        } else {
+            // TODO: fix bug
+            console.log("save");
+            panel.hide();
+            saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex, wordIndex);
         }
-    )
-    .done(function() {
-        console.log( "add annotaiton post success" );
-    })
-    .fail(function() {
-        console.log( "add annotation post error" );
+    });
+
+    panel.mouseleave(function() {
+        panel.hide();
     });  
+    
+    //Set submit botton to be disabled as default
+    $('#annontation-submit-btn' + annotationPanelID).prop('disabled', true);    
+    
+    //Toggle disable of submit button according the text entered in text field
+    $('#' + editorID).on('keyup', function() {         
+            
+        if (this.value.length > 0) {
+            $('#annontation-submit-btn' + annotationPanelID).prop('disabled', false);    
+        }    
+        else {
+            $('#annontation-submit-btn' + annotationPanelID).prop('disabled', true);    
+        }
+    });      
+
+    return panel;
 }
 
-// TODO: send to server to remove annoation
-function deleteAnnotation(annotationID) {	
+// TODO: send to server to add annotation
+function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex, wordIndex) {	
+    
+    //Get the translated word
+    var textAreaElem = document.getElementById(editorID);
+    
+    var state = $('#' + annotationPanelID + "_panel").data('state');
+    //If the annotation is newly created, send data to server to add into database
+    if(state == annotationState.NEW) {
+        //TODO: Have not supported unicode for non-english input in textarea
+        $.post( hostUrl + "/create_annotation", 
+            {            
+                annotation: {
+                    ann_id: annotationPanelID, //This is annotation panel id
+                    user_id: userId,
+                    selected_text: word,
+                    translation: textAreaElem.value,
+                    lang: "zh",
+                    url: window.location.href,
+                    paragraph_idx: paragrahIndex,
+                    text_idx: wordIndex
+                }            
+            }, 
+            function (result) { // post successful and result returned by server
+                console.log( "add annotaiton post success", result );          
+                
+                //Change the state of the annotation from new to existed
+                var panelID  = annotationPanelID + "_panel";
+                $('#' + panelID).data('state', annotationState.EXISTED);
+                $('#' + panelID).data('id', result.id); // add the annotation id from server
+            }
+        )
+        .fail(function(result) {
+            console.log( "add annotation post error", result );
+        });
+    }        
+    else {
+        var annotation_id = $('#' + annotationPanelID + "_panel").data('id');
+        $.get( hostUrl + "/update_annotation",
+            {
+                id: annotation_id,
+                translation: textAreaElem.value  
+            },
+            function (result) { // get successful and result returned by server
+                console.log( "update annotaiton get success", result );      
+            }        
+        )
+        .fail(function(result) {
+            console.log( "update annotation get error", result );
+        });
+    }
+}
 
-	
+//Send to server to remove annoation
+function deleteAnnotationFromServer(annotationPanelID) {	
+    //Need to check the state of the annotation
+    var state = $('#' + annotationPanelID + "_panel").data('state');
+    //If the annotation existed in database, send request to remove it
+    if(state == annotationState.EXISTED)
+    {
+        var annotationID = $('#' + annotationPanelID + "_panel").data('id');
+        $.get( hostUrl + "/delete_annotation", // for experiments
+            {            
+                id: annotationID       
+            }
+        )
+        .done(function() {
+            console.log( "delete annotaiton post success" );            
+        })
+        .fail(function() {
+            console.log( "delete annotation post error" );
+        });
+    }
 }
 
 // TODO： show all the highlights and annotations
