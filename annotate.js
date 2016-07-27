@@ -160,20 +160,14 @@ function highlight(userId ) {
         if (parent != null) {
             pidx = getParagraphIndex(parent);
             console.log(pidx);
+            //TODO: Currently is not working
             widx = getWordIndex(parent, textNode);
 
             sNode.setAttribute('value', pidx + ',' + widx);
         }
         
-        var panel = appendPanel(annotationPanelID, textNode.toString(), userId, pidx, widx);
+        var panel = appendPanel(annotationPanelID, textNode.toString(), userId, pidx, widx, annotationState.NEW, 0);
         
-        $("#" + annotationPanelID).mouseenter(function() {
-            console.log(annotationPanelID + " mouse enter");
-            if (panel.is(':hidden')) {
-                panel.show();
-            }
-        });
-
         return annotationPanelID;
     }
     else if (textNode.toString().length != 0 ) {
@@ -262,7 +256,7 @@ var annotation = {
 
 // TODO: To save annotator's effort, we will show the system's translation 
 // in the textarea as default translation, and thus annotator can edit it.
-function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex) {
+function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex, state, id) {
     var highlightWords = $("#" + annotationPanelID);
     var rect = cumulativeOffset2(annotationPanelID);
     console.log("rect: " + rect.left + " " + rect.top);
@@ -273,7 +267,7 @@ function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex) 
     var lang = BFHLanguagesList[annotationLanguage.split('_')[0]]; // in native language
     var country = annotationLanguage.split('_')[1];
     
-    var panelHtml = '<div id=\"' + panelID + '\" class=\"panel\" data-state=\"' + annotationState.NEW  + ' \"data-id=\"0\">';
+    var panelHtml = '<div id=\"' + panelID + '\" class=\"panel\" data-state=\"' + state  + ' \"data-id=\"' + id + '\">';
     panelHtml += '<span class=\"bfh-languages\" data-language=\"' + 
     			 annotationLanguage + '\" data-flags=\"true\">' + 
     			 '<i class="glyphicon bfh-flag-'+country+ '" title="' + lang + '"></i></span><br>';
@@ -311,6 +305,13 @@ function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex) 
             console.log("save");
             panel.hide();
             saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex, wordIndex);
+        }
+    });
+    
+    $("#" + annotationPanelID).mouseenter(function() {
+        console.log(annotationPanelID + " mouse enter");
+        if (panel.is(':hidden')) {
+            panel.show();
         }
     });
 
@@ -411,11 +412,21 @@ function deleteAnnotationFromServer(annotationPanelID) {
 }
 
 // TODO： show all the highlights and annotations
-function showAnnotations() {
-
-	
+function showAnnotations(userid) {
+    $.get( hostUrl + "/show_annotation_by_user_url",
+        {
+            user_id: userid,
+            url: window.location.href
+        },
+        function (result) { //get successful and get result from server
+            for (var i = 0; i < result.annotations.length; ++i)
+            {
+                showAnnotation(result.annotations[i]);
+            }
+            console.log(result);
+        }
+    );
 }
-
 
 // TODO: inject annotation panel div as well
 function showAnnotation(ann) {
@@ -424,27 +435,30 @@ function showAnnotation(ann) {
         return;
     }
 
-    var para = paragraphs[pidx];
+    var para = paragraphs[ann.paragraph_idx];
     var innerHtml = para.innerHTML;
     console.log(para);
 
     var count = 0;
-    for (var i=0; i<innerHtml.length; ) {
-        var idx = innerHtml.indexOf(ann.selected_text, i);
-        if (idx>0) {
-            count++;
-            if (count==ann.text_idx) {
-                var before = innerHtml.slice(0, idx);
-                var after = innerHtml.slice(idx+ann.selected_text.length);
-                // TODO: inject annotation div as well
-                var html = '<span class=\"highlight\">' + ann.selected_text + '</span>';
-                para.innerHTML = before + html + after;
-                return;
-            } 
-        } 
-        i++;
+    
+    var idx = innerHtml.indexOf(ann.selected_text);
+    if (idx > 0) {
+        
+        var before = innerHtml.slice(0, idx);
+        var after = innerHtml.slice(idx + ann.selected_text.length);
+        
+        var html = '<span id=\"' + ann.ann_id + '\" class=\"annotate-highlight\" value=\"' + ann.paragraph_idx + ',' + idx + '\">' + ann.selected_text + '</span>';
+        para.innerHTML = before + html + after;
+        
+        var panel = appendPanel(ann.ann_id, ann.selected_text, ann.user_id, ann.paragraph_idx, idx, annotationState.EXISTED, ann.id);        
+        
+        var editorID = ann.ann_id + "_editor";
+        var textAreaElem = document.getElementById(editorID);
+        textAreaElem.value = ann.translation;         
+        
+        return;            
     }
-    console.log("Cannot find the " + text + "  in paragraph " + pid);	
+    //console.log("Cannot find the " + text + "  in paragraph " + pid);	
 }
 
 
@@ -505,6 +519,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	    if (request.mode == "annotate") {
             annotationLanguage = request.ann_lang;
 	        console.log("annotate mode lang:" + annotationLanguage);
+            //TODO: Need to get the main framework to send new page(includes refreshed page) event
+            showAnnotations(request.user_id);
 	        $('body').on("mouseup", 'p', function(e) {
 	            var id = highlight(request.user_id);
 	            if (id == -1)
