@@ -346,31 +346,39 @@ function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex
     //If the annotation is newly created, send data to server to add into database
     if(state == annotationState.NEW) {
         //TODO: Have not supported unicode for non-english input in textarea
-        $.post( hostUrl + "/create_annotation", 
-            {            
-                annotation: {
+    	$.ajax({
+			type : "post",
+			beforeSend : function(request) {
+				request.setRequestHeader("Accept", "application/json");
+			},
+
+			url : hostUrl + "/create_annotation",
+			dataType : 'json',
+			data : {
+				annotation: {
                     ann_id: annotationPanelID, //This is annotation panel id
                     user_id: userId,
                     selected_text: word,
                     translation: textAreaElem.value,
-                    lang: "zh",
+                    lang: annotationLanguage,
                     url: window.location.href,
                     paragraph_idx: paragrahIndex,
                     text_idx: wordIndex
-                }            
-            }, 
-            function (result) { // post successful and result returned by server
-                console.log( "add annotaiton post success", result );          
+                }   
+			},
+			success : function(result) { // post successful and result returned by server
+				console.log( "add annotaiton post success", result );          
                 
                 //Change the state of the annotation from new to existed
                 var panelID  = annotationPanelID + "_panel";
                 $('#' + panelID).data('state', annotationState.EXISTED);
                 $('#' + panelID).data('id', result.id); // add the annotation id from server
-            }
-        )
-        .fail(function(result) {
-            console.log( "add annotation post error", result );
-        });
+			},
+
+			error : function(result) {
+				console.log("add annotation post error" + result);
+			}
+		});
     }        
     else {
         var annotation_id = $('#' + annotationPanelID + "_panel").data('id');
