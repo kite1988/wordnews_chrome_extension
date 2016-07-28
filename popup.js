@@ -199,15 +199,22 @@ function syncUser() {
                             }
                         });
 
-                // Obtain user's annotation history from server
-                $.get(hostUrl + '/show_user_annotation_history?user_id=' + userId,
-                    function(obj) {
-                        if ('history' in obj) {
+                
+                $.ajax({
+        			type : "get",
+        			beforeSend : function(request) {
+        				request.setRequestHeader("Accept", "application/json");
+        			},
+        			url : hostUrl + '/show_user_annotation_history?user_id=359',
+        			success : function(obj) {
+        				if ('history' in obj) {
                             document.getElementById('annotations').innerHTML = obj['history']['annotation'];
                             document.getElementById('articles').innerHTML = obj['history']['url'];
                         }
-                    });
+        			}
+        		});
                 
+               
                 // Annotation language
                 annotationLanguage = result.annotationLanguage;
                 if (annotationLanguage==null) {
