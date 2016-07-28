@@ -532,8 +532,8 @@ function setLinks() {
         window.open(hostUrl + '/settings?name=' + userAccount);
     });
     // http://testnaijia.herokuapp.com/howtouse
-    $('#documentation').click(function() {
-        window.open(hostUrl + '/howtouse');
+    $('#learn-tutorial').click(function() {
+        window.open(hostUrl + '/how-to-learn');
     });
     
     $('#annotate-panel .btn-block').click(function() {
@@ -542,6 +542,10 @@ function setLinks() {
     	} else {
     		window.open(hostUrl + '/show_user_annotation_urls?user_id=' + userId);
     	}
+    });
+    
+    $('#annotate-tutorial').click(function() {
+        window.open(hostUrl + '/how-to-annotate');
     });
 }
 
