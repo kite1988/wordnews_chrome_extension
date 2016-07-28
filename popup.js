@@ -199,29 +199,29 @@ function syncUser() {
                             }
                         });
 
-                
+
                 $.ajax({
-        			type : "get",
-        			beforeSend : function(request) {
-        				request.setRequestHeader("Accept", "application/json");
-        			},
-        			url : hostUrl + '/show_user_annotation_history?user_id=359',
-        			success : function(obj) {
-        				if ('history' in obj) {
+                    type: "get",
+                    beforeSend: function(request) {
+                        request.setRequestHeader("Accept", "application/json");
+                    },
+                    url: hostUrl + '/show_user_annotation_history?user_id=359',
+                    success: function(obj) {
+                        if ('history' in obj) {
                             document.getElementById('annotations').innerHTML = obj['history']['annotation'];
                             document.getElementById('articles').innerHTML = obj['history']['url'];
                         }
-        			}
-        		});
-                
-               
+                    }
+                });
+
+
                 // Annotation language
                 annotationLanguage = result.annotationLanguage;
-                if (annotationLanguage==null) {
-	                chrome.storage.sync.set({
-	                    'annotationLanguage': 'zh_CN'
-	                }, function() {});
-            	}
+                if (annotationLanguage == null) {
+                    chrome.storage.sync.set({
+                        'annotationLanguage': 'zh_CN'
+                    }, function() {});
+                }
                 $('.bfh-selectbox').val(annotationLanguage);
             });
 }
@@ -391,9 +391,8 @@ function paintCursor() {
     }, function(arrayOfTabs) {
         //var cursor = chrome.extension.getURL('images/highlighter-orange.cur');
         //console.log(cursor);
-        chrome.tabs.sendMessage(arrayOfTabs[0].id, 
-        		{ mode: "annotate", user_id: userId, ann_lang: annotationLanguage}, 
-        		function(response) {});
+        chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "annotate", user_id: userId, ann_lang: annotationLanguage },
+            function(response) {});
 
     });
 }
@@ -429,37 +428,37 @@ function showDivByMode(mode) {
     }
 }
 
-function setAnnotationLanguage(){
-	$('.bfh-selectbox').on('change.bfhselectbox', function() {
-		annotationLanguage = $(this).val();
+function setAnnotationLanguage() {
+    $('.bfh-selectbox').on('change.bfhselectbox', function() {
+        annotationLanguage = $(this).val();
         console.log("set annotation language on popup.html: " + annotationLanguage);
         chrome.storage.sync.set({
             'annotationLanguage': annotationLanguage
         });
-        
+
         chrome.tabs.query({
             active: true,
             currentWindow: true
         }, function(arrayOfTabs) {
-            chrome.tabs.sendMessage(arrayOfTabs[0].id, { ann_lang: annotationLanguage}, function(response) {});
-        });     
-        
+            chrome.tabs.sendMessage(arrayOfTabs[0].id, { ann_lang: annotationLanguage }, function(response) {});
+        });
+
         //window.close();
     });
 }
 
 // TODO: a new logo for annotation?
 function switchLogo(mode) {
-	if (mode=='disable') {
-		var imgURL = chrome.extension.getURL("images/logo-gray.png");
-		chrome.browserAction.setIcon({path: imgURL});
-	} else if (mode=='annotate'){
-		var imgURL = chrome.extension.getURL("images/logo.png");
-		chrome.browserAction.setIcon({path: imgURL});
-	} else {
-		var imgURL = chrome.extension.getURL("images/logo.png");
-		chrome.browserAction.setIcon({path: imgURL});
-	}
+    if (mode == 'disable') {
+        var imgURL = chrome.extension.getURL("images/logo-gray.png");
+        chrome.browserAction.setIcon({ path: imgURL });
+    } else if (mode == 'annotate') {
+        var imgURL = chrome.extension.getURL("images/logo.png");
+        chrome.browserAction.setIcon({ path: imgURL });
+    } else {
+        var imgURL = chrome.extension.getURL("images/logo.png");
+        chrome.browserAction.setIcon({ path: imgURL });
+    }
 }
 
 // TODO: refine code
@@ -524,6 +523,29 @@ function reload() {
 
 }
 
+function setLinks() {
+    $('#learn-panel .btn-block').click(function() {
+        window.open(hostUrl + '/displayHistory?name=' + userAccount);
+    });
+    // http://testnaijia.herokuapp.com/settings?name='+userAccount'
+    $('#setting').click(function() {
+        window.open(hostUrl + '/settings?name=' + userAccount);
+    });
+    // http://testnaijia.herokuapp.com/howtouse
+    $('#documentation').click(function() {
+        window.open(hostUrl + '/howtouse');
+    });
+    
+    $('#annotate-panel .btn-block').click(function() {
+    	if ($(this).val()=='annotations') {
+    		window.open(hostUrl + '/show_user_annotations?user_id=' + userId);
+    	} else {
+    		window.open(hostUrl + '/show_user_annotation_urls?user_id=' + userId);
+    	}
+    });
+}
+
+
 function onWindowLoad() {
     syncUser();
     setWordReplace();
@@ -532,18 +554,7 @@ function onWindowLoad() {
     setMode();
     setReplace();
     setAnnotationLanguage();
-
-    $('.btn-block').click(function() {
-        window.open(hostUrl + 'displayHistory?name=' + userAccount);
-    });
-    // http://testnaijia.herokuapp.com/settings?name='+userAccount'
-    $('#setting').click(function() {
-        window.open(hostUrl + 'settings?name=' + userAccount);
-    });
-    // http://testnaijia.herokuapp.com/howtouse
-    $('#documentation').click(function() {
-        window.open(hostUrl + 'howtouse');
-    });
+    setLinks();
 }
 
 window.onload = onWindowLoad;
