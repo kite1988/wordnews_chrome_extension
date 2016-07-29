@@ -191,17 +191,14 @@ function getWordIndex(p, textNode) {
     var precedingRange = document.createRange();
     precedingRange.setStartBefore(p.firstChild);
     precedingRange.setEnd(textNode.startContainer, textNode.startOffset);
-
+    //Cache the strings 
     var precedingText = precedingRange.toString();
-    var count = 0;
-    for (var i = 0; i < precedingText.length;) {
-        var idx = precedingText.indexOf(textNode.toString(), i);
-        if (idx > 0) {
-            count++;
-            i = idx + 1;
-        } else {
-            i++;
-        }
+    var selectedText = textNode.toString();
+    var count = 0;    
+    var idx = precedingText.indexOf(selectedText); //Get the index of the selected text
+    while (idx < precedingText.length && idx != -1) {   
+        ++count;            
+        idx = precedingText.indexOf(selectedText, idx + 1);//Get the next index of the selected text
     }
     return count;
 }
@@ -249,7 +246,7 @@ var annotation = {
 		translation: '', //This variable cannot be empty
 		lang: 'zh', // language of the translation, obtained from user's configuration. set default to zh (Chinese)
 		paragraph_idx: -1, // paragraph idx
-		text_idx: -1, // the idx in the occurrence of the paragraph 
+		text_idx: -1, // the idx in the occurrence of the paragraph, starts from 0
 		url: '', // url of the article
         state: annotationState.NEW // state to determine whether the annontation existed in the database
 };
@@ -436,7 +433,6 @@ function showAnnotations(userid) {
     );
 }
 
-// TODO: inject annotation panel div as well
 function showAnnotation(ann) {
     if (paragraphs.length < ann.paragraph_idx) {
         console.log("layout changed");
@@ -448,25 +444,28 @@ function showAnnotation(ann) {
     console.log(para);
 
     var count = 0;
-    
-    var idx = innerHtml.indexOf(ann.selected_text);
-    if (idx > 0) {
-        
-        var before = innerHtml.slice(0, idx);
-        var after = innerHtml.slice(idx + ann.selected_text.length);
-        
-        var html = '<span id=\"' + ann.ann_id + '\" class=\"annotate-highlight\" value=\"' + ann.paragraph_idx + ',' + idx + '\">' + ann.selected_text + '</span>';
-        para.innerHTML = before + html + after;
-        
-        var panel = appendPanel(ann.ann_id, ann.selected_text, ann.user_id, ann.paragraph_idx, idx, annotationState.EXISTED, ann.id);        
-        
-        var editorID = ann.ann_id + "_editor";
-        var textAreaElem = document.getElementById(editorID);
-        textAreaElem.value = ann.translation;         
-        
-        return;            
+    var idx = innerHtml.indexOf(ann.selected_text);   
+    while (idx != -1) { //Iterate the whole <p> to find the selected word                              
+        if (count == ann.text_idx) { //If count is equals to the number word occurance 
+            //Get the before and after text from selected text
+            var before = innerHtml.slice(0, idx);
+            var after = innerHtml.slice(idx + ann.selected_text.length);
+            //Create <span> HTML tag and add to the middle
+            var html = '<span id=\"' + ann.ann_id + '\" class=\"annotate-highlight\" value=\"' + ann.paragraph_idx + ',' + idx + '\">' + ann.selected_text + '</span>';
+            para.innerHTML = before + html + after;
+            
+            var panel = appendPanel(ann.ann_id, ann.selected_text, ann.user_id, ann.paragraph_idx, count, annotationState.EXISTED, ann.id);        
+            //Add translated text to textarea
+            var editorID = ann.ann_id + "_editor";
+            var textAreaElem = document.getElementById(editorID);
+            textAreaElem.value = ann.translation;         
+            
+            return;                    
+        }      
+        ++count; 
+        idx = innerHtml.indexOf(ann.selected_text, idx + 1); //Searching the word starting from idx
     }
-    //console.log("Cannot find the " + text + "  in paragraph " + pid);	
+    console.log("Cannot find the " + text + "  in paragraph " + pid);	
 }
 
 
@@ -528,7 +527,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             annotationLanguage = request.ann_lang;
 	        console.log("annotate mode lang:" + annotationLanguage);
             //TODO: Need to get the main framework to send new page(includes refreshed page) event
-            showAnnotations(request.user_id);
+            //showAnnotations(request.user_id);
 	        $('body').on("mouseup", 'p', function(e) {
 	            var id = highlight(request.user_id);
 	            if (id == -1)
