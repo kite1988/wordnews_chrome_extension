@@ -7,13 +7,14 @@ var website;
 var selectionMaxNoOfWords = 5;
 var selectionMinNoOfWords = 1;
 var annotationLanguage = '';
+//A container to keep all the annotations' panel ID
+var annotationPanelIDCont = [];
 
 var hostUrl = "https://wordnews-server-kite19881.c9users.io";
 //var hostUrl = "https://wordnews-annotate.herokuapp.com";
 
 function selectHTML() {
     try {
-
         var nNd = document.createElement("em");
         var w = getSelection().getRangeAt(0);
         w.surroundContents(nNd);
@@ -57,8 +58,7 @@ function getTextNodeFromSelection()
     while (isValidString(range.toString()[0]))
     {
         //If the start offset is 0, break the loop since offset cannot be < 0
-        if( range.startOffset == 0)
-        {
+        if( range.startOffset == 0) {
             offset = false;
             break;
         }
@@ -265,13 +265,21 @@ var annotation = {
     state: annotationState.NEW // state to determine whether the annontation existed in the database
 };
 
+function updatePanelPosition (annotationPanelID) {
+    var rect = cumulativeOffset2(annotationPanelID);
+    console.log("rect: " + rect.left + " " + rect.top);
+    var panelID  = annotationPanelID + "_panel";
+    var panel = document.getElementById(panelID);
+    panel.style.position = "absolute";
+    panel.style.left = (rect.left - 20) + 'px';
+    panel.style.top = (rect.top + 20) + 'px';
+    panel.className = "annotate-panel";
+}
+
 // TODO: To save annotator's effort, we will show the system's translation 
 // in the textarea as default translation, and thus annotator can edit it.
 function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex, state, id) {
-    var highlightWords = $("#" + annotationPanelID);
-    var rect = cumulativeOffset2(annotationPanelID);
-    console.log("rect: " + rect.left + " " + rect.top);
-
+    var highlightWords = $("#" + annotationPanelID);   
     var panelID  = annotationPanelID + "_panel";
     var editorID = annotationPanelID + "_editor";
     
@@ -290,13 +298,11 @@ function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex, 
     panelHtml += '</div></div>';
 
     $("body").append(panelHtml);
+    
+    annotationPanelIDCont.push(annotationPanelID); //Add panel ID to container
 
-    var panel = document.getElementById(panelID);
-    panel.style.position = "absolute";
-    panel.style.left = (rect.left - 20) + 'px';
-    panel.style.top = (rect.top + 20) + 'px';
-    panel.className = "annotate-panel";
-
+    updatePanelPosition(annotationPanelID);    
+    var panel = document.getElementById(panelID);    
     panel = $(panel);
 
     $("#" + panelID + " button").click(function() {
@@ -310,7 +316,8 @@ function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex, 
             //Remove the panel HTML
             panel.remove();
             highlightWords.contents().unwrap();            
-            
+            var index = annotationPanelIDCont.indexOf(annotationPanelID);
+            annotationPanelIDCont.splice(index, 1); //Remove it from container
         } else {
             // TODO: fix bug
             console.log("save");
@@ -423,13 +430,11 @@ function deleteAnnotationFromServer(annotationPanelID) {
 			url : hostUrl + "/delete_annotation",
 			dataType : "json",
 			data : {			
-                id: annotationID 
-                  
+                id: annotationID                   
 			},
 			success : function(result) { // getsuccessful and result returned by server
 				console.log( "delete annotaiton get success" );    
 			},
-
 			error : function(result) {
 				console.log( "delete annotation get error" );
 			}
@@ -462,13 +467,12 @@ function showAnnotations(userid) {
     });
 }
 
-// TODO: handle the special case for CNN
 function showAnnotation(ann) {
     if (paragraphs.length < ann.paragraph_idx) {
         console.log("layout changed");
         return;
     }
-
+    annotationPanelIDCont.push(ann.ann_id); //Add panel ID to container
     var para = paragraphs[ann.paragraph_idx];
     var innerHtml = para.innerHTML;
     console.log(para);
@@ -575,8 +579,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		            console.log($("#" + id));
 		        });
             }
-	    }
-	        paintCursor();
+            paintCursor();	        
 	    } else if (request.mode == "unannotate"){
 	        console.log(request.mode);
 	        unpaintCursor();
@@ -586,3 +589,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     	console.log("update lang to " + annotationLanguage);
     }
 });
+
+//TODO: Need check again whether is there any function being called when onsize event is triggered
+window.onresize = function() { //Resize all annotation panel according to the new resized window
+    for (var i = 0; i < annotationPanelIDCont.length; ++i) {
+        updatePanelPosition(annotationPanelIDCont[i]);
+    }         
+};
+
+
