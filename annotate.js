@@ -1,6 +1,8 @@
 'use strict';
 
-var paragraphs = document.getElementsByTagName('p');
+// Note cnn used ".zn-body__paragraph" instead of p
+var paragraphs = getParagraphs();// = document.getElementsByTagName('p');
+var website;
 
 var selectionMaxNoOfWords = 5;
 var selectionMinNoOfWords = 1;
@@ -125,7 +127,7 @@ function checkAnnoationExisted(node)
  	  http://stackoverflow.com/questions/7563169/detect-which-word-has-been-clicked-on-within-a-text
  * 5. Can not highlight a string with existing highlighted words  
  */
- 
+//TODO: handle the special case for CNN
 function highlight(userId ) {    
     
     var result =  getTextNodeFromSelection();
@@ -181,6 +183,19 @@ function getParagraphIndex(p) {
         }
     }
     return -1;
+}
+
+
+function getParagraphs() {
+	var paragraphs;
+    if (document.URL.indexOf('cnn.com') !== -1) {
+        paragraphs = $('.zn-body__paragraph').get();
+        website = "cnn";
+    } else {
+        paragraphs = document.getElementsByTagName('p');
+        website = "other";
+    }
+    return paragraphs;
 }
 
 //Find the occurrence of the selected text in preceding string which is
@@ -447,6 +462,7 @@ function showAnnotations(userid) {
     });
 }
 
+// TODO: handle the special case for CNN
 function showAnnotation(ann) {
     if (paragraphs.length < ann.paragraph_idx) {
         console.log("layout changed");
@@ -540,14 +556,26 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	        console.log("annotate mode lang:" + annotationLanguage);
             //TODO: Need to get the main framework to send new page(includes refreshed page) event
             showAnnotations(request.user_id);
-	        $('body').on("mouseup", 'p', function(e) {
-	            var id = highlight(request.user_id);
-	            if (id == -1)
-	            {
-	                console.log("Error: Unable to create annotation");
-	            }
-	            console.log($("#" + id));
-	        });
+            if (website=='cnn') {
+            	$('body').on("mouseup", '.zn-body__paragraph', function(e) {
+		            var id = highlight(request.user_id);
+		            if (id == -1)
+		            {
+		                console.log("Error: Unable to create annotation");
+		            }
+		            console.log($("#" + id));
+		        });
+            } else {
+		        $('body').on("mouseup", 'p', function(e) {
+		            var id = highlight(request.user_id);
+		            if (id == -1)
+		            {
+		                console.log("Error: Unable to create annotation");
+		            }
+		            console.log($("#" + id));
+		        });
+            }
+	    }
 	        paintCursor();
 	    } else if (request.mode == "unannotate"){
 	        console.log(request.mode);

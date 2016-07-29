@@ -385,8 +385,6 @@ function paintCursor() {
         active: true,
         currentWindow: true
     }, function(arrayOfTabs) {
-        //var cursor = chrome.extension.getURL('images/highlighter-orange.cur');
-        //console.log(cursor);
         chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "annotate", user_id: userId, ann_lang: annotationLanguage },
             function(response) {});
 
