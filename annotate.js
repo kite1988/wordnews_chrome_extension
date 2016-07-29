@@ -110,8 +110,7 @@ function checkAnnoationExisted(node)
         parentElem = parentElem.parentNode;
     }
     
-    if (hasClass(parentElem, "annotate-highlight"))
-    {
+    if (hasClass(parentElem, "annotate-highlight")) {
         console.log("annotate class existed")        
         return true;
     }    
@@ -160,9 +159,7 @@ function highlight(userId ) {
         if (parent != null) {
             pidx = getParagraphIndex(parent);
             console.log(pidx);
-            //TODO: Currently is not working
             widx = getWordIndex(parent, textNode);
-
             sNode.setAttribute('value', pidx + ',' + widx);
         }
         
@@ -186,8 +183,9 @@ function getParagraphIndex(p) {
     return -1;
 }
 
-// find the occurrence of the selected text in preceding string. 
-function getWordIndex(p, textNode) {
+//Find the occurrence of the selected text in preceding string which is
+//all of the text before the selected text. 
+function getWordIndex(p, textNode) {    
     var precedingRange = document.createRange();
     precedingRange.setStartBefore(p.firstChild);
     precedingRange.setEnd(textNode.startContainer, textNode.startOffset);
@@ -198,7 +196,8 @@ function getWordIndex(p, textNode) {
     var idx = precedingText.indexOf(selectedText); //Get the index of the selected text
     while (idx < precedingText.length && idx != -1) {   
         ++count;            
-        idx = precedingText.indexOf(selectedText, idx + 1);//Get the next index of the selected text
+        //Get the next index of the selected text
+        idx = precedingText.indexOf(selectedText, idx + 1);
     }
     return count;
 }
@@ -239,16 +238,16 @@ var annotationState = {
 };
 
 var annotation = {
-		id: -1,  // the internal id in database
-		user_id: -1, // user id
-		ann_id: -1, // annotation id - TODO: the server needs to generate a unique ID for annotation
-		selected_text: '',
-		translation: '', //This variable cannot be empty
-		lang: 'zh', // language of the translation, obtained from user's configuration. set default to zh (Chinese)
-		paragraph_idx: -1, // paragraph idx
-		text_idx: -1, // the idx in the occurrence of the paragraph, starts from 0
-		url: '', // url of the article
-        state: annotationState.NEW // state to determine whether the annontation existed in the database
+    id: -1,  // the internal id in database
+    user_id: -1, // user id
+    ann_id: -1, // annotation panel id
+    selected_text: '',
+    translation: '', //This variable cannot be empty
+    lang: 'zh', // language of the translation, obtained from user's configuration. set default to zh (Chinese)
+    paragraph_idx: -1, // paragraph idx
+    text_idx: -1, // the idx in the occurrence of the paragraph, starts from 0
+    url: '', // url of the article
+    state: annotationState.NEW // state to determine whether the annontation existed in the database
 };
 
 // TODO: To save annotator's effort, we will show the system's translation 
@@ -348,7 +347,6 @@ function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex
 			beforeSend : function(request) {
 				request.setRequestHeader("Accept", "application/json");
 			},
-
 			url : hostUrl + "/create_annotation",
 			dataType : 'json',
 			data : {
@@ -402,35 +400,50 @@ function deleteAnnotationFromServer(annotationPanelID) {
     if(state == annotationState.EXISTED)
     {
         var annotationID = $('#' + annotationPanelID + "_panel").data('id');
-        $.get( hostUrl + "/delete_annotation", // for experiments
-            {            
-                id: annotationID       
-            }
-        )
-        .done(function() {
-            console.log( "delete annotaiton post success" );            
-        })
-        .fail(function() {
-            console.log( "delete annotation post error" );
-        });
+        $.ajax({
+			type : "get",
+			beforeSend : function(request) {
+				request.setRequestHeader("Accept", "application/json");
+			},
+			url : hostUrl + "/delete_annotation",
+			dataType : "json",
+			data : {			
+                id: annotationID 
+                  
+			},
+			success : function(result) { // getsuccessful and result returned by server
+				console.log( "delete annotaiton get success" );    
+			},
+
+			error : function(result) {
+				console.log( "delete annotation get error" );
+			}
+		});
     }
 }
 
 // TODO： show all the highlights and annotations
 function showAnnotations(userid) {
-    $.get( hostUrl + "/show_annotation_by_user_url",
-        {
+    $.ajax({
+        type : "get",
+        beforeSend : function(request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url : hostUrl + "/show_annotation_by_user_url",
+        dataType : "json",
+        data : {            
             user_id: userid,
             url: window.location.href
         },
-        function (result) { //get successful and get result from server
-            for (var i = 0; i < result.annotations.length; ++i)
-            {
+        success : function(result) { // get successful and result returned by server
+            for (var i = 0; i < result.annotations.length; ++i) {
                 showAnnotation(result.annotations[i]);
-            }
-            console.log(result);
+            }    
+        },
+        error : function(result) {
+            console.log( "show annotation get error" );
         }
-    );
+    });
 }
 
 function showAnnotation(ann) {
@@ -465,7 +478,7 @@ function showAnnotation(ann) {
         ++count; 
         idx = innerHtml.indexOf(ann.selected_text, idx + 1); //Searching the word starting from idx
     }
-    console.log("Cannot find the " + text + "  in paragraph " + pid);	
+    console.log("Cannot find the " + ann.selected_text + "  in paragraph " + ann.paragraph_idx);	
 }
 
 
@@ -516,8 +529,6 @@ function unpaintCursor() {
     $('body').unbind("mouseup", 'p');
 }
 
-
-
 // add listeners
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
@@ -527,7 +538,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             annotationLanguage = request.ann_lang;
 	        console.log("annotate mode lang:" + annotationLanguage);
             //TODO: Need to get the main framework to send new page(includes refreshed page) event
-            //showAnnotations(request.user_id);
+            showAnnotations(request.user_id);
 	        $('body').on("mouseup", 'p', function(e) {
 	            var id = highlight(request.user_id);
 	            if (id == -1)
