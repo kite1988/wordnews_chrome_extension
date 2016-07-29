@@ -21,11 +21,12 @@ var userAccount = ''; //this is username
 var userId = -1; // this is user internal id
 var isWorking = ''; // 0: disable, 1: learn, 2: annotation
 var categoryParameter = '';
-var wordDisplay = '';
-var wordsReplaced = '';
+var wordDisplay = ''; //0: in target language, 1: in source language
+var wordsLearn = ''; // number of words to learn
 var websiteSetting = '';
 var translationUrl = '';
 var annotationLanguage = '';
+var learnLanguage = '';
 
 
 function syncUser() {
@@ -110,12 +111,12 @@ function syncUser() {
                     });
                 }
                 console.log('wordDisplay ' + wordDisplay);
-                if (wordDisplay == 0) {
-                    document.getElementById('displayEnglish').className = 'btn btn-default';
-                    document.getElementById('displayChinese').className = 'btn btn-primary active';
+                if (wordDisplay == 0) { // show target (e.g., Chinese)
+                    document.getElementById('displaySource').className = 'btn btn-default';
+                    document.getElementById('displayTarget').className = 'btn btn-primary active';
                 } else {
-                    document.getElementById('displayEnglish').className = 'btn btn-primary active';
-                    document.getElementById('displayChinese').className = 'btn btn-default';
+                    document.getElementById('displaySource').className = 'btn btn-primary active';
+                    document.getElementById('displayTarget').className = 'btn btn-default';
                 }
 
                 translationUrl = result.translationUrl || "http://wordnews-mobile.herokuapp.com/";
@@ -134,21 +135,21 @@ function syncUser() {
                     document.getElementById('bingTranslations').className = 'btn btn-default';
                 }
 
-                wordsReplaced = result.wordsReplaced;
-                // console.log('wordsReplaced '+wordsReplaced);
-                if (wordsReplaced == undefined) {
-                    wordsReplaced = 2;
-                    // console.log('Set to default wordsReplaced
+                wordsLearn = result.wordsLearn;
+                // console.log('wordsLearn '+wordsLearn);
+                if (wordsLearn == undefined) {
+                    wordsLearn = 2;
+                    // console.log('Set to default wordsLearn
                     // setting');
                     chrome.storage.sync.set({
-                        'wordsReplaced': wordsReplaced
+                        'wordsLearn': wordsLearn
                     });
                 } else {
-                    // document.getElementById('wordsReplaced').value =
-                    // wordsReplaced;
-                    $('#wordsReplaced').slider({
+                    // document.getElementById('wordsLearn').value =
+                    // wordsLearn;
+                    $('#wordsLearn').slider({
                         precision: 2,
-                        value: wordsReplaced
+                        value: wordsLearn
                             // Slider will instantiate showing 8.12 due to
                             // specified precision
                     });
@@ -176,6 +177,15 @@ function syncUser() {
                     document.getElementById('inlineCheckbox4').checked = true;
                 }
 
+                // Learn language
+                learnLanguage = result.learnLanguage;
+                if (learnLanguage == null) {
+                    chrome.storage.sync.set({
+                        'learnLanguage': 'zh_CN'
+                    }, function() {});
+                }
+                $('#learn-panel .bfh-selectbox').val(learnLanguage);
+                
 
                 // TODO: use $.get()
                 var remembered = new HttpClient();
@@ -199,22 +209,6 @@ function syncUser() {
                             }
                         });
 
-
-                $.ajax({
-                    type: "get",
-                    beforeSend: function(request) {
-                        request.setRequestHeader("Accept", "application/json");
-                    },
-                    url: hostUrl + '/show_user_annotation_history?user_id=359',
-                    success: function(obj) {
-                        if ('history' in obj) {
-                            document.getElementById('annotations').innerHTML = obj['history']['annotation'];
-                            document.getElementById('articles').innerHTML = obj['history']['url'];
-                        }
-                    }
-                });
-
-
                 // Annotation language
                 annotationLanguage = result.annotationLanguage;
                 if (annotationLanguage == null) {
@@ -222,14 +216,16 @@ function syncUser() {
                         'annotationLanguage': 'zh_CN'
                     }, function() {});
                 }
-                $('.bfh-selectbox').val(annotationLanguage);
+                $('#annotate-panel .bfh-selectbox').val(annotationLanguage);
+                
+                showAnnotationHistory();
             });
 }
 
 function setWordReplace() {
-    $('#wordsReplaced').on('slide', function(slideEvt) {
+    $('#wordsLearn').on('slide', function(slideEvt) {
         chrome.storage.sync.set({
-            'wordsReplaced': slideEvt.value
+            'wordsLearn': slideEvt.value
         });
     });
 }
@@ -429,12 +425,15 @@ function showDivByMode(mode) {
 }
 
 function setAnnotationLanguage() {
-    $('.bfh-selectbox').on('change.bfhselectbox', function() {
+    $('#annotate-panel .bfh-selectbox').on('change.bfhselectbox', function() {
         annotationLanguage = $(this).val();
         console.log("set annotation language on popup.html: " + annotationLanguage);
         chrome.storage.sync.set({
             'annotationLanguage': annotationLanguage
         });
+        
+        showAnnotationHistory();
+        setAnnotationLinks();
 
         chrome.tabs.query({
             active: true,
@@ -442,10 +441,49 @@ function setAnnotationLanguage() {
         }, function(arrayOfTabs) {
             chrome.tabs.sendMessage(arrayOfTabs[0].id, { ann_lang: annotationLanguage }, function(response) {});
         });
+        
+        //window.close();
+    });
+}
+
+
+
+function setLearnLanguage() {
+    $('#learn-panel .bfh-selectbox').on('change.bfhselectbox', function() {
+        learnLanguage = $(this).val();
+        console.log("set learning language on popup.html: " + learnLanguage);
+        chrome.storage.sync.set({
+            'learnLanguage': learnLanguage
+        });
+
+        /*chrome.tabs.query({
+            active: true,
+            currentWindow: true
+        }, function(arrayOfTabs) {
+            chrome.tabs.sendMessage(arrayOfTabs[0].id, { learn_lang: learnLanguage }, function(response) {});
+        });*/
 
         //window.close();
     });
 }
+
+
+function showAnnotationHistory() {
+	$.ajax({
+        type: "get",
+        beforeSend: function(request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url: hostUrl + '/show_user_annotation_history?user_id=359&lang='+annotationLanguage,
+        success: function(obj) {
+            if ('history' in obj) {
+                document.getElementById('annotations').innerHTML = obj['history']['annotation'];
+                document.getElementById('articles').innerHTML = obj['history']['url'];
+            }
+        }
+    });
+}
+
 
 // TODO: a new logo for annotation?
 function switchLogo(mode) {
@@ -468,7 +506,7 @@ function setReplace() {
             return;
         }
 
-        if ($(this).attr('id') == 'englishchinese') {
+        if ($(this).attr('id') == 'displayLanguage') {
             $(this).find('.btn').toggleClass('btn-default');
             $(this).find('.btn').toggleClass('active');
 
@@ -535,17 +573,21 @@ function setLinks() {
     $('#learn-tutorial').click(function() {
         window.open(hostUrl + '/how-to-learn');
     });
-    
-    $('#annotate-panel .btn-block').click(function() {
-    	if ($(this).val()=='annotations') {
-    		window.open(hostUrl + '/show_user_annotations?user_id=' + userId);
-    	} else {
-    		window.open(hostUrl + '/show_user_annotation_urls?user_id=' + userId);
-    	}
-    });
-    
+
     $('#annotate-tutorial').click(function() {
         window.open(hostUrl + '/how-to-annotate');
+    });
+    
+    setAnnotationLinks();
+}
+
+function setAnnotationLinks() {
+	$('#annotate-panel .btn-block').click(function() {
+        if ($(this).val() == 'annotations') {
+            window.open(hostUrl + '/show_user_annotations?user_id=' + userId + '&lang='+annotationLanguage);
+        } else {
+            window.open(hostUrl + '/show_user_annotation_urls?user_id=' + userId + '&lang='+annotationLanguage);
+        }
     });
 }
 
@@ -558,6 +600,7 @@ function onWindowLoad() {
     setMode();
     setReplace();
     setAnnotationLanguage();
+    setLearnLanguage();
     setLinks();
 }
 
