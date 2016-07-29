@@ -433,7 +433,8 @@ function showAnnotations(userid) {
         dataType : "json",
         data : {            
             user_id: userid,
-            url: window.location.href
+            url: window.location.href,
+            lang: annotationLanguage
         },
         success : function(result) { // get successful and result returned by server
             for (var i = 0; i < result.annotations.length; ++i) {
