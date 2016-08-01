@@ -28,6 +28,7 @@ var translationUrl = '';
 var annotationLanguage = '';
 var learnLanguage = '';
 
+var modeLookUpTable = ["disable", "learn", "annotate"];
 
 function syncUser() {
     chrome.storage.sync
@@ -53,55 +54,21 @@ function syncUser() {
 
                 // Ask the server to generate the User ID
                 if (userId == undefined) {
-                    $
-                        .get(
-                            hostUrl + '/get_user_id_by_user_name?user_name=' + userAccount,
-                            function(obj) {
-
-                                //var obj = JSON.parse(answer);
-                                if ('user_id' in obj) {
-                                    userId = obj['user_id'];
-                                    // console.log('id: ' + userId + ', user name: ' + userAccount);
-
-                                    chrome.storage.sync.set({
-                                        'userId': userId
-                                    }, function() {});
-                                }
-                            });
+                    //TODO: Change to ajax
+                    $.get( hostUrl + '/get_user_id_by_user_name?user_name=' + userAccount,
+                        function(obj) {                            
+                            if ('user_id' in obj) {
+                                userId = obj['user_id'];
+                                chrome.storage.sync.set({
+                                    'userId': userId
+                                }, function() {});
+                            }
+                        }
+                    );
                 }
-
 
                 isWorking = result.isWorking;
-                if (isWorking == undefined) {
-                    isWorking = 1;
-                    chrome.storage.sync.set({
-                        'isWorking': isWorking
-                    });
-                }
-                // console.log('isWorking '+isWorking);
-
-                $("#mode .btn").removeClass('active');
-                $("#mode .btn").removeClass('btn-primary');
-                $("#mode .btn").addClass('btn-default');
-
-                if (isWorking == 0) { // disable
-                    $("#mode #disable").addClass('active btn-primary');
-                    unpaintCursor();
-                    showDivByMode('disable');
-                    switchLogo('disable');
-
-                } else if (isWorking == 1) { // learn
-                    $("#mode #learn").addClass('active btn-primary');
-                    unpaintCursor();
-                    showDivByMode('learn');
-                    switchLogo('learn');
-
-                } else { // annotate
-                    $("#mode #annotate").addClass('active btn-primary');
-                    paintCursor();
-                    showDivByMode('annotate');
-                    switchLogo('annotate');
-                }
+                setMode(modeLookUpTable[isWorking]);
 
                 wordDisplay = result.wordDisplay;
                 if (wordDisplay == undefined) {
@@ -305,60 +272,43 @@ function setTranslation() {
             });
 }
 
-function setMode() {
+
+function setModeCallback() {
     $('#mode .btn').click(function() {
-        $("#mode .btn").removeClass('active');
-        $("#mode .btn").removeClass('btn-primary');
-        $("#mode .btn").addClass('btn-default');
-
-        mode = $(this).attr('id');
-        if (mode == 'learn') {
-            isWorking = 1;
-            chrome.storage.sync.set({
-                'isWorking': isWorking
-            });
-
-            $("#mode #learn").addClass('active btn-primary');
-            showDivByMode('learn');
-            switchLogo('learn');
-            unpaintCursor();
-
-        } else if (mode == 'annotate') {
-            isWorking = 2;
-            chrome.storage.sync.set({
-                'isWorking': isWorking
-            });
-
-            $("#mode #annotate").addClass('active btn-primary');
-            showDivByMode('annotate');
-            switchLogo('annotate');
-            paintCursor();
-            //window.close();
-
-        } else { // disable
-            isWorking = 0;
-            chrome.storage.sync.set({
-                'isWorking': isWorking
-            });
-
-            $("#mode #disable").addClass('active btn-primary');
-            showDivByMode('disable');
-            switchLogo('disable');
-
-            // removeAnnotationContextMenu();
-            unpaintCursor();
-        }
-
-        // TODO: Why call this?
-        chrome.storage.sync.get(null, function(result) {
-            isWorking = result.isWorking;
-            console.log('user isworking: ' + result.isWorking);
-        });
-
-        // TODO: this function does not execute sometimes
-        // alert("before");
-        //reload();
+        // "this" refers to the button element
+        var mode = $(this).attr('id'); // This will returns a string 
+        setMode(mode);
     });
+}
+
+function setMode(mode) {    
+    $("#mode .btn").removeClass('active');
+    $("#mode .btn").removeClass('btn-primary');
+    $("#mode .btn").addClass('btn-default');    
+    
+    isWorking = modeLookUpTable.indexOf(mode); 
+    chrome.storage.sync.set({ //Set isWorking to chrome storage
+            'isWorking': isWorking
+    });
+    
+    $("#mode #" + mode ).addClass('active btn-primary');
+    showDivByMode(mode);
+    switchLogo(mode);
+    
+    if (isWorking == 1) { //If mode is "learn"
+        unpaintCursor();
+    } else if (isWorking == 2) { //If mode is "annotate"
+        paintCursor();           
+    } else { //If mode is disable                     
+        unpaintCursor();
+    }
+
+    // TODO: Why call this?
+    chrome.storage.sync.get(null, function(result) {
+        isWorking = result.isWorking;
+        console.log('user isworking: ' + result.isWorking);
+    });
+    
 }
 
 function addAnnotationContextMenu() {
@@ -387,7 +337,6 @@ function paintCursor() {
     }, function(arrayOfTabs) {
         chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "annotate", user_id: userId, ann_lang: annotationLanguage },
             function(response) {});
-
     });
 }
 
@@ -485,16 +434,15 @@ function showAnnotationHistory() {
 
 // TODO: a new logo for annotation?
 function switchLogo(mode) {
+    var imgURL;
     if (mode == 'disable') {
-        var imgURL = chrome.extension.getURL("images/logo-gray.png");
-        chrome.browserAction.setIcon({ path: imgURL });
+        imgURL = chrome.extension.getURL("images/logo-gray.png");        
     } else if (mode == 'annotate') {
-        var imgURL = chrome.extension.getURL("images/logo.png");
-        chrome.browserAction.setIcon({ path: imgURL });
+        imgURL = chrome.extension.getURL("images/logo.png");        
     } else {
-        var imgURL = chrome.extension.getURL("images/logo.png");
-        chrome.browserAction.setIcon({ path: imgURL });
+        imgURL = chrome.extension.getURL("images/logo.png");
     }
+    chrome.browserAction.setIcon({ path: imgURL });
 }
 
 // TODO: refine code
@@ -595,7 +543,7 @@ function onWindowLoad() {
     setWordReplace();
     setWebsite();
     setTranslation();
-    setMode();
+    setModeCallback();
     setReplace();
     setAnnotationLanguage();
     setLearnLanguage();
