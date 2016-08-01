@@ -575,7 +575,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		            console.log($("#" + id));
 		        });
             }
-	    }
 	        paintCursor();
 	    } else if (request.mode == "unannotate"){
 	        console.log(request.mode);
