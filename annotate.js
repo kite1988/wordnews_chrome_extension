@@ -1,6 +1,7 @@
 'use strict';
 
 // Note cnn used ".zn-body__paragraph" instead of p
+var paragraphFormatTag;
 var paragraphs = getParagraphs();// = document.getElementsByTagName('p');
 var website;
 
@@ -101,8 +102,7 @@ function hasClass(element, cls) {
     return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
 }
 
-//This function will take in the text node and check whether is there any annoation existed under this node
-function checkAnnoationExisted(node)
+function getParentElem(node)
 {
     var parentElem = null;
     
@@ -111,6 +111,14 @@ function checkAnnoationExisted(node)
     if (parentElem.nodeType != 1) {
         parentElem = parentElem.parentNode;
     }
+    
+    return parentElem;
+}
+//This function will take in the text node and check whether is there any annoation existed under this node
+function checkAnnoationExisted(node)
+{
+    var parentElem = getParentElem(node);
+    
     
     if (hasClass(parentElem, "annotate-highlight")) {
         console.log("annotate class existed")        
@@ -127,7 +135,6 @@ function checkAnnoationExisted(node)
  	  http://stackoverflow.com/questions/7563169/detect-which-word-has-been-clicked-on-within-a-text
  * 5. Can not highlight a string with existing highlighted words  
  */
-//TODO: handle the special case for CNN
 function highlight(userId ) {    
     
     var result =  getTextNodeFromSelection();
@@ -150,12 +157,9 @@ function highlight(userId ) {
         {
             console.log(err);
             return -1
-        }        
+        }          
         
-        var parent = getSelection().anchorNode.parentNode;
-        while (parent != null && parent.localName.toLowerCase() != "p") {
-            parent = parent.parentNode;
-        }
+        var parent = getParentElem(textNode);
         var pidx = 0;
         var widx = 0;
         if (parent != null) {
@@ -185,14 +189,17 @@ function getParagraphIndex(p) {
     return -1;
 }
 
-
+//TODO: This function exists in contentscript.js
 function getParagraphs() {
 	var paragraphs;
+    
     if (document.URL.indexOf('cnn.com') !== -1) {
         paragraphs = $('.zn-body__paragraph').get();
+        paragraphFormatTag = '.zn-body__paragraph';
         website = "cnn";
     } else {
         paragraphs = document.getElementsByTagName('p');
+        paragraphFormatTag = 'p'
         website = "other";
     }
     return paragraphs;
@@ -560,25 +567,16 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	        console.log("annotate mode lang:" + annotationLanguage);
             //TODO: Need to get the main framework to send new page(includes refreshed page) event
             showAnnotations(request.user_id);
-            if (website=='cnn') {
-            	$('body').on("mouseup", '.zn-body__paragraph', function(e) {
-		            var id = highlight(request.user_id);
-		            if (id == -1)
-		            {
-		                console.log("Error: Unable to create annotation");
-		            }
-		            console.log($("#" + id));
-		        });
-            } else {
-		        $('body').on("mouseup", 'p', function(e) {
-		            var id = highlight(request.user_id);
-		            if (id == -1)
-		            {
-		                console.log("Error: Unable to create annotation");
-		            }
-		            console.log($("#" + id));
-		        });
-            }
+          
+            $('body').on("mouseup", paragraphFormatTag, function(e) {
+                var id = highlight(request.user_id);
+                if (id == -1)
+                {
+                    console.log("Error: Unable to create annotation");
+                }
+                console.log($("#" + id));
+            });            
+            
             paintCursor();	        
 	    } else if (request.mode == "unannotate"){
 	        console.log(request.mode);
