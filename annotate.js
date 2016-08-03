@@ -405,19 +405,25 @@ function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex
 		});
     }        
     else {
-        var annotation_id = $('#' + annotationPanelID + "_panel").data('id');
-        $.get( hostUrl + "/update_annotation",
-            {
+        var annotation_id = $('#' + annotationPanelID + "_panel").data('id');                
+        $.ajax({
+			type : "get",
+			beforeSend : function(request) {
+				request.setRequestHeader("Accept", "application/json");
+			},
+			url : hostUrl + "/update_annotation",
+			dataType : "json",
+			data : {			
                 id: annotation_id,
-                translation: textAreaElem.value  
-            },
-            function (result) { // get successful and result returned by server
-                console.log( "update annotaiton get success", result );      
-            }        
-        )
-        .fail(function(result) {
-            console.log( "update annotation get error", result );
-        });
+                translation: textAreaElem.value                 
+			},
+			success : function(result) { // get successful and result returned by server
+				console.log( "update annotaiton get success" );    
+			},
+			error : function(result) {
+				console.log( "update annotation get error" );
+			}
+		});
     }
 }
 
@@ -557,6 +563,85 @@ function unpaintCursor() {
     $('body').unbind("mouseup", 'p');
 }
 
+//TODO: If BBC changes their HTML format, we will need to update this accordingly
+function showAnnotationCounterForBBCRelatedURL () {
+    //Get the unorder list <ul>
+    var list = document.getElementsByClassName("story-body__unordered-list"); 
+    
+    for (var i = 0; i < list.length; ++i) {
+        var links = list[i].getElementsByTagName("a"); //Get all the links
+        if (links.length > 0) {
+            for (var i = 0; i < links.length; ++i)
+            {
+                appendAnnotationCounterForURL(links[i]);
+            }
+        }
+    }
+}
+
+//TODO: If CNN changes their HTML format, we will need to update this accordingly
+function showAnnotationCounterForCNNRelatedURL () {
+    //Get the unorder list <ul>
+    //<div class="ob-widget-section ob-last">
+    var currentElem = document.getElementsByClassName("ob-widget-section ob-last");
+    if (currentElem.length > 0)
+    {
+        currentElem = currentElem[0];        
+        var list = currentElem.getElementsByClassName("ob-widget-items-container"); 
+        
+        for (var i = 0; i < list.length; ++i) {
+            var links = list[i].getElementsByTagName("a"); //Get all the links
+            if (links.length > 0) {
+                for (var i = 0; i < links.length; ++i)
+                {
+                    appendAnnotationCounterForURL(links[i]);
+                }
+            }
+        }
+    }
+}
+
+function getURLPostfix(url) {
+    var index = url.search('//');
+    var noHTTPString = url.substr(index + 2); // this will get the string with http://
+    index = noHTTPString.search('/');
+    return noHTTPString.substr(index + 1);
+}
+
+function appendAnnotationCounterForURL (link) {    
+
+    var linkElem = link;
+    console.log(linkElem.href);
+    //console.log(getURLPostfix(linkElem.href));
+    $.ajax({
+        type : "get",
+        beforeSend : function(request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url : hostUrl + "/show_annotation_count_by_url",
+        dataType : "json",
+        data : {            
+            
+            url: linkElem.href,
+            lang: annotationLanguage
+        },
+        success : function(result) { // get successful and result returned by server
+            console.log(linkElem.href + " annotation counter: " + result.annotation_count);
+             //If there is more than one annotation in the link, display the counter
+            //if (result.annotation_count > 0)
+            //{
+                var countSpan = document.createElement('span');
+                countSpan.innerHTML = " Annotation count: 20";
+                linkElem.appendChild(countSpan);
+            //}
+        },
+        error : function(result) {
+            console.log( "show annotation get error" );
+        }
+    });        
+    
+}
+
 // add listeners
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
@@ -567,7 +652,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	        console.log("annotate mode lang:" + annotationLanguage);
             //TODO: Need to get the main framework to send new page(includes refreshed page) event
             showAnnotations(request.user_id);
-          
+            //showAnnotationCounterForBBCRelatedURL();
+            //showAnnotationCounterForCNNRelatedURL();
             $('body').on("mouseup", paragraphFormatTag, function(e) {
                 var id = highlight(request.user_id);
                 if (id == -1)
