@@ -11,6 +11,7 @@ var categoryParameter = '';
 var wordDisplay;
 
 var translationUrl = 'http://wordnews-mobile.herokuapp.com/show';
+//var translationUrl = "http://localhost:3000/show";
 
 var TranslationDirection = {
   CHINESE: 0,
@@ -19,7 +20,7 @@ var TranslationDirection = {
 var isTranslatingByParagraph = true;
 
 var wordsReplaced = '';
-// a dictionary of english to chinese words 
+// a dictionary of english to chinese words
 var pageDictionary = {};
 var vocabularyListDisplayed;
 var displayID = '';
@@ -33,12 +34,12 @@ var translatedWords = {};
 
 var pageWordsLearned = new Set();
 
-// startTime is used for logging, it is initialised after the user settings have been 
+// startTime is used for logging, it is initialised after the user settings have been
 // retrieved from chrome
 var startTime;
 
 var UserSettings = (function() {
-  var _numWordsToTranslate;    
+  var _numWordsToTranslate;
   var _isWorking;
 
   function UserSettings() {
@@ -46,7 +47,7 @@ var UserSettings = (function() {
   }
 
   UserSettings.prototype.updateNumWords = function(newNumWords) {
-    _numWordsToTranslate = newNumWords; 
+    _numWordsToTranslate = newNumWords;
   }
 
   UserSettings.prototype.readNumWords = function() {
@@ -58,12 +59,28 @@ var UserSettings = (function() {
 
 var userSettings = new UserSettings();
 
+function sendRememberWords( userAccount, tempWordID, isRemembered, url, onSuccessCallback = null ) {
+  var params = 'name=' + userAccount + '&wordID='+tempWordID +'&isRemembered=' + isRemembered + '&url=' + encodeURIComponent(url);
+  var httpClient = new HttpClient();
+
+  httpClient.post(hostUrl+'remember', params, onSuccessCallback );
+}
+
+function sendUserAction( userAccount, elapsed_time, action, onSuccessCallback = null ) {
+  var loggingUrl = hostUrl + 'log';
+
+  var params = 'name=' + userAccount + '&time=' + encodeURIComponent(elapsed_time) +'&move=' + action;
+  var httpClient = new HttpClient();
+
+  httpClient.post(loggingUrl, params, onSuccessCallback );
+}
+
 function requestTranslatedWords(url, params, index){
   var xhr = new XMLHttpRequest();
   xhr.open('POST', url, true);
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
-  xhr.onreadystatechange = function() { 
+  xhr.onreadystatechange = function() {
     if (xhr.readyState == 4 && xhr.status == 200) {
       var response = xhr.responseText.replace(/&quot;/g,'"');
       var obj = JSON.parse(response);
@@ -78,6 +95,11 @@ function requestTranslatedWords(url, params, index){
       var choices3 = {};
       var wordID = [];
 
+      // TODO: Refactored API will return translation list under 'translate_text'.
+      // TODO: This is a temporary hack to support Refactored API.
+      if ('translate_text' in obj) {
+        obj = obj['translate_text']
+      }
 
       for (var wordToReplace in obj) {
 
@@ -108,24 +130,31 @@ function requestTranslatedWords(url, params, index){
         }
 
         var isChoicesProvided = obj[wordToReplace].hasOwnProperty('isChoicesProvided') && obj[wordToReplace]['isChoicesProvided'];
-          
+
         if (obj[wordToReplace].isTest > 0 && !isChoicesProvided) {
-           // make a seperate request to get the quiz options
-           $.ajax({url: hostUrl+'getQuiz.json?word='+ wordToReplace.toLowerCase() +'&category='+'Technology'+'&level=3'})
-           .done(function(quizOptions) {
-            // Callback for successful retrieval     
-            for (var quizStart in quizOptions) {
-              var choices = quizOptions[quizStart]['choices'];
-              choices1[quizStart.toLowerCase()] = choices['0'];
-              choices2[quizStart.toLowerCase()] = choices['1'];
-              choices3[quizStart.toLowerCase()] = choices['2'];
-            }
-            
-            replaceWords(sourceWords, targetWords, testType, pronunciation, wordID, choices1, choices2 , choices3, index);
-           }).fail(function() {
-            //console.log("Retrieving of quiz options failed!");
-           });
- 
+          // make a seperate request to get the quiz options
+          $.ajax({url: hostUrl+'getQuiz.json?word='+ wordToReplace.toLowerCase() +'&category='+'Technology'+'&level=3'})
+            .done(function(quizOptions) {
+              // Callback for successful retrieval
+
+              // TODO: Refactored API will return quiz under 'quiz'.
+              // TODO: Should set quizOptions to quizOptions['quiz'] permanently
+              if ('quiz' in quizOptions) {
+                quizOptions = quizOptions['quiz'];
+              }
+
+              for (var quizStart in quizOptions) {
+                var choices = quizOptions[quizStart]['choices'];
+                choices1[quizStart.toLowerCase()] = choices['0'];
+                choices2[quizStart.toLowerCase()] = choices['1'];
+                choices3[quizStart.toLowerCase()] = choices['2'];
+              }
+              replaceWords(sourceWords, targetWords, testType, pronunciation, wordID, choices1, choices2 , choices3, index);
+            })
+            .fail(function() {
+              //console.log("Retrieving of quiz options failed!");
+            });
+
         }
       }
 
@@ -201,7 +230,7 @@ function replaceWordsWithoutQuiz(sourceWords, targetWords) {
 
       contentToPopupForDisplayId[id+"_popup"] = append;
 
-      
+
 
       $(document).off('click.wordnews').on('click.wordnews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
 
@@ -220,7 +249,7 @@ function replaceWordsWithoutQuiz(sourceWords, targetWords) {
       result += parts.join(' ' + sourceWord + ' ');
 
       paragraph.innerHTML = result;
-    }   
+    }
   }
 }
 
@@ -337,7 +366,7 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
       }
       append += '<div class="row" style="margin-left:10px">';
       for (var k = 0; k < splitPinyin.length; k++){
-        
+
         append += '<div style="height:21px;width:15px;display:inline-block;"> </div>';
         append += '<small>' + splitPinyin[k] + '</small> ';
       }
@@ -428,29 +457,22 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
     var container = $('.jfk-bubble')
 
     var currentTime = new Date();
-    var timeElapsed = currentTime - startTime; 
+    var timeElapsed = currentTime - startTime;
 
-    var loggingUrl = hostUrl + 'log?' + 'id=' + encodeURIComponent(userAccount) +
-             '&time=' + encodeURIComponent(timeElapsed) + '&move=';  // missing move param, to be added when sending log
-    var httpClient = new HttpClient();
-
-    if (container[0]) {   
+    if (container[0]) {
       if ( !container.is(e.target) && container.has(e.target).length === 0) { // if the target of the click isn't the container... // ... nor a descendant of the container
-      
+
         var id = container.attr('id');
         var englishWord = id.split('_')[1];
         var tempWordID = id.split('_')[2];
         var mainOrTest = id.split('_')[4];
-        
+
         if (mainOrTest === '0') {
           // increase the number of words encountered
-          httpClient.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+'&url='+document.URL, function(answer) {
-            ////console.log("this is answer: "+answer);
-          });
+          sendRememberWords( userAccount, tempWordID, 1, document.URL )
 
-          httpClient.post(loggingUrl + 'see_' + tempWordID, function(dummy) {
-            //console.log('log sent');
-          });
+          // Fire logging
+          sendUserAction( userAccount, timeElapsed, 'see_' + tempWordID );
 
           // add to page's learned words
           pageWordsLearned.add(tempWordID);
@@ -460,29 +482,23 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
       }
 
       if (thisClass === 'myIdMore') {
-        
+
         id = container.attr('id');
-         
+
         var englishWord = id.split('_')[1];
         var tempWordID = id.split('_')[2];
 
-        httpClient.post(loggingUrl + 'myId_more_wordID_' + tempWordID, function(dummy) {
-          //console.log('log sent');
-        });
+        sendRememberWords( userAccount, tempWordID, 0, document.URL )
 
+        sendUserAction( userAccount, timeElapsed, 'myId_more_wordID_' + tempWordID );
 
-        httpClient.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-          ////console.log("this is answer: "+answer);
-        });
       }
 
       if (thisClass === 'audioButton') {
         ////console.log("clicked id is "+id);
         var myAudio = document.getElementById("myAudio_"+id);
 
-        httpClient.post(loggingUrl + 'clickAudioButton_wordID_' + id, function(dummy) {
-          //console.log("log sent");
-        });
+        sendUserAction( userAccount, timeElapsed, 'clickAudioButton_wordID_' + id );
 
         if (myAudio.paused) {
           myAudio.play();
@@ -490,40 +506,38 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
           myAudio.pause();
         }
       }
-    
+
       if (thisClass === 'fyp_choice_class') {
-        
+
         var tempWordID = id.split("_")[0];
         var isCorrect = id.split("_")[1];
-        var remembered = new HttpClient();
         if (isCorrect === 'c') {
-          remembered.post(loggingUrl + 'correct_quiz_answer_wordId_' + tempWordID, function(dummy) {
-            //console.log("log sent");
-          });
 
-          remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-            //console.log("select the correct answer");
-          });
+          // Answered correctly. So we increase the remembered count
+          sendRememberWords( userAccount, tempWordID, 1, document.URL )
 
-          $('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");                
+          sendUserAction( userAccount, timeElapsed, 'correct_quiz_answer_wordId_' + tempWordID );
+
+
+          $('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");
 
           $('.jfk-bubble').css("background-size", "cover");
 
           $('.content').css("background-color", "#cafffb");
         } else {
-          remembered.post(loggingUrl + 'wrong_quiz_answer_wordID_' + tempWordID, function(dummy) {
-            //console.log("log sent");
-          });
-          remembered.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-            //console.log("select the wrong answer");
-          });
-          $('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");                
+
+          // Answered incorrectly.
+          sendRememberWords( userAccount, tempWordID, 0, document.URL )
+
+          sendUserAction( userAccount, timeElapsed, 'wrong_quiz_answer_wordID_' + tempWordID );
+
+          $('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");
           $('.jfk-bubble').css("background-size", "cover");
         }
 
       }
     }
-  }); 
+  });
 
   $(".fypSpecialClass").off('click.wordnews').on('click.wordnews', appendPopUp);
 
@@ -539,7 +553,6 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
 function documentClickOnInlineRadioButton() {
     var id = $(this).attr('id');
     var tempWordID = $(this).attr('value').split('_')[0];
-    var httpClient = new HttpClient();
 
     document.getElementById('inlineRadio1').disabled = true;
     document.getElementById('inlineRadio2').disabled = true;
@@ -547,16 +560,14 @@ function documentClickOnInlineRadioButton() {
     document.getElementById('inlineRadioCorrect').disabled = true;
 
     if (document.getElementById('inlineRadioCorrect').checked) {
-      httpClient.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=1'+"&url="+document.URL, function(answer) {
-        //console.log("selected the correct answer");
-      });
+
+      sendRememberWords( userAccount, tempWordID, 1, document.URL )
 
       document.getElementById('alertSuccess').style.display = 'inline-flex';
       setTimeout(function() {$('.fypSpecialClass').popover('hide')},1000);
     } else {
-      httpClient.get(hostUrl+'remember?name='+userAccount+'&wordID='+tempWordID+'&isRemembered=0'+"&url="+document.URL, function(answer) {
-        //console.log("selected the wrong answer");
-      });
+
+      sendRememberWords( userAccount, tempWordID, 0, document.URL )
 
       document.getElementById('alertDanger').style.display = 'inline-flex';
       setTimeout(function() {$('.fypSpecialClass').popover('hide')},2500);
@@ -645,19 +656,13 @@ function handleInitResult(result, androidID) {
   //console.log("user wordsReplaced: "+ result.wordsReplaced);
   //console.log("user websiteSetting: "+ result.websiteSetting);
 
-  if (userAccount == undefined) {
-    var d = new Date();
-    userAccount = 'id' + d.getTime() + '_1';
-    saveSetting({'userAccount': userAccount});
-  }
-
   if (isWorking == undefined) {
     isWorking = 1;
     saveSetting({'isWorking': isWorking});
   }
 
   if (wordDisplay == undefined) {
-    wordDisplay = TranslationDirection.ENGLISH; 
+    wordDisplay = TranslationDirection.ENGLISH;
     saveSetting({'wordDisplay': wordDisplay});
   }
 
@@ -677,19 +682,42 @@ function handleInitResult(result, androidID) {
 
   userSettings.updateNumWords(wordsReplaced);
 
-  var remembered = new HttpClient();
+  if (userAccount == undefined) {
+    // Register an account
+    var registerUser = new HttpClient();
+    registerUser.get(hostUrl + 'getNumber',
+      function( onSuccessAnswer ) {
+        var obj = JSON.parse(onSuccessAnswer);
+        if ('userID' in obj) {
+          userAccount = obj['userID'];
+          saveSetting({'userAccount': userAccount});
+          beginTranslating();
+        }
+      },
+      function( onFailureAnswer ) {
+        var obj = JSON.parse(onFailureAnswer);
+        console.log("Server error: " + obj['msg'] );
+      }
+    );
+  }
+  else {
+    beginTranslating();
+  }
+}
+
+function beginTranslating() {
 
   var isWebsiteForTranslation = 0;
   var splitedWebsite = websiteSetting.split("_");
 
-  if (websiteSetting.indexOf('all') !== -1) { 
+  if (websiteSetting.indexOf('all') !== -1) {
     isWebsiteForTranslation = 1;
   } else {
     for (var k = 0; k < splitedWebsite.length; k++) {
       if (document.URL.indexOf(splitedWebsite[k]) !== -1 && websiteSetting !== "") {
         isWebsiteForTranslation = 1;
       }
-    } 
+    }
   }
 
   console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
@@ -701,7 +729,7 @@ function handleInitResult(result, androidID) {
     $(window).scroll(function() {
       // if the user scrolls to the button of the page, display the list of words learned
       if ($(window).scrollTop() + $(window).height() === $(document).height() - 300) {
-        var wordList = []; 
+        var wordList = [];
 
         for (var key of pageWordsLearned) {
           var value = idToOriginalWordDictionary[key];
@@ -724,10 +752,10 @@ function handleInitResult(result, androidID) {
       var targetWords = [];
 
       var paragraph = paragraphs[i];
-      
-      // if the paragraph is followed or preceeded by another p, 
+
+      // if the paragraph is followed or preceeded by another p,
       // then translate it
-      //if ((paragraph.nextSibling && (paragraph.nextSibling.nodeName.toLowerCase() === "p" || paragraph.nextSibling.nodeName.toLowerCase() === "#text")) || 
+      //if ((paragraph.nextSibling && (paragraph.nextSibling.nodeName.toLowerCase() === "p" || paragraph.nextSibling.nodeName.toLowerCase() === "#text")) ||
        //   (paragraph.previousSibling && (paragraph.previousSibling.nodeName.toLowerCase() === "p" || paragraph.previousSibling.nodeName.toLowerCase() === "#text"))) {
 
         var stringToServer = paragraph.innerText;
@@ -742,9 +770,9 @@ function handleInitResult(result, androidID) {
 
           requestTranslatedWords(url, params, i);
         }
-      //} 
+      //}
     }
-    
+
     if (!isTranslatingByParagraph) {
       var params = 'text=' + encodeURIComponent(articleText) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
 
@@ -756,25 +784,44 @@ function handleInitResult(result, androidID) {
 
 
 var HttpClient = function() {
-  this.get = function(aUrl, aCallback) {
+  this.get = function(aUrl, onSuccessCallback = null, onFailureCallback = null ) {
     var anHttpRequest = new XMLHttpRequest();
-    anHttpRequest.onreadystatechange = function() { 
-    if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
-      aCallback(anHttpRequest.responseText);
+    anHttpRequest.onreadystatechange = function () {
+      if (anHttpRequest.readyState == 4) {
+        if (anHttpRequest.status == 200 && onSuccessCallback != null) {
+          onSuccessCallback(anHttpRequest.responseText);
+        }
+        else {
+          if (onFailureCallback != null) {
+            onFailureCallback(anHttpRequest.responseText);
+          }
+        }
+      }
     }
-    anHttpRequest.open( "GET", aUrl, true );            
-    anHttpRequest.send( null );
-  }    
-  this.post = function(url, callback) {
-    var httpRequest = new XMLHttpRequest(); 
-    httpRequest.onreadystatechange = function() { 
-    if (httpRequest.readyState == 4 && httpRequest.status == 200)
-      callback(httpRequest.responseText);
-    }
-    httpRequest.open( "POST", url, true );            
-    httpRequest.send( null );
+    anHttpRequest.open("GET", aUrl, true);
+    anHttpRequest.send(null);
 
   }
+
+  this.post = function(url, params = null, onSuccessCallback = null, onFailureCallback = null ) {
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function() {
+      if (httpRequest.readyState == 4 ) {
+        if( httpRequest.status == 200 && onSuccessCallback != null ) {   // 200 OK
+          onSuccessCallback(httpRequest.responseText);
+        }
+        else {    // Not 200 OK
+          if ( onFailureCallback != null ) {
+            onFailureCallback(httpRequest.responseText)
+          }
+        }
+      }
+    }
+    httpRequest.open( "POST", url, true );
+    httpRequest.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    httpRequest.send( params );
+
+  };
 }
 
 function shuffle(o){ //v1.0
@@ -794,7 +841,7 @@ function occurrences(string, substring) {
       pos += l;
     } else {
       break;
-    } 
+    }
   }
   return (n);
 }
@@ -828,6 +875,3 @@ function spawnNotification(bodyOfNotification, iconOfNotification, titleOfNotifi
   var n = new Notification(titleOfNotification, options);
   window.setTimeout(function() {n.close();}, 5000);
 }
-
-
-
