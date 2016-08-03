@@ -1,11 +1,11 @@
 var HttpClient = function() {
   this.get = function(aUrl, aCallback) {
   anHttpRequest = new XMLHttpRequest();
-  anHttpRequest.onreadystatechange = function() {
+  anHttpRequest.onreadystatechange = function() { 
     if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
     aCallback(anHttpRequest.responseText);
   }
-  anHttpRequest.open( 'GET', aUrl, true );
+  anHttpRequest.open( 'GET', aUrl, true );                        
   anHttpRequest.send( null );
   }
 }
@@ -28,6 +28,13 @@ function onWindowLoad() {
     userAccount = result.userAccount;
     //console.log('user acc: '+ result.userAccount);
 
+    if (userAccount == undefined){
+      var d = new Date();
+      userAccount = 'id' + d.getTime() + '_1';
+      chrome.storage.sync.set({'userAccount': userAccount}, function() {});
+    }
+    //console.log('userAccount ' + userAccount);
+
     isWorking = result.isWorking;
     if (isWorking == undefined) {
       isWorking = 1;
@@ -37,7 +44,7 @@ function onWindowLoad() {
     if (isWorking == 0) {
       document.getElementById('turnOn').className = 'btn btn-default';
       document.getElementById('turnOff').className = 'btn btn-primary active';
-
+      
       $('.website-checkbox input').prop('disabled', true);
     } else {
       document.getElementById('turnOn').className = 'btn btn-primary active';
@@ -129,9 +136,6 @@ function onWindowLoad() {
       if ('toLearn' in obj) {
         document.getElementById('toLearn').innerHTML = obj['toLearn'];
       }
-      if ('userID' in obj) {
-        chrome.storage.sync.set({'userAccount': obj['userID']});
-      }
     });
   });
 
@@ -150,7 +154,7 @@ function onWindowLoad() {
     }
 
     if (document.getElementById('inlineCheckbox2').checked == true) {
-      if(websiteSetting !== '')
+      if(websiteSetting !== '')   
         websiteSetting += '_';
       websiteSetting += document.getElementById('inlineCheckbox2').value;
     }
@@ -159,7 +163,7 @@ function onWindowLoad() {
         websiteSetting += '_';
       websiteSetting+= document.getElementById('inlineCheckbox3').value;
     }
-
+    
     // Comment out temporarily for now, to prevent the use of 'All website'
     /*if(document.getElementById('inlineCheckbox4').checked == true) {
       if(websiteSetting !== '')
@@ -175,7 +179,7 @@ function onWindowLoad() {
   });
 
   $('#translationUrl .btn').click(function() {
-
+    
     translationUrl = $(this).attr('id');
 
     if (translationUrl.indexOf('ims') >= 0) {
@@ -216,7 +220,7 @@ function onWindowLoad() {
       });
 
       $(this).find('.btn').toggleClass('btn-default');
-      $(this).find('.btn').toggleClass('active');
+      $(this).find('.btn').toggleClass('active'); 
 
       if ($(this).find('.btn-primary').size() > 0) {
         $(this).find('.btn').toggleClass('btn-primary');
@@ -242,7 +246,7 @@ function onWindowLoad() {
       return;
     }
     $(this).find('.btn').toggleClass('btn-default');
-    $(this).find('.btn').toggleClass('active');
+    $(this).find('.btn').toggleClass('active'); 
 
     if ($(this).attr('id') == 'englishchinese') {
       if (wordDisplay === 1) {
