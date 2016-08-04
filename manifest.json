@@ -6,13 +6,13 @@
   "version": "1.3180",
 
   "browser_action": {
-    "default_icon": "logo.png",
+    "default_icon": "images/logo.png",
     "default_popup": "popup.html"
   },
 
   "background":{
     "scripts": ["jquery-2.1.1.min.js", "login.js", "background.js"]
-  },
+    },
   "content_scripts": [
     {
       "matches":[
@@ -25,12 +25,18 @@
       "css": [
         "gt_popup_css_compiled.css",
         "gt_bubble_gss.css",
-        "slider/css/slider.css"
+        "slider/css/slider.css",
+        "bootstrap/css/bootstrap.min.css",
+        "bootstrap/css/bootstrap-formhelpers.min.css",
+        "annotate.css"
       ],
       "js":[
         "jquery-2.1.1.min.js",
         "contentscript.js",
-        "slider/js/bootstrap-slider.js"
+        "slider/js/bootstrap-slider.js",
+        "bootstrap/js/bootstrap-formhelpers.min.js",
+        "bootstrap/js/bootstrap.min.js",
+        "annotate.js"        
       ],
       "html":["bing.html"],
       "run_at": "document_end",
@@ -40,9 +46,10 @@
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "web_accessible_resources":[
     "background.html",
-    "bootstrap/*",
+    "bootstrap/*/*",
     "slider/*",
-    "icons/*"
+    "icons/*",
+    "images/*"
   ],
   "permissions": [
     "tabs","<all_urls>","identity","storage","http://*/*"
