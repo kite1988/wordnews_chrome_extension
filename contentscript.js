@@ -201,6 +201,7 @@ function replaceWordsWithoutQuiz(sourceWords, targetWords) {
             joinString += 'data-placement="above" ';
 
             joinString += 'id = "' + id + '" >';
+            // TODO: fix the bug of displaying word
             if (wordDisplay == 1) {
                 joinString += sourceWord;
             } else {
