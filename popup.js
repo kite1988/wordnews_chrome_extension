@@ -147,12 +147,14 @@ function syncUser() {
                 // Learn language
                 learnLanguage = result.learnLanguage;
                 if (learnLanguage == null) {
+                	learnLanguage = 'zh_CN';
                     chrome.storage.sync.set({
                         'learnLanguage': 'zh_CN'
                     }, function() {});
                 }
                 $('#learn-panel .bfh-selectbox').val(learnLanguage);
-
+                
+                
 
                 // TODO: use $.get()
                 var remembered = new HttpClient();
@@ -179,6 +181,7 @@ function syncUser() {
                 // Annotation language
                 annotationLanguage = result.annotationLanguage;
                 if (annotationLanguage == null) {
+                	annotationLanguage = 'zh_CN';
                     chrome.storage.sync.set({
                         'annotationLanguage': 'zh_CN'
                     }, function() {});
