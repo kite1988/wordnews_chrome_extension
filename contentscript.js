@@ -1,11 +1,11 @@
 'use strict';
 
 
-// TODO: FYP translation and bing translation are broken
+// TODO: FYP translation and bing translation are broken 
 
 
 //var hostUrl = 'http://wordnews.herokuapp.com/';
-var hostUrl = "http://wordnews-mobile.herokuapp.com/";
+var hostUrl = "http://wordnews-mobile.herokuapp.com";
 //var hostUrl = "http://wordnews-annotate.herokuapp.com/";
 //var hostUrl = "http://localhost:3000/";
 
@@ -139,7 +139,7 @@ function requestTranslatedWords(url, params, index) {
 
                 if (obj[wordToReplace].isTest > 0 && !isChoicesProvided) {
                     // make a seperate request to get the quiz options
-                    $.ajax({ url: hostUrl + 'getQuiz.json?word=' + wordToReplace.toLowerCase() + '&category=' + 'Technology' + '&level=3' })
+                    $.ajax({ url: hostUrl + '/getQuiz.json?word=' + wordToReplace.toLowerCase() + '&category=' + 'Technology' + '&level=3' })
                         .done(function(quizOptions) {
                             // Callback for successful retrieval
 
@@ -686,7 +686,7 @@ function handleInitResult(result, androidID) {
     if (userAccount == undefined) {
         // Register an account
         var registerUser = new HttpClient();
-        registerUser.get(hostUrl + 'getNumber',
+        registerUser.get(hostUrl + '/getNumber',
             function(onSuccessAnswer) {
                 var obj = JSON.parse(onSuccessAnswer);
                 if ('userID' in obj) {
@@ -760,7 +760,7 @@ function beginTranslating() {
 
             var stringToServer = paragraph.innerText;
 
-            var url = (typeof translationUrl === 'undefined' ? hostUrl + 'show' : translationUrl);
+            var url = (typeof translationUrl === 'undefined' ? hostUrl + '/show' : translationUrl);
             articleText += stringToServer;
 
             if (isTranslatingByParagraph) {
