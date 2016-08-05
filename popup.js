@@ -14,8 +14,8 @@ var HttpClient = function() {
 
 //var hostUrl = 'http://wordnews-annotate.herokuapp.com';
 var hostUrl = 'https://wordnews-server-kite19881.c9users.io'
-    // var hostUrl = 'http://wordnews.herokuapp.com/';
-    // var hostUrl = 'http://localhost:3000/';
+//var hostUrl = 'http://wordnews.herokuapp.com/';
+//var hostUrl = 'http://localhost:3000/';
 
 var userAccount = ''; //this is username
 var userId = -1; // this is user internal id
@@ -247,15 +247,15 @@ function setTranslation() {
                 $("#translationUrl .btn").removeClass('btn-primary');
                 $("#translationUrl .btn").addClass('btn-default');
 
-                translationUrl = $(this).attr('id');
-                if (translationUrl.indexOf('ims') >= 0) {
+                var translationType = $(this).attr('id');
+                if (translationType.indexOf('ims') >= 0) {
                     chrome.storage.sync
                         .set({
                             'translationUrl': 'http://imsforwordnews.herokuapp.com/show'
                         });
                     $("#translationUrl #imsTranslations").addClass(
                         'active btn-primary');
-                } else if (translationUrl.indexOf('dictionary') >= 0) {
+                } else if (translationType.indexOf('dictionary') >= 0) {
                     chrome.storage.sync
                         .set({
                             'translationUrl': 'http://wordnews.herokuapp.com/show_by_dictionary'
@@ -266,7 +266,7 @@ function setTranslation() {
                     // this one uses Bing translator
                     chrome.storage.sync
                         .set({
-                            'translationUrl': translationUrl + '/show'
+                            'translationUrl': hostUrl + '/show'
                         });
                     $("#translationUrl #bingTranslations").addClass(
                         'active btn-primary');
