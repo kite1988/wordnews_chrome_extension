@@ -1,5 +1,9 @@
 'use strict';
 
+
+// TODO: FYP translation and bing translation are broken
+
+
 //var hostUrl = 'http://wordnews.herokuapp.com/';
 var hostUrl = "http://wordnews-mobile.herokuapp.com/";
 //var hostUrl = "http://wordnews-annotate.herokuapp.com/";
@@ -116,7 +120,7 @@ function requestTranslatedWords(url, params, index) {
                     pronunciation.push("/pronunciation/");
                 }
 
-                if (obj[wordToReplace].wordID !== undefined) {
+                if (obj[wordToReplace].wordID != undefined) {
                     wordID.push(obj[wordToReplace]['wordID']);
                     idToOriginalWordDictionary[obj[wordToReplace]['wordID']] = wordToReplace;
                 }
@@ -201,7 +205,7 @@ function replaceWordsWithoutQuiz(sourceWords, targetWords) {
             joinString += 'data-placement="above" ';
 
             joinString += 'id = "' + id + '" >';
-            // TODO: fix the bug of displaying word
+            // TODO: fix the bug of displaying word correctly
             if (wordDisplay == 1) {
                 joinString += sourceWord;
             } else {
@@ -262,7 +266,7 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
     const ENGLISH_TO_CHINESE_QUIZ = 2;
 
     var paragraphs = paragraphsInArticle();
-
+    
     function addOptionsForQuiz() {
         var myArrayShuffle = shuffle([1, 2, 3, 4]);
         var result = "";
@@ -459,6 +463,7 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
             if (!container.is(e.target) && container.has(e.target).length === 0) { // if the target of the click isn't the container... // ... nor a descendant of the container
 
                 var id = container.attr('id');
+                console.log("container id" + id);
                 var englishWord = id.split('_')[1];
                 var tempWordID = id.split('_')[2];
                 var mainOrTest = id.split('_')[4];
@@ -472,6 +477,8 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
 
                     // add to page's learned words
                     pageWordsLearned.add(tempWordID);
+                    
+                    console.log("wid: " + tempWordID);
                 }
 
                 document.body.removeChild(container[0]);
