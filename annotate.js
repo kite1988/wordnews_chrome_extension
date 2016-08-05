@@ -570,7 +570,7 @@ function unpaintCursor() {
 //TODO: If BBC changes their HTML format, we will need to update this accordingly
 function showAnnotationCounterForBBCRelatedURL () {
     //Get the unorder list <ul>
-    var list = document.getElementsByClassName("story-body__unordered-list"); 
+    var list = document.getElementsByClassName("group story-alsos more-on-this-story"); 
     
     for (var i = 0; i < list.length; ++i) {
         var links = list[i].getElementsByTagName("a"); //Get all the links
@@ -629,21 +629,19 @@ function appendAnnotationCounterForURL (link) {
         },
         url : hostUrl + "/show_annotation_count_by_url",
         dataType : "json",
-        data : {            
-            
-            url: linkElem.href,
+        data : {         
             url_postfix: getURLPostfix(linkElem.href),
             lang: annotationLanguage
         },
         success : function(result) { // get successful and result returned by server
             console.log(linkElem.href + " annotation counter: " + result.annotation_count);
-             //If there is more than one annotation in the link, display the counter
-            //if (result.annotation_count > 0)
-            //{
-                var countSpan = document.createElement('span');
-                countSpan.innerHTML = " Annotation count: 20";
-                linkElem.appendChild(countSpan);
-            //}
+            //If there is more than one annotation in the link, display the counter
+            if (result.annotation_count > 0)
+            {
+              var countSpan = document.createElement('span');
+              countSpan.innerHTML = " Annotation count: " + result.annotation_count;
+              linkElem.appendChild(countSpan);
+            }
         },
         error : function(result) {
             console.log( "show annotation get error" );
@@ -662,8 +660,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	        console.log("annotate mode lang:" + annotationLanguage);
             //TODO: Need to get the main framework to send new page(includes refreshed page) event
             showAnnotations(request.user_id);
-            //showAnnotationCounterForBBCRelatedURL();
-            //showAnnotationCounterForCNNRelatedURL();
+            showAnnotationCounterForBBCRelatedURL();
+            showAnnotationCounterForCNNRelatedURL();
             $('body').on("mouseup", paragraphFormatTag, function(e) {
                 var id = highlight(request.user_id);
                 if (id == -1)
