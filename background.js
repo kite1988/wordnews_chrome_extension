@@ -9,4 +9,10 @@ chrome.storage.sync.get(null, function(result) {
   //if (!result.hasOwnProperty('userAccount')) {
      // launchGoogleLoginFlow(url);
   //}
+  
+  var isWorking = result.isWorking;
+  if (isWorking == 0) {
+      var imgURL = chrome.extension.getURL("images/logo-gray.png");
+      chrome.browserAction.setIcon({ path: imgURL });
+  } 
 });

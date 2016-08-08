@@ -11,7 +11,6 @@ var annotationLanguage = '';
 //A container to keep all the annotations' panel ID
 var annotationPanelIDCont = [];
 
-var hostUrl = "https://wordnews-server-kite19881.c9users.io";
 //var hostUrl = "https://wordnews-annotate.herokuapp.com";
 
 function selectHTML() {
@@ -657,20 +656,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	    if (request.mode == "annotate") {
             annotationLanguage = request.ann_lang;
 	        console.log("annotate mode lang:" + annotationLanguage);
-            //TODO: Need to get the main framework to send new page(includes refreshed page) event
-            showAnnotations(request.user_id);
-            showAnnotationCounterForBBCRelatedURL();
-            showAnnotationCounterForCNNRelatedURL();
-            $('body').on("mouseup", paragraphFormatTag, function(e) {
-                var id = highlight(request.user_id);
-                if (id == -1)
-                {
-                    console.log("Error: Unable to create annotation");
-                }
-                console.log($("#" + id));
-            });            
-            
-            paintCursor();	        
+            //TODO: Need to get the main framework to send new page(includes refreshed page) event 
+	        beginAnnotation(request.user_id);
 	    } else if (request.mode == "unannotate"){
 	        console.log(request.mode);
 	        unpaintCursor();
@@ -680,6 +667,23 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     	console.log("update lang to " + annotationLanguage);
     }
 });
+
+function beginAnnotation(userId) {
+	showAnnotations(userId);
+    showAnnotationCounterForBBCRelatedURL();
+    showAnnotationCounterForCNNRelatedURL();
+    $('body').on("mouseup", paragraphFormatTag, function(e) {
+        var id = highlight(userId);
+        if (id == -1)
+        {
+            console.log("Error: Unable to create annotation");
+        }
+        console.log($("#" + id));
+    });            
+    
+    paintCursor();
+	    
+}
 
 //TODO: Need check again whether is there any function being called when onsize event is triggered
 window.onresize = function() { //Resize all annotation panel according to the new resized window

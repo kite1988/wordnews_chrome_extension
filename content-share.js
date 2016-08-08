@@ -45,10 +45,7 @@ function handleInitResult(result, androidID) {
     } else if (isWorking == 2) { // annotation
     	initAnnotate(result);
     } else { // disable
-    	
     }
-
-   
 }
 
 // TODO: keep consistent with the synUser() in popup.js
@@ -161,29 +158,18 @@ function initAnnotate(result) {
                     userId = obj['user_id'];
                     chrome.storage.sync.set({
                         'userId': userId
-                    }, function() {});
+                    }, function() {
+                    	beginAnnotation(userId);
+                    });
                 }
             },
             error : function(result) {
                 console.log( "get user id failed" );
             }
         });  
-    	
+    } else {
+    	beginAnnotation(userId);
     }
-    
-    showAnnotations(userId);
-    showAnnotationCounterForBBCRelatedURL();
-    showAnnotationCounterForCNNRelatedURL();
-    $('body').on("mouseup", paragraphFormatTag, function(e) {
-        var id = highlight(userId);
-        if (id == -1)
-        {
-            console.log("Error: Unable to create annotation");
-        }
-        console.log($("#" + id));
-    });            
-    
-    paintCursor();
 }
 
 
