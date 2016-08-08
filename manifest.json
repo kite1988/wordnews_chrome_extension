@@ -32,11 +32,12 @@
       ],
       "js":[
         "jquery-2.1.1.min.js",
-        "contentscript.js",
         "slider/js/bootstrap-slider.js",
         "bootstrap/js/bootstrap-formhelpers.min.js",
         "bootstrap/js/bootstrap.min.js",
-        "annotate.js"        
+		"content-share.js",
+        "annotate.js",
+        "learn.js"        
       ],
       "html":["bing.html"],
       "run_at": "document_end",

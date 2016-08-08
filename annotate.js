@@ -459,7 +459,6 @@ function deleteAnnotationFromServer(annotationPanelID) {
     }
 }
 
-// TODO： show all the highlights and annotations
 function showAnnotations(userid) {
     $.ajax({
         type : "post",

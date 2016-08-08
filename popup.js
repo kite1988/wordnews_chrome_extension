@@ -54,17 +54,28 @@ function syncUser() {
 
                 // Ask the server to generate the User ID
                 if (userId == undefined) {
-                    //TODO: Change to ajax
-                    $.get(hostUrl + '/get_user_id_by_user_name?user_name=' + userAccount,
-                        function(obj) {
-                            if ('user_id' in obj) {
+                    $.ajax({
+                        type : "get",
+                        beforeSend : function(request) {
+                            request.setRequestHeader("Accept", "application/json");
+                        },
+                        url : hostUrl + "/get_user_id_by_user_name",
+                        dataType : "json",
+                        data : {         
+                        	user_name: userAccount
+                        },
+                        success : function(result) { // get successful and result returned by server
+                        	if ('user_id' in obj) {
                                 userId = obj['user_id'];
                                 chrome.storage.sync.set({
                                     'userId': userId
                                 }, function() {});
                             }
+                        },
+                        error : function(result) {
+                            console.log( "get user id failed" );
                         }
-                    );
+                    });  
                 }
 
                 isWorking = result.isWorking;
@@ -290,28 +301,22 @@ function setMode(mode) {
     $("#mode .btn").addClass('btn-default');
 
     isWorking = modeLookUpTable.indexOf(mode);
+    console.log("switching to " + isWorking);
     chrome.storage.sync.set({ //Set isWorking to chrome storage
         'isWorking': isWorking
+    }, function(result) {
+    	$("#mode #" + mode).addClass('active btn-primary');
+        showDivByMode(mode);
+        switchLogo(mode);
+
+        if (isWorking == 1) { //If mode is "learn"
+            unpaintCursor();
+        } else if (isWorking == 2) { //If mode is "annotate"
+            paintCursor();
+        } else { //If mode is disable                     
+            unpaintCursor();
+        }
     });
-
-    $("#mode #" + mode).addClass('active btn-primary');
-    showDivByMode(mode);
-    switchLogo(mode);
-
-    if (isWorking == 1) { //If mode is "learn"
-        unpaintCursor();
-    } else if (isWorking == 2) { //If mode is "annotate"
-        paintCursor();
-    } else { //If mode is disable                     
-        unpaintCursor();
-    }
-
-    // TODO: Why call this?
-    chrome.storage.sync.get(null, function(result) {
-        isWorking = result.isWorking;
-        console.log('user isworking: ' + result.isWorking);
-    });
-
 }
 
 function addAnnotationContextMenu() {

@@ -5,7 +5,7 @@
 
 
 //var hostUrl = 'http://wordnews.herokuapp.com/';
-var hostUrl = "http://wordnews-mobile.herokuapp.com";
+//var hostUrl = "http://wordnews-mobile.herokuapp.com";
 //var hostUrl = "http://wordnews-annotate.herokuapp.com/";
 //var hostUrl = "http://localhost:3000/";
 
@@ -24,6 +24,7 @@ var TranslationDirection = {
     ENGLISH: 1
 };
 var isTranslatingByParagraph = true;
+var learnLanguage = '';
 
 var wordsReplaced = '';
 // a dictionary of english to chinese words 
@@ -612,98 +613,6 @@ function paragraphsInArticle() {
     return paragraphs;
 }
 
-if (typeof chrome != 'undefined') {
-    console.log('Chrome, initializating with chrome storage.');
-    chrome.storage.sync.get(null, handleInitResult);
-} else {
-    console.log('Not chrome, waiting for manual initialization.');
-}
-
-// This function is called from Android client, with appropriate params
-function initFromAndroid(androidID, andoridScreenWidth) {
-    console.log('initFromAndroid: ' + androidID + ' ' + andoridScreenWidth);
-    handleInitResult({
-        userAccount: androidID
-    });
-}
-
-function saveSetting(obj) {
-    if (typeof chrome != 'undefined') {
-        // console.log('saving setting for ', JSON.stringify(obj, null, '\t'));
-        chrome.storage.sync.set(obj);
-    } else {
-        console.log('saving setting for other clients not implemented.');
-    }
-}
-
-function handleInitResult(result, androidID) {
-
-    var allKeys = Object.keys(result);
-
-    userAccount = result.userAccount || undefined;
-    isWorking = result.isWorking || undefined;
-    wordDisplay = result.wordDisplay || undefined;
-    wordsReplaced = result.wordsReplaced || undefined;
-    websiteSetting = result.websiteSetting || undefined;
-
-    console.log(result.translationUrl);
-    if (typeof result.translationUrl !== 'undefined') {
-        translationUrl = result.translationUrl;
-    }
-
-    //console.log("user acc: "+ result.userAccount);
-    //console.log("user isWorking: "+ result.isWorking);
-    console.log("user wordDisplay: "+ result.wordDisplay);
-    //console.log("user wordsReplaced: "+ result.wordsReplaced);
-    //console.log("user websiteSetting: "+ result.websiteSetting);
-
-    if (isWorking == undefined) {
-        isWorking = 1;
-        saveSetting({ 'isWorking': isWorking });
-    }
-
-    if (wordDisplay == undefined) {
-        wordDisplay = TranslationDirection.ENGLISH;
-        saveSetting({ 'wordDisplay': wordDisplay });
-    }
-
-    if (wordsReplaced == undefined) {
-        wordsReplaced = 6;
-        //console.log("Setting words to replace to : " + wordsReplaced + " (default setting)");
-        saveSetting({ 'wordsReplaced': wordsReplaced });
-    }
-
-    if (websiteSetting == undefined) {
-        websiteSetting = "cnn.com_bbc.co";
-        //console.log("Setting websites to use to : " + websiteSetting + " (default setting)");
-        saveSetting({ 'websiteSetting': websiteSetting });
-    }
-
-    startTime = new Date(); // this is used to track the time between each click
-
-    userSettings.updateNumWords(wordsReplaced);
-
-    if (userAccount == undefined) {
-        // Register an account
-        var registerUser = new HttpClient();
-        registerUser.get(hostUrl + '/getNumber',
-            function(onSuccessAnswer) {
-                var obj = JSON.parse(onSuccessAnswer);
-                if ('userID' in obj) {
-                    userAccount = obj['userID'];
-                    saveSetting({ 'userAccount': userAccount });
-                    beginTranslating();
-                }
-            },
-            function(onFailureAnswer) {
-                var obj = JSON.parse(onFailureAnswer);
-                console.log("Server error: " + obj['msg']);
-            }
-        );
-    } else {
-        beginTranslating();
-    }
-}
 
 function beginTranslating() {
 
