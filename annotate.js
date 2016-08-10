@@ -669,6 +669,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 function beginAnnotation(userId) {
+	showAnnotations(userId);
     showAnnotationCounterForBBCRelatedURL();
     showAnnotationCounterForCNNRelatedURL();
     $('body').on("mouseup", paragraphFormatTag, function(e) {
