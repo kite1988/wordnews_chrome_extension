@@ -548,7 +548,7 @@ function cumulativeOffset2(id) {
 function generateId() {    
     //This method creates semi-unique ID
     var i = new Date().getTime();
-    i = i & 0xffffffff;
+    i = i & 0xfffffff;
     //console.log(i);
     return (i + Math.floor(Math.random() * i));
 }
@@ -691,5 +691,30 @@ window.onresize = function() { //Resize all annotation panel according to the ne
         updatePanelPosition(annotationPanelIDCont[i]);
     }         
 };
+
+$(window).on("blur focus", function(e) {
+    var prevType = $(this).data("prevType");
+
+    if (prevType != e.type) {   //  reduce double fire issues
+        switch (e.type) {
+            case "blur":
+                console.log("Blured");
+                break;
+            case "focus": //Update the chrome UI
+                console.log("Focused")
+                
+                //chrome.runtime.sendMessage({
+                //    from:       'annotate',
+                //    subject:    'updateMode',
+                //    mode:       'annotate'
+                //});
+               
+                
+                break;
+        }
+    }
+
+    $(this).data("prevType", e.type);
+})
 
 
