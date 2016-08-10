@@ -616,15 +616,34 @@ function getArticleTitleAndPublicationDate() {
     }
     else if(website == "cnn") { //If website is cnn
         //For cnn, we can get the proper title from this tag
-        var titleElem = document.getElementsByClassName("pg-headline")[0];
-        title = titleElem.innerText;
+        var titleElem = document.getElementsByClassName("pg-headline");
+        
+        if (titleElem.length > 0) {// If the tag exist in the web page
+            title = titleElem[0].innerText;
+        }
+        else { // Else check for another tag for the title
+            titleElem = document.getElementsByClassName("article-title"); //This is to cover cnn money
+            title = titleElem[0].innerText;
+        }
+
         
         var dateElem = document.getElementsByClassName("update-time");
-        //Format the date to yyyy-mm-dd 
-        // CNN inner text returns this "Updated 0811 GMT (1611 HKT) August 10, 2016"
-        var dateString = dateElem[0].innerText;
-        var index = dateString.indexOf(")") ;
-        dateString = dateString.substr(index + 2);        
+        var dateString = "";
+        if (dateElem.length > 0) {
+            //Format the date to yyyy-mm-dd 
+            // CNN inner text returns this "Updated 0811 GMT (1611 HKT) August 10, 2016"
+            dateString = dateElem[0].innerText;
+            var index = dateString.indexOf(")") ;
+            dateString = dateString.substr(index + 2);        
+        }
+        else {
+            dateElem = document.getElementsByClassName("cnnDateStamp");
+            //This tag returns "July 6, 2016: 1:21 AM ET"
+            //Need to remove the excessive text behind the time            
+            dateString = dateElem[0].innerText;
+            var index = dateString.indexOf(":") ;
+            dateString = dateString.substr(0, index); 
+        }
         date = formatDate(dateString);
     }
     //For other websites beside cnn and bbc, we will return default values
