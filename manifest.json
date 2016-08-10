@@ -18,9 +18,7 @@
       "matches":[
         "http://*.cnn.com/*",
         "http://*.chinadaily.com.cn/*",
-        "http://*.bbc.com/*",
-        "http://*/*",
-        "https://*/*"
+        "http://*.bbc.com/*"
       ],
       "css": [
         "gt_popup_css_compiled.css",

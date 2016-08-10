@@ -27,6 +27,7 @@ var websiteSetting = '';
 var translationUrl = '';
 var annotationLanguage = '';
 var learnLanguage = '';
+var mostAnnotatedArticle = 10;
 
 var modeLookUpTable = ["disable", "learn", "annotate"];
 
@@ -526,8 +527,25 @@ function setAnnotationLinks() {
     $('#annotate-panel .btn-block').click(function() {
         if ($(this).val() == 'annotations') {
             window.open(hostUrl + '/show_user_annotations?user_id=' + userId + '&lang=' + annotationLanguage);
+        } else if ($(this).val() == 'urls'){
+            window.open(hostUrl + '/show_user_annotated_urls?user_id=' + userId + '&lang=' + annotationLanguage);
+        }
+    });
+    
+    $('#annotate-panel #most-annotated .btn').click(function() {
+    	var url = hostUrl + '/show_most_annotated_urls?lang=' + annotationLanguage + '&num='+mostAnnotatedArticle;
+    	var today = new Date().toJSON().slice(0,10);
+    
+        if ($(this).val() == 'today') {
+            window.open(url + '&from_date=' + today + '&to_date='+today);
+        } else if ($(this).val() == 'week'){
+        	var oneWeekAgo = new Date();
+        	oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        	oneWeekAgo = oneWeekAgo.toJSON().slice(0,10);
+        	
+            window.open(url + '&from_date=' + oneWeekAgo + '&to_date='+today);        	
         } else {
-            window.open(hostUrl + '/show_user_annotation_urls?user_id=' + userId + '&lang=' + annotationLanguage);
+            window.open(url);        	        	
         }
     });
 }
