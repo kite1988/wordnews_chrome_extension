@@ -50,10 +50,18 @@ function handleInitResult(result, androidID) {
 
 // TODO: keep consistent with the synUser() in popup.js
 function initLearn(result) {
-	userAccount = result.userAccount || undefined;
-    wordDisplay = result.wordDisplay || undefined;
-    wordsReplaced = result.wordsReplaced || undefined;
-    websiteSetting = result.websiteSetting || undefined;
+    if ( typeof result.userAccount !== 'undefined' ) {
+        userAccount = result.userAccount
+    }
+    if ( typeof result.wordDisplay !== 'undefined' ) {
+        wordDisplay = result.wordDisplay
+    }
+    if ( typeof result.wordsReplaced !== 'undefined' ) {
+        wordsReplaced = result.wordsReplaced
+    }
+    if ( typeof result.websiteSetting !== 'undefined' ) {
+        websiteSetting = result.websiteSetting
+    }
 
     console.log(result.translationUrl);
     if (typeof result.translationUrl !== 'undefined') {
