@@ -50,21 +50,21 @@ function handleInitResult(result, androidID) {
 
 // TODO: keep consistent with the synUser() in popup.js
 function initLearn(result) {
-    if ( typeof result.userAccount !== 'undefined' ) {
+    if ( typeof result.userAccount != 'undefined' ) {
         userAccount = result.userAccount
     }
-    if ( typeof result.wordDisplay !== 'undefined' ) {
+    if ( typeof result.wordDisplay != 'undefined' ) {
         wordDisplay = result.wordDisplay
     }
-    if ( typeof result.wordsReplaced !== 'undefined' ) {
+    if ( typeof result.wordsReplaced != 'undefined' ) {
         wordsReplaced = result.wordsReplaced
     }
-    if ( typeof result.websiteSetting !== 'undefined' ) {
+    if ( typeof result.websiteSetting != 'undefined' ) {
         websiteSetting = result.websiteSetting
     }
 
     console.log(result.translationUrl);
-    if (typeof result.translationUrl !== 'undefined') {
+    if (typeof result.translationUrl != 'undefined') {
         translationUrl = result.translationUrl;
     }
 
@@ -128,7 +128,7 @@ function initLearn(result) {
 //TODO: 1) keep consistent with the synUser() in popup.js and 
 // 2) wrap some code as a utility function for annotate.js 
 function initAnnotate(result) {
-	annotationLanguage = result.annotationLanguage;
+    annotationLanguage = result.annotationLanguage;
     if (annotationLanguage == null) {
     	annotationLanguage = 'zh_CN';
     	saveSetting({'annotationLanguage': 'zh_CN'});
