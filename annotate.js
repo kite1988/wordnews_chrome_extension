@@ -573,7 +573,7 @@ function paintCursor() {
 
 function unpaintCursor() {
     window.location.reload();
-    $('body').unbind("mouseup", 'p');
+    $('body').unbind("mouseup", paragraphFormatTag);
 }
 
 //TODO: If BBC changes their HTML format, we will need to update this accordingly
@@ -756,29 +756,6 @@ window.onresize = function() { //Resize all annotation panel according to the ne
     }         
 };
 
-$(window).on("blur focus", function(e) {
-    var prevType = $(this).data("prevType");
 
-    if (prevType != e.type) {   //  reduce double fire issues
-        switch (e.type) {
-            case "blur":
-                console.log("Blured");
-                break;
-            case "focus": //Update the chrome UI
-                console.log("Focused")
-                
-                //chrome.runtime.sendMessage({
-                //    from:       'annotate',
-                //    subject:    'updateMode',
-                //    mode:       'annotate'
-                //});
-               
-                
-                break;
-        }
-    }
-
-    $(this).data("prevType", e.type);
-})
 
 

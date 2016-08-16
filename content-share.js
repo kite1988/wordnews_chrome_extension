@@ -1,5 +1,16 @@
 // Shared functions and configurations for learning and annotation mode
 
+//TODO: These variables are also in popup.js
+var modeLookUpTable = ["disable", "learn", "annotate"];
+
+var modes = {
+    disable: 0,
+    learn: 1,
+    annotate: 2
+};
+
+var currentMode = modes.disable;
+
 // TODO: move common variables to here
 var hostUrl = "https://wordnews-server-kite19881.c9users.io";
 
@@ -128,7 +139,7 @@ function initLearn(result) {
 //TODO: 1) keep consistent with the synUser() in popup.js and 
 // 2) wrap some code as a utility function for annotate.js 
 function initAnnotate(result) {
-    annotationLanguage = result.annotationLanguage;
+	annotationLanguage = result.annotationLanguage;
     if (annotationLanguage == null) {
     	annotationLanguage = 'zh_CN';
     	saveSetting({'annotationLanguage': 'zh_CN'});
@@ -150,34 +161,68 @@ function initAnnotate(result) {
         }, function() {});
     }
     
-    if (userId == undefined) {
-    	$.ajax({
-            type : "get",
-            beforeSend : function(request) {
-                request.setRequestHeader("Accept", "application/json");
-            },
-            url : hostUrl + "/get_user_id_by_user_name",
-            dataType : "json",
-            data : {         
-            	user_name: userAccount
-            },
-            success : function(result) { // get successful and result returned by server
-            	if ('user_id' in obj) {
-                    userId = obj['user_id'];
-                    chrome.storage.sync.set({
-                        'userId': userId
-                    }, function() {
-                    	beginAnnotation(userId);
-                    });
-                }
-            },
-            error : function(result) {
-                console.log( "get user id failed" );
-            }
-        });  
-    } else {
-    	beginAnnotation(userId);
-    }
+    //if (userId == undefined) {
+    //	$.ajax({
+    //        type : "get",
+    //        beforeSend : function(request) {
+    //            request.setRequestHeader("Accept", "application/json");
+    //        },
+    //        url : hostUrl + "/get_user_id_by_user_name",
+    //        dataType : "json",
+    //        data : {         
+    //        	user_name: userAccount
+    //        },
+    //        success : function(result) { // get successful and result returned by server
+    //        	if ('user_id' in obj) {
+    //                userId = obj['user_id'];
+    //                chrome.storage.sync.set({
+    //                    'userId': userId
+    //                }, function() {
+    //                	beginAnnotation(userId);
+    //                });
+    //            }
+    //        },
+    //        error : function(result) {
+    //            console.log( "get user id failed" );
+    //        }
+    //    });  
+    //} else {
+    //	beginAnnotation(userId);
+    //}
 }
+
+//Window event to check whether window is focused 
+$(window).on("blur focus", function(e) {
+    var prevType = $(this).data("prevType");
+
+    if (prevType != e.type) {   //  reduce double fire issues
+        switch (e.type) {
+            case "blur":
+                console.log("Blured");
+                //chrome.runtime.sendMessage(
+                //    //Send message to background.js that this tab is active
+                //    {type: "active", value: false},
+                //    function (response) {
+                //        console.log(response);
+                //    }
+                //);     
+                break;
+            case "focus": //Update the chrome UI
+                console.log("Focused")                
+
+                chrome.runtime.sendMessage(                                
+                    {type: "active", value: true},
+                    function (response) {                       
+                });   
+                        
+                    
+                
+                break;
+        }
+    }
+
+    $(this).data("prevType", e.type);
+})
+
 
 
