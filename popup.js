@@ -93,7 +93,7 @@ function initalize() {
                 );
             } else {
                 console.log("init set mode 2");
-                setMode(currentTabInfo.mode);
+                setMode(modeLookUpTable[currentTabInfo.mode]);
             }
         });
         

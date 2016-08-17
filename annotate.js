@@ -604,14 +604,30 @@ function getArticleTitleAndPublicationDate() {
     var date = "1970-01-01"; //Use unix default timestamp to respresent that it is an old article
     if (website == "bbc") // If website is bbc 
     {
+        var timestamp;//This variable could either hold the datetime or timestamp
         //There are more than one ways of how the publish timestamp is stored
         var dateElem = document.getElementsByClassName("publication-date index-body");
+        
         if (dateElem.length == 0) { //If the above tag doesnt exist in the webpage
             //Try another tag to get the publish date
             dateElem = document.getElementsByClassName("date date--v2");
+            
+            if (dateElem.length > 0) {                 
+                timestamp = dateElem[0].dataset.datetime;
+            } else {// If date date--v2 tag does not exist
+                //This case is for bbc.com/sport 
+                dateElem = document.getElementsByClassName("timestamp")[0];
+                dateElem = dateElem.getElementsByTagName("time")[0];
+                //Convert the timestamp into int because Date() takes in int for timestamp
+                timestamp = parseInt(dateElem.dataset.timestamp);
+            }
+        }
+        else {
+            //TODO: Need to check again for this case whether the dateset contains datetime
+            timestamp = dateElem[0].dataset.datetime;
         }
         //Format the date to yyyy-mm-dd
-        date = formatDate(dateElem[0].innerText);
+        date = formatDate(timestamp);
         console.log(date);              
     }
     else if(website == "cnn") { //If website is cnn
