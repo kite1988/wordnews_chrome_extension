@@ -19,6 +19,7 @@
         "http://*.cnn.com/*",
         "http://*.chinadaily.com.cn/*",
         "http://*.bbc.com/*"
+       
       ],
       "css": [
         "gt_popup_css_compiled.css",
@@ -51,7 +52,7 @@
     "images/*"
   ],
   "permissions": [
-    "tabs","<all_urls>","identity","storage","http://*/*"
+    "tabs","<all_urls>","identity","storage","http://*/*", "activeTab"
   ],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqSbvqqeWKmBsWm2SE6nZZ8FIjQpL24G3nnZ9AeH1Qsedenku2VOR2IIy8SKsyfxxlbLiBbTpzrU97u2E01jDKLHxEZ7uWxZPoiNvN1MoIXkSaJQJz/RTcAd99uxM4FyvuSL9FwxWP/2q60+8zFQ9BrvpFImXqQcyueC5Bc4Gzx6pq8Qhig5pszZ32qVaQY67BJiGnitgCT9RKIHMtMDxgl4Q2dB10DBAwaIajFW+JM/VRF/Onr+vC0xEyht4l3yjOKr8VOYLt67pWeetCg39VNvz4QwfPgmcr2I72OMY1M/Rg4VlmryvYnOHtM3Vxu544iI8Z4l947YgqNHySw1h4wIDAQAB",
 

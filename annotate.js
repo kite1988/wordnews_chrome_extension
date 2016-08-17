@@ -12,7 +12,7 @@ var annotationLanguage = '';
 var annotationPanelIDCont = [];
 
 //var hostUrl = "https://wordnews-annotate.herokuapp.com";
-
+console.log(hostUrl);
 function selectHTML() {
     try {
         var nNd = document.createElement("em");
@@ -23,6 +23,7 @@ function selectHTML() {
         return getSelection();
     }
 }
+
 
 function isValidString(str)
 {
@@ -116,8 +117,7 @@ function getParentElem(node)
 //This function will take in the text node and check whether is there any annoation existed under this node
 function checkAnnoationExisted(node)
 {
-    var parentElem = getParentElem(node);
-    
+    var parentElem = getParentElem(node);    
     
     if (hasClass(parentElem, "annotate-highlight")) {
         console.log("annotate class existed")        
@@ -191,12 +191,19 @@ function getParagraphIndex(p) {
 //TODO: This function exists in contentscript.js
 function getParagraphs() {
 	var paragraphs;
-    
+    //If website is cnn
     if (document.URL.indexOf('cnn.com') !== -1) {
         paragraphs = $('.zn-body__paragraph').get();
         paragraphFormatTag = '.zn-body__paragraph';
         website = "cnn";
-    } else {
+    }
+    //if website is bbc
+    else if (document.URL.indexOf('bbc.com') !== -1){
+        paragraphs = document.getElementsByTagName('p');
+        paragraphFormatTag = 'p'
+        website = "bbc";
+    }
+    else { //TODO: Other webpages could be other tags instead of <p>
         paragraphs = document.getElementsByTagName('p');
         paragraphFormatTag = 'p'
         website = "other";
@@ -371,6 +378,8 @@ function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex
     var state = $('#' + annotationPanelID + "_panel").data('state');
     //If the annotation is newly created, send data to server to add into database
     if(state == annotationState.NEW) {
+        var title_date = getArticleTitleAndPublicationDate();
+   
         //TODO: Have not supported unicode for non-english input in textarea
     	$.ajax({
 			type : "post",
@@ -388,9 +397,11 @@ function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex
                     lang: annotationLanguage,
                     url: window.location.href,
                     url_postfix: getURLPostfix(window.location.href),
-                    website: getWebsiteName(window.location.href),
+                    website: website,
                     paragraph_idx: paragrahIndex,
-                    text_idx: wordIndex
+                    text_idx: wordIndex,
+                    title: title_date[0],
+                    publication_date: title_date[1]
                 }   
 			},
 			success : function(result) { // post successful and result returned by server
@@ -403,11 +414,11 @@ function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex
 			},
 
 			error : function(result) {
-				console.log("add annotation post error" + result);
+				console.log("add annotation post error", result);
 			}
 		});
     }        
-    else {
+    else { // Else update the annnotation 
         var annotation_id = $('#' + annotationPanelID + "_panel").data('id');                
         $.ajax({
 			type : "post",
@@ -477,7 +488,7 @@ function showAnnotations(userid) {
             }    
         },
         error : function(result) {
-            console.log( "show annotation get error" );
+            console.log( "show annotation get error", result);
         }
     });
 }
@@ -562,7 +573,7 @@ function paintCursor() {
 
 function unpaintCursor() {
     window.location.reload();
-    $('body').unbind("mouseup", 'p');
+    $('body').unbind("mouseup", paragraphFormatTag);
 }
 
 //TODO: If BBC changes their HTML format, we will need to update this accordingly
@@ -579,6 +590,64 @@ function showAnnotationCounterForBBCRelatedURL () {
             }
         }
     }
+}
+
+//toISOString does not works because date string does not contain timezone information
+function formatDate(dateString) {
+    var dateObject = new Date(dateString);
+    
+    return  dateObject.getFullYear() + "-" +  (dateObject.getMonth() + 1) + "-" + dateObject.getDate();
+}
+
+function getArticleTitleAndPublicationDate() {
+    var title = document.title;
+    var date = "1970-01-01"; //Use unix default timestamp to respresent that it is an old article
+    if (website == "bbc") // If website is bbc 
+    {
+        //There are more than one ways of how the publish timestamp is stored
+        var dateElem = document.getElementsByClassName("publication-date index-body");
+        if (dateElem.length == 0) { //If the above tag doesnt exist in the webpage
+            //Try another tag to get the publish date
+            dateElem = document.getElementsByClassName("date date--v2");
+        }
+        //Format the date to yyyy-mm-dd
+        date = formatDate(dateElem[0].innerText);
+        console.log(date);              
+    }
+    else if(website == "cnn") { //If website is cnn
+        //For cnn, we can get the proper title from this tag
+        var titleElem = document.getElementsByClassName("pg-headline");
+        
+        if (titleElem.length > 0) {// If the tag exist in the web page
+            title = titleElem[0].innerText;
+        }
+        else { // Else check for another tag for the title
+            titleElem = document.getElementsByClassName("article-title"); //This is to cover cnn money
+            title = titleElem[0].innerText;
+        }
+
+        
+        var dateElem = document.getElementsByClassName("update-time");
+        var dateString = "";
+        if (dateElem.length > 0) {
+            //Format the date to yyyy-mm-dd 
+            // CNN inner text returns this "Updated 0811 GMT (1611 HKT) August 10, 2016"
+            dateString = dateElem[0].innerText;
+            var index = dateString.indexOf(")") ;
+            dateString = dateString.substr(index + 2);        
+        }
+        else {
+            dateElem = document.getElementsByClassName("cnnDateStamp");
+            //This tag returns "July 6, 2016: 1:21 AM ET"
+            //Need to remove the excessive text behind the time            
+            dateString = dateElem[0].innerText;
+            var index = dateString.indexOf(":") ;
+            dateString = dateString.substr(0, index); 
+        }
+        date = formatDate(dateString);
+    }
+    //For other websites beside cnn and bbc, we will return default values
+    return [title, date];
 }
 
 //TODO: If CNN changes their HTML format, we will need to update this accordingly
@@ -610,11 +679,6 @@ function getURLPostfix(url) {
     return noHTTPString.substr(index + 1);
 }
 
-// TODO: 
-function getWebsiteName(url) {
-	return 'bbc';
-}
-
 function appendAnnotationCounterForURL (link) {    
 
     var linkElem = link;
@@ -644,8 +708,7 @@ function appendAnnotationCounterForURL (link) {
         error : function(result) {
             console.log( "show annotation get error" );
         }
-    });        
-    
+    });            
 }
 
 // add listeners
@@ -670,6 +733,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 function beginAnnotation(userId) {
 	showAnnotations(userId);
+    getArticleTitleAndPublicationDate();
     showAnnotationCounterForBBCRelatedURL();
     showAnnotationCounterForCNNRelatedURL();
     $('body').on("mouseup", paragraphFormatTag, function(e) {
@@ -692,29 +756,6 @@ window.onresize = function() { //Resize all annotation panel according to the ne
     }         
 };
 
-$(window).on("blur focus", function(e) {
-    var prevType = $(this).data("prevType");
 
-    if (prevType != e.type) {   //  reduce double fire issues
-        switch (e.type) {
-            case "blur":
-                console.log("Blured");
-                break;
-            case "focus": //Update the chrome UI
-                console.log("Focused")
-                
-                //chrome.runtime.sendMessage({
-                //    from:       'annotate',
-                //    subject:    'updateMode',
-                //    mode:       'annotate'
-                //});
-               
-                
-                break;
-        }
-    }
-
-    $(this).data("prevType", e.type);
-})
 
 

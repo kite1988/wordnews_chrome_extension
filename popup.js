@@ -27,19 +27,98 @@ var websiteSetting = '';
 var translationUrl = '';
 var annotationLanguage = '';
 var learnLanguage = '';
+var currentTabID;
+var modeLookUpTable = ["disable", "learn", "annotate"];
 var mostAnnotatedArticle = 10;
 
-var modeLookUpTable = ["disable", "learn", "annotate"];
+//This function will inject all the the scripts
+function programmaticInjection () {
+    var js = [  "jquery-2.1.1.min.js",
+                "slider/js/bootstrap-slider.js",
+                "bootstrap/js/bootstrap-formhelpers.min.js",
+                "bootstrap/js/bootstrap.min.js",
+                "content-share.js",
+                "annotate.js",
+                "learn.js"        
+             ];
+             
+    for (var i = 0; i < js.length; ++i) {
+        chrome.tabs.executeScript(null, {file: js[i], runAt: "document_end"});
+    }
+    
+    var css = [ "gt_popup_css_compiled.css",
+                "gt_bubble_gss.css",
+                "slider/css/slider.css",
+                "bootstrap/css/bootstrap.min.css",
+                "bootstrap/css/bootstrap-formhelpers.min.css",
+                "annotate.css"   
+              ];
+              
+    for (var i = 0; i < css.length; ++i) {
+        chrome.tabs.insertCSS(null, {file: css[i], runAt: "document_end"});
+    }        
+    
+}
 
-function syncUser() {
+function initalize() {
+    //Shift tab query call to outside to ensure that currentTabID is initialized before entering next
+    chrome.tabs.query({
+        active: true,
+        currentWindow: true
+    }, function(arrayOfTabs) {
+        //Get the current tab id 
+        currentTabID = arrayOfTabs[0].id;
+        
+        //Grab all the data from the google local storage
+        chrome.storage.local.get(null, function (result) {
+            
+            console.log(result);
+            var currentTabInfo = undefined;
+            if (result.hasTabs) {
+                //Use the current tab id to get the tab information
+                currentTabInfo = result.tabsInfoCont[currentTabID];
+            } 
+            
+            //If current tab info is undefined, it means this a new tab
+            console.log(currentTabInfo);
+            if (currentTabInfo == undefined) {              
+                //Send message to background to register the new tab
+                chrome.runtime.sendMessage(
+                    { type: "new_tab", tab_id: currentTabID },
+                    function(response) {
+                        console.log("New tab message sent.");
+                        console.log("init set mode 1");
+                        setMode("learn");
+                    }
+                );
+            } else {
+                console.log("init set mode 2");
+                setMode(currentTabInfo.mode);
+            }
+        });
+        
+                
+    });
+}
+
+function syncUser() {            
     chrome.storage.sync
         .get(
-            null,
+            null, //
             function(result) {
                 userAccount = result.userAccount;
                 userId = result.userId;
                 // console.log('user acc: '+ result.userAccount);
-
+                
+                //Check whether the tab information cont exists in the storage
+                //var tabsInfoCont = result.tabsInfoCont ? tabsInfoCont : {};                
+                
+                //Add the new tab infomation into the container
+                //tabsInfoCont[currentTabID] = 1; //set the mode to learn as default               
+                // chrome.storage.sync.set({
+                //        'annotationLanguage': 'zh_CN'
+                //    }, function() {});
+                
                 if (userAccount == undefined || typeof userAccount == "string") {
 
                     //This temporary method of generating will not create a true unique ID
@@ -66,8 +145,8 @@ function syncUser() {
                         	user_name: userAccount
                         },
                         success : function(result) { // get successful and result returned by server
-                        	if ('user_id' in obj) {
-                                userId = obj['user_id'];
+                        	if ('user_id' in result) {
+                                userId = result['user_id'];
                                 chrome.storage.sync.set({
                                     'userId': userId
                                 }, function() {});
@@ -80,7 +159,7 @@ function syncUser() {
                 }
 
                 isWorking = result.isWorking;
-                setMode(modeLookUpTable[isWorking]);
+                //setMode(modeLookUpTable[isWorking]);
 
                 wordDisplay = result.wordDisplay;
                 if (wordDisplay == undefined) {
@@ -300,24 +379,32 @@ function setMode(mode) {
     $("#mode .btn").removeClass('active');
     $("#mode .btn").removeClass('btn-primary');
     $("#mode .btn").addClass('btn-default');
-
-    isWorking = modeLookUpTable.indexOf(mode);
-    console.log("switching to " + isWorking);
-    chrome.storage.sync.set({ //Set isWorking to chrome storage
-        'isWorking': isWorking
-    }, function(result) {
-    	$("#mode #" + mode).addClass('active btn-primary');
-        showDivByMode(mode);
-        switchLogo(mode);
-
-        if (isWorking == 1) { //If mode is "learn"
-            unpaintCursor();
-        } else if (isWorking == 2) { //If mode is "annotate"
-            paintCursor();
-        } else { //If mode is disable                     
-            unpaintCursor();
+    
+    $("#mode #" + mode).addClass('active btn-primary');
+    showDivByMode(mode);
+    //switchLogo(mode);
+    mode_enum = modeLookUpTable.indexOf(mode);
+    chrome.runtime.sendMessage(
+        { type: "mode", tab_id: currentTabID, mode: mode_enum },
+        function(response) {
+            console.log("New tab message sent.");
         }
-    });
+    );    
+    //isWorking = modeLookUpTable.indexOf(mode);
+    //console.log("switching to " + isWorking);
+    //chrome.storage.sync.set({ //Set isWorking to chrome storage
+    //    'isWorking': isWorking
+    //}, function(result) {
+    	
+        //if (isWorking == 1) { //If mode is "learn"
+        //    //unpaintCursor();
+        //} else if (isWorking == 2) { //If mode is "annotate"
+        //    
+        //    //paintCursor();
+        //} else { //If mode is disable                     
+        //    //unpaintCursor();
+        //}
+    //});
 }
 
 function addAnnotationContextMenu() {
@@ -443,7 +530,6 @@ function showAnnotationHistory() {
     });
 }
 
-
 // TODO: a new logo for annotation?
 function switchLogo(mode) {
     var imgURL;
@@ -552,6 +638,7 @@ function setAnnotationLinks() {
 
 
 function onWindowLoad() {
+    initalize();
     syncUser();
     setWordReplace();
     setWebsite();
