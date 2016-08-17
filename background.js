@@ -49,17 +49,10 @@ function setMode (mode, tabID) {
             console.log(result);
             chrome.tabs.sendMessage(
                 tabID, 
-                { mode: "annotate",  user_id : result.userId, ann_lang:   tabsInfoCont[tabID].lang}, 
+                { mode: "annotate",  user_id : result.userId, ann_lang: tabsInfoCont[tabID].ann_lang}, 
                 function(response) {} );
-        });
-        
-    }
-    tabsInfoCont[tabID].mode = mode;
-    chrome.storage.local.set({
-            'tabsInfoCont': tabsInfoCont
-        }, function() {
-            console.log("tabsInfoCont is sync-ed.");
-    });
+        });        
+    }    
 }
 //Listener
 chrome.runtime.onMessage.addListener(
@@ -91,36 +84,63 @@ chrome.runtime.onMessage.addListener(
                 }                
                 mode = tmp.mode;
             }            
-            updateLogo(mode);
-            
-            //Update the current window info in google storage local
-            chrome.storage.local.set({
-               'currentWindowInfo':  tabsInfoCont[tabID]
-                }, function() {
-                    console.log("currentWindowInfo is updated.");
-            });            
-            
-            //Still got many more things need to do......
+            updateLogo(mode);      
+            //Many more things need to be done...
 
         } else if (request.type == "new_tab") {
             console.log("Request type is new tab");
             
-            //Set learn mode "1" and lanuage to chinese as default for new tab
-            tabsInfoCont[tabID] = {mode: 1, lang: 'zh_CN'};
+            //Set learn mode "1" and lanuage to chinese for both annotation and learn as default for new tab
+            tabsInfoCont[tabID] = {mode: 1, ann_lang: 'zh_CN', learn_lang: 'zh_CN'};
             //Sync tab information container in google local storage
             chrome.storage.local.set({
                         'tabsInfoCont': tabsInfoCont,
                         'hasTabs': true
                     }, function() {
                         console.log("tabsInfoCont is sync-ed.");
+                        //Send a response back to popup.js to update the UI                        
+                        sendResponse(tabsInfoCont[tabID]);
             });
+            //From Google API...
+            //This function becomes invalid when the event listener returns, 
+            //unless you return true from the event listener to 
+            //indicate you wish to send a response asynchronously 
+            //(this will keep the message channel open to the other end 
+            //until sendResponse is called).
+            return true;
         } else if (request.type == "mode") {
             setMode(request.mode, tabID);
-        }       
-        //sendResponse("bar");
+            //Update the local chrome storage with the local copy
+            tabsInfoCont[tabID].mode = request.mode;
+            chrome.storage.local.set({
+                    'tabsInfoCont': tabsInfoCont
+                }, function() {
+                    console.log("tabsInfoCont is sync-ed.");
+            });
+            
+        } else if (request.type == "update_tab") {
+            //Iterate all the settings and update the local copy
+            for (var key in request.settings) {
+                tabsInfoCont[tabID][key] = request.settings[key];
+            }
+            //Update the local chrome storage with the local copy
+            chrome.storage.local.set({
+                        'tabsInfoCont': tabsInfoCont,
+                    }, function() {
+                        console.log("tabsInfoCont is sync-ed.");                        
+                }
+            );
+            //If the request has send for request to update the mode.
+            if (request.update_mode) {
+                setMode(tabsInfoCont[tabID].mode, tabID);
+            }
+        }        
     }
 );
 
+//Since there is no proper on close event for chrome yet
+//We will clear the local storage of chrome when background.js is loaded
+//and set the tabs information container
 $(document).ready(function() {
     chrome.storage.local.clear();
     chrome.storage.local.set({

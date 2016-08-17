@@ -17,9 +17,11 @@ var hostUrl = 'https://wordnews-server-kite19881.c9users.io'
 //var hostUrl = 'http://wordnews.herokuapp.com/';
 //var hostUrl = 'http://localhost:3000/';
 
+var isWorking = ''; // 0: disable, 1: learn, 2: annotation //TODO: Need to remove
+
+//These variables are only "alive" as long as popup.html is showing
 var userAccount = ''; //this is username
 var userId = -1; // this is user internal id
-var isWorking = ''; // 0: disable, 1: learn, 2: annotation
 var categoryParameter = '';
 var wordDisplay = ''; //0: in target language, 1: in source language
 var wordsLearn = ''; // number of words to learn
@@ -60,6 +62,16 @@ function programmaticInjection () {
     
 }
 
+function updatePopupUI (currentTabInfo) {
+    var mode = modeLookUpTable[currentTabInfo.mode];
+    setMode(mode);            
+    
+    //Update Learn language UI
+    $('#learn-panel .bfh-selectbox').val(currentTabInfo.learn_lang);
+    //Update Annotation language UI
+    $('#annotate-panel .bfh-selectbox').val(currentTabInfo.ann_lang);
+}
+
 function initalize() {
     //Shift tab query call to outside to ensure that currentTabID is initialized before entering next
     chrome.tabs.query({
@@ -67,37 +79,31 @@ function initalize() {
         currentWindow: true
     }, function(arrayOfTabs) {
         //Get the current tab id 
-        currentTabID = arrayOfTabs[0].id;
-        
+        currentTabID = arrayOfTabs[0].id;        
         //Grab all the data from the google local storage
-        chrome.storage.local.get(null, function (result) {
-            
-            console.log(result);
+        chrome.storage.local.get(null, function (result) {                        
             var currentTabInfo = undefined;
             if (result.hasTabs) {
                 //Use the current tab id to get the tab information
                 currentTabInfo = result.tabsInfoCont[currentTabID];
-            } 
-            
-            //If current tab info is undefined, it means this a new tab
+            }             
             console.log(currentTabInfo);
+            //If current tab info is undefined, it means this a new tab
             if (currentTabInfo == undefined) {              
                 //Send message to background to register the new tab
                 chrome.runtime.sendMessage(
                     { type: "new_tab", tab_id: currentTabID },
                     function(response) {
-                        console.log("New tab message sent.");
-                        console.log("init set mode 1");
-                        setMode("learn");
+                        //background.js will respond back with current tab info to update the UI
+                        console.log("New tab message sent.");         
+                        //console.log("New tab response", response);
+                        updatePopupUI(response);
                     }
                 );
-            } else {
-                console.log("init set mode 2");
-                setMode(modeLookUpTable[currentTabInfo.mode]);
-            }
-        });
-        
-                
+            } else {                
+                updatePopupUI(currentTabInfo);                
+            }            
+        });     
     });
 }
 
@@ -233,19 +239,7 @@ function syncUser() {
                 }
                 if (websiteSetting.indexOf('all') !== -1) {
                     document.getElementById('inlineCheckbox4').checked = true;
-                }
-
-                // Learn language
-                learnLanguage = result.learnLanguage;
-                if (learnLanguage == null) {
-                	learnLanguage = 'zh_CN';
-                    chrome.storage.sync.set({
-                        'learnLanguage': 'zh_CN'
-                    }, function() {});
-                }
-                $('#learn-panel .bfh-selectbox').val(learnLanguage);
-                
-                
+                }                
 
                 // TODO: use $.get()
                 var remembered = new HttpClient();
@@ -269,15 +263,7 @@ function syncUser() {
                             }
                         });
 
-                // Annotation language
-                annotationLanguage = result.annotationLanguage;
-                if (annotationLanguage == null) {
-                	annotationLanguage = 'zh_CN';
-                    chrome.storage.sync.set({
-                        'annotationLanguage': 'zh_CN'
-                    }, function() {});
-                }
-                $('#annotate-panel .bfh-selectbox').val(annotationLanguage);
+                
 
                 showAnnotationHistory();
             });
@@ -387,24 +373,9 @@ function setMode(mode) {
     chrome.runtime.sendMessage(
         { type: "mode", tab_id: currentTabID, mode: mode_enum },
         function(response) {
-            console.log("New tab message sent.");
+            //console.log("New tab message sent.");
         }
     );    
-    //isWorking = modeLookUpTable.indexOf(mode);
-    //console.log("switching to " + isWorking);
-    //chrome.storage.sync.set({ //Set isWorking to chrome storage
-    //    'isWorking': isWorking
-    //}, function(result) {
-    	
-        //if (isWorking == 1) { //If mode is "learn"
-        //    //unpaintCursor();
-        //} else if (isWorking == 2) { //If mode is "annotate"
-        //    
-        //    //paintCursor();
-        //} else { //If mode is disable                     
-        //    //unpaintCursor();
-        //}
-    //});
 }
 
 function addAnnotationContextMenu() {
@@ -471,45 +442,34 @@ function setAnnotationLanguage() {
     $('#annotate-panel .bfh-selectbox').on('change.bfhselectbox', function() {
         annotationLanguage = $(this).val();
         console.log("set annotation language on popup.html: " + annotationLanguage);
-        chrome.storage.sync.set({
-            'annotationLanguage': annotationLanguage
-        });
 
+        chrome.runtime.sendMessage(
+            { type: "update_tab", tab_id: currentTabID, settings: {ann_lang: annotationLanguage}, update_mode: true },
+            function(response) {                
+                console.log("Updated annotation language.");               
+                //TODO: Check whether is there a need to update learn with new language selected
+            }
+        );
         showAnnotationHistory();
+        //Update the annotation links with the newly selected language
         setAnnotationLinks();
-
-        chrome.tabs.query({
-            active: true,
-            currentWindow: true
-        }, function(arrayOfTabs) {
-            chrome.tabs.sendMessage(arrayOfTabs[0].id, { ann_lang: annotationLanguage }, function(response) {});
-        });
-
-        //window.close();
     });
 }
-
-
 
 function setLearnLanguage() {
     $('#learn-panel .bfh-selectbox').on('change.bfhselectbox', function() {
         learnLanguage = $(this).val();
         console.log("set learning language on popup.html: " + learnLanguage);
-        chrome.storage.sync.set({
-            'learnLanguage': learnLanguage
-        });
-
-        /*chrome.tabs.query({
-            active: true,
-            currentWindow: true
-        }, function(arrayOfTabs) {
-            chrome.tabs.sendMessage(arrayOfTabs[0].id, { learn_lang: learnLanguage }, function(response) {});
-        });*/
-
-        //window.close();
+        //Send message to background.js to update the tab settings
+        chrome.runtime.sendMessage(
+            { type: "update_tab", tab_id: currentTabID, settings: {learn_lang: learnLanguage}, update_mode: false },
+            function(response) {                
+                console.log("Updated learn language.");               
+                //TODO: Check whether is there a need to update learn with new language selected
+            }
+        );
     });
 }
-
 
 function showAnnotationHistory() {
     $.ajax({
@@ -528,19 +488,6 @@ function showAnnotationHistory() {
             }
         }
     });
-}
-
-// TODO: a new logo for annotation?
-function switchLogo(mode) {
-    var imgURL;
-    if (mode == 'disable') {
-        imgURL = chrome.extension.getURL("images/logo-gray.png");
-    } else if (mode == 'annotate') {
-        imgURL = chrome.extension.getURL("images/logo.png");
-    } else {
-        imgURL = chrome.extension.getURL("images/logo.png");
-    }
-    chrome.browserAction.setIcon({ path: imgURL });
 }
 
 // TODO: refine code
