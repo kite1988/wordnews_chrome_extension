@@ -571,8 +571,9 @@ function paintCursor() {
     document.body.style.cursor = "url(" + cursor + "),auto";
 }
 
+//Since reload
 function unpaintCursor() {
-    window.location.reload();
+    //window.location.reload();
     $('body').unbind("mouseup", paragraphFormatTag);
 }
 
@@ -726,26 +727,6 @@ function appendAnnotationCounterForURL (link) {
         }
     });            
 }
-
-// add listeners
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
-    //console.log(request);
-    if ('mode' in request) {
-	    if (request.mode == "annotate") {
-            annotationLanguage = request.ann_lang;
-	        console.log("annotate mode lang:" + annotationLanguage);
-            //TODO: Need to get the main framework to send new page(includes refreshed page) event 
-	        beginAnnotation(request.user_id);
-	    } else if (request.mode == "unannotate"){
-	        console.log(request.mode);
-	        unpaintCursor();
-	    }
-    } else if ('ann_lang' in request) {
-        annotationLanguage = request.ann_lang;
-    	console.log("update lang to " + annotationLanguage);
-    }
-});
 
 function beginAnnotation(userId) {
 	showAnnotations(userId);

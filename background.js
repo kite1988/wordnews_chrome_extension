@@ -39,8 +39,8 @@ function updateLogo (mode) {
 function setMode (mode, tabID) {
     updateLogo(mode);
     //TODO: the condition for learn is temporary
-    if (mode == modeENUM.disable || modeENUM.learn == mode) {
-        chrome.tabs.sendMessage(tabID, { mode: "unannotate" }, function(response) {});
+    if (mode == modeENUM.disable) {
+        //chrome.tabs.sendMessage(tabID, { mode: "unannotate" }, function(response) {});
         //TODO: Check whether does learn mode has listener to disable learn mode
         //Send message to learn for deactivation
     }
@@ -52,7 +52,16 @@ function setMode (mode, tabID) {
                 { mode: "annotate",  user_id : result.userId, ann_lang: tabsInfoCont[tabID].ann_lang}, 
                 function(response) {} );
         });        
-    }    
+    }
+    else if (modeENUM.learn == mode) {
+        chrome.tabs.sendMessage(
+            tabID, 
+            { mode: "learn" }, 
+            function(response) {
+                
+            } 
+        );
+    }
 }
 //Listener
 chrome.runtime.onMessage.addListener(
@@ -91,7 +100,11 @@ chrome.runtime.onMessage.addListener(
             console.log("Request type is new tab");
             
             //Set learn mode "1" and lanuage to chinese for both annotation and learn as default for new tab
-            tabsInfoCont[tabID] = {mode: 1, ann_lang: 'zh_CN', learn_lang: 'zh_CN'};
+            tabsInfoCont[tabID] = { mode: 1, 
+                                    ann_lang: 'zh_CN', 
+                                    learn_lang: 'zh_CN',
+                                    wordDisplay: 1,
+                                  };
             //Sync tab information container in google local storage
             chrome.storage.local.set({
                         'tabsInfoCont': tabsInfoCont,

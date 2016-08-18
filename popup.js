@@ -17,7 +17,7 @@ var hostUrl = 'https://wordnews-server-kite19881.c9users.io'
 //var hostUrl = 'http://wordnews.herokuapp.com/';
 //var hostUrl = 'http://localhost:3000/';
 
-var isWorking = ''; // 0: disable, 1: learn, 2: annotation //TODO: Need to remove
+//TODO: Need to remove isWorking from learn.js, annotate.js and content-share.js
 
 //These variables are only "alive" as long as popup.html is showing
 var userAccount = ''; //this is username
@@ -107,6 +107,7 @@ function initalize() {
     });
 }
 
+//TODO: Need to revamp this whole function!!!
 function syncUser() {            
     chrome.storage.sync
         .get(
@@ -114,16 +115,6 @@ function syncUser() {
             function(result) {
                 userAccount = result.userAccount;
                 userId = result.userId;
-                // console.log('user acc: '+ result.userAccount);
-                
-                //Check whether the tab information cont exists in the storage
-                //var tabsInfoCont = result.tabsInfoCont ? tabsInfoCont : {};                
-                
-                //Add the new tab infomation into the container
-                //tabsInfoCont[currentTabID] = 1; //set the mode to learn as default               
-                // chrome.storage.sync.set({
-                //        'annotationLanguage': 'zh_CN'
-                //    }, function() {});
                 
                 if (userAccount == undefined || typeof userAccount == "string") {
 
@@ -164,8 +155,6 @@ function syncUser() {
                     });  
                 }
 
-                isWorking = result.isWorking;
-                //setMode(modeLookUpTable[isWorking]);
 
                 wordDisplay = result.wordDisplay;
                 if (wordDisplay == undefined) {
@@ -199,6 +188,7 @@ function syncUser() {
                     document.getElementById('bingTranslations').className = 'btn btn-default';
                 }
 
+                //TODO: Need to shift this to tab level settings
                 wordsLearn = result.wordsLearn;
                 // console.log('wordsLearn '+wordsLearn);
                 if (wordsLearn == undefined) {
@@ -218,7 +208,7 @@ function syncUser() {
                             // specified precision
                     });
                 }
-
+                //TODO: Need to shift this to tab level settings
                 websiteSetting = result.websiteSetting;
                 // console.log('websiteSetting '+websiteSetting);
                 if (websiteSetting == undefined) {
@@ -228,6 +218,7 @@ function syncUser() {
                         'websiteSetting': websiteSetting
                     });
                 }
+                //TODO: Double check this code again, there is no "all" checkbox
                 if (websiteSetting.indexOf('cnn.com') !== -1) {
                     document.getElementById('inlineCheckbox1').checked = true;
                 }
@@ -237,9 +228,9 @@ function syncUser() {
                 if (websiteSetting.indexOf('bbc.co') !== -1) {
                     document.getElementById('inlineCheckbox3').checked = true;
                 }
-                if (websiteSetting.indexOf('all') !== -1) {
-                    document.getElementById('inlineCheckbox4').checked = true;
-                }                
+                //if (websiteSetting.indexOf('all') !== -1) {
+                //    document.getElementById('inlineCheckbox4').checked = true;
+                //}                
 
                 // TODO: use $.get()
                 var remembered = new HttpClient();
@@ -248,23 +239,20 @@ function syncUser() {
                 document.getElementById('learnt').innerHTML = '-';
                 document.getElementById('toLearn').innerHTML = '-';
 
-                remembered
-                    .get(
-                        hostUrl + '/getNumber?name=' + userAccount,
-                        function(answer) {
-                            var obj = JSON.parse(answer);
-                            if ('learnt' in obj) {
-                                document
-                                    .getElementById('learnt').innerHTML = obj['learnt'];
-                            }
-                            if ('toLearn' in obj) {
-                                document
-                                    .getElementById('toLearn').innerHTML = obj['toLearn'];
-                            }
-                        });
-
-                
-
+                remembered.get(
+                    hostUrl + '/getNumber?name=' + userAccount,
+                    function(answer) {
+                        var obj = JSON.parse(answer);
+                        if ('learnt' in obj) {
+                            document
+                                .getElementById('learnt').innerHTML = obj['learnt'];
+                        }
+                        if ('toLearn' in obj) {
+                            document
+                                .getElementById('toLearn').innerHTML = obj['toLearn'];
+                        }
+                    }
+                );
                 showAnnotationHistory();
             });
 }
@@ -396,27 +384,6 @@ function removeAnnotationContextMenu() {
     chrome.contextMenus.removeAll();
 }
 
-function paintCursor() {
-    console.log("paint cursor");
-    chrome.tabs.query({
-        active: true,
-        currentWindow: true
-    }, function(arrayOfTabs) {
-        chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "annotate", user_id: userId, ann_lang: annotationLanguage },
-            function(response) {});
-    });
-}
-
-function unpaintCursor() {
-    console.log("unpaint");
-    chrome.tabs.query({
-        active: true,
-        currentWindow: true
-    }, function(arrayOfTabs) {
-        chrome.tabs.sendMessage(arrayOfTabs[0].id, { mode: "unannotate" }, function(response) {});
-    });
-}
-
 function showDivByMode(mode) {
     var learn = document.getElementById('learn-panel');
     var annotate = document.getElementById('annotate-panel');
@@ -446,8 +413,7 @@ function setAnnotationLanguage() {
         chrome.runtime.sendMessage(
             { type: "update_tab", tab_id: currentTabID, settings: {ann_lang: annotationLanguage}, update_mode: true },
             function(response) {                
-                console.log("Updated annotation language.");               
-                //TODO: Check whether is there a need to update learn with new language selected
+                console.log("Updated annotation language.");                               
             }
         );
         showAnnotationHistory();
@@ -491,6 +457,7 @@ function showAnnotationHistory() {
 }
 
 // TODO: refine code
+//       and shift this to tab level settings
 function setReplace() {
 	
 	$('#displayLanguage .btn').click(function() {
@@ -582,7 +549,6 @@ function setAnnotationLinks() {
         }
     });
 }
-
 
 function onWindowLoad() {
     initalize();

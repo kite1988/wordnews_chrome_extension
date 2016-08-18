@@ -11,7 +11,6 @@
 
 // TODO: move into UserSettings
 var userAccount = '';
-var isWorking = '';
 var categoryParameter = '';
 var wordDisplay;
 
@@ -24,6 +23,7 @@ var TranslationDirection = {
     ENGLISH: 1
 };
 var isTranslatingByParagraph = true;
+
 var learnLanguage = '';
 
 var wordsReplaced = '';
@@ -32,7 +32,7 @@ var pageDictionary = {};
 var vocabularyListDisplayed;
 var displayID = '';
 var contentToPopupForDisplayId = {};
-var websiteSetting = '';
+
 
 var idToOriginalWordDictionary = {};
 
@@ -629,16 +629,16 @@ function beginTranslating() {
         }
     }
 
-    console.log('isWorking ' + isWorking + ' websiteCheck ' + isWebsiteForTranslation);
+    console.log('websiteCheck ' + isWebsiteForTranslation);
 
-    if (isWorking == 1 && isWebsiteForTranslation) {
+    if (isWebsiteForTranslation) {
         // request at the start
         //Notification.requestPermission();
         //spawnNotification(null, null, 'WordNews is replacing some words in this article');
         $(window).scroll(function() {
             // if the user scrolls to the button of the page, display the list of words learned
             if ($(window).scrollTop() + $(window).height() === $(document).height() - 300) {
-                var wordList = [];
+                var wordList = [];//TODO: word list is not being used
 
                 for (var key of pageWordsLearned) {
                     var value = idToOriginalWordDictionary[key];

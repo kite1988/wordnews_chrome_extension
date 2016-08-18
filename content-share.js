@@ -1,23 +1,22 @@
 // Shared functions and configurations for learning and annotation mode
 
-//TODO: These variables are also in popup.js
-var modeLookUpTable = ["disable", "learn", "annotate"];
+//TODO: Variables such as isWorking, userAccount, wordDisplay, wordsReplace and translationUrl
+//      are declared in learn.js BUT initalized at here!!!
+//      Need to remove these variables from learn.js and shift them to their respective settings.
 
-var modes = {
-    disable: 0,
-    learn: 1,
-    annotate: 2
-};
-
-var currentMode = modes.disable;
 
 // TODO: move common variables to here
 var hostUrl = "https://wordnews-server-kite19881.c9users.io";
+//TODO: Need to find ways to put websiteSetting to user level settings.
+//      For now it is hardcoded        
+var websiteSetting = "cnn.com_bbc.co";
 
-
+//TODO: Better to bring this over to background.js since there is a similar function as this.
+//      Also, why is handleInitResult is stored in sync???
 if (typeof chrome != 'undefined') {
     console.log('Chrome, initializating with chrome storage.');
-    chrome.storage.sync.get(null, handleInitResult);
+    //TODO: Revamp initalize function
+    //chrome.storage.sync.get(null, handleInitResult);
 } else {
     console.log('Not chrome, waiting for manual initialization.');
 }
@@ -25,6 +24,8 @@ if (typeof chrome != 'undefined') {
 // This function is called from Android client, with appropriate params
 function initFromAndroid(androidID, andoridScreenWidth) {
     console.log('initFromAndroid: ' + androidID + ' ' + andoridScreenWidth);
+    //TODO: The function parameter does not match with function defination
+    //      unless it is calling handleInitResult at some other files.
     handleInitResult({
         userAccount: androidID
     });
@@ -38,7 +39,7 @@ function saveSetting(obj) {
         console.log('saving setting for other clients not implemented.');
     }
 }
-
+//Need to change this for website
 function handleInitResult(result, androidID) {
 
     var allKeys = Object.keys(result);
@@ -67,13 +68,14 @@ function initLearn(result) {
     if ( typeof result.wordDisplay != 'undefined' ) {
         wordDisplay = result.wordDisplay
     }
+    //TODO: wordsReplace is not being used by anywhere. Check again before removing this
     if ( typeof result.wordsReplaced != 'undefined' ) {
         wordsReplaced = result.wordsReplaced
     }
     if ( typeof result.websiteSetting != 'undefined' ) {
         websiteSetting = result.websiteSetting
     }
-
+    //TODO: translationUrl is being initialized twice! Once here and another time at learn.js
     console.log(result.translationUrl);
     if (typeof result.translationUrl != 'undefined') {
         translationUrl = result.translationUrl;
@@ -85,7 +87,7 @@ function initLearn(result) {
     //console.log("user wordsReplaced: "+ result.wordsReplaced);
     //console.log("user websiteSetting: "+ result.websiteSetting);
 
-    
+    //TODO: Find where is TranslationDirection defined at
 	if (wordDisplay == undefined) {
         wordDisplay = TranslationDirection.ENGLISH;
         saveSetting({ 'wordDisplay': wordDisplay });
@@ -111,8 +113,7 @@ function initLearn(result) {
     if (learnLanguage == null) {
     	learnLanguage = 'zh_CN';
         saveSetting ({'learnLanguage': 'zh_CN'});
-    }
-    
+    }    
 
     if (userAccount == undefined) {
         // Register an account
@@ -198,14 +199,7 @@ $(window).on("blur focus", function(e) {
     if (prevType != e.type) {   //  reduce double fire issues
         switch (e.type) {
             case "blur":
-                console.log("Blured");
-                //chrome.runtime.sendMessage(
-                //    //Send message to background.js that this tab is active
-                //    {type: "active", value: false},
-                //    function (response) {
-                //        console.log(response);
-                //    }
-                //);     
+                console.log("Blured"); 
                 break;
             case "focus": //Update the chrome UI
                 console.log("Focused")                
@@ -213,10 +207,7 @@ $(window).on("blur focus", function(e) {
                 chrome.runtime.sendMessage(                                
                     {type: "active", value: true},
                     function (response) {                       
-                });   
-                        
-                    
-                
+                });      
                 break;
         }
     }
@@ -224,5 +215,37 @@ $(window).on("blur focus", function(e) {
     $(this).data("prevType", e.type);
 })
 
+//This is temporary variable to use for checking the differences of mode and when to reload the page
+var currentMode = "disable";
+
+//Listener to handle event messages from background.js
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    //console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
+    
+    //If request mode is disable or current mode is disable and current mode is different from request mode
+    if (request.mode == "disable" || ((currentMode != "disable") && (currentMode != request.mode)) ) {
+	    //Need to clear both annotation and learn 
+	    //TODO: Need ways to disable the functionality of annotation and learn without restarting
+        window.location.reload();        
+	} 
+    
+	if (request.mode == "annotate") {
+        annotationLanguage = request.ann_lang;
+	    //console.log("annotate mode lang:" + annotationLanguage);        
+	    beginAnnotation(request.user_id);
+	}     
+    else if (request.mode == "learn") {
+        learnLanguage = request.learn_lang;
+        beginTranslating();
+    }
+    
+    currentMode = request.mode;
+    
+    //TODO: This doesn't makes any sense unless the request only send ann_lang in the parameter
+    if ('ann_lang' in request) {
+        annotationLanguage = request.ann_lang;
+    	console.log("update lang to " + annotationLanguage);
+    }
+});
 
 
