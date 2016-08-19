@@ -620,7 +620,7 @@ function getArticleTitleAndPublicationDate() {
                 dateElem = document.getElementsByClassName("timestamp")[0];
                 dateElem = dateElem.getElementsByTagName("time")[0];
                 //Convert the timestamp into int because Date() takes in int for timestamp
-                timestamp = parseInt(dateElem.dataset.timestamp);
+                timestamp = (parseInt(dateElem.dataset.timestamp) - 28800) * 1000;
             }
         }
         else {

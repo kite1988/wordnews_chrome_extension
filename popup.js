@@ -70,6 +70,24 @@ function updatePopupUI (currentTabInfo) {
     $('#learn-panel .bfh-selectbox').val(currentTabInfo.learn_lang);
     //Update Annotation language UI
     $('#annotate-panel .bfh-selectbox').val(currentTabInfo.ann_lang);
+    
+    //Update Words learn UI
+    if (currentTabInfo.wordsDisplay == 0) { // show target (e.g., Chinese)
+        document.getElementById('displaySource').className = 'btn btn-default';
+        document.getElementById('displayTarget').className = 'btn btn-primary active';
+    } else {
+        document.getElementById('displaySource').className = 'btn btn-primary active';
+        document.getElementById('displayTarget').className = 'btn btn-default';
+    }    
+    console.log(currentTabInfo);
+    //Update wordsLearn UI;
+    $('#wordsLearn').slider({
+        precision: 2,
+        value: currentTabInfo.wordsLearn
+            // Slider will instantiate showing 8.12 due to
+            // specified precision
+    });
+    
 }
 
 function initalize() {
@@ -153,24 +171,7 @@ function syncUser() {
                             console.log( "get user id failed" );
                         }
                     });  
-                }
-
-
-                wordDisplay = result.wordDisplay;
-                if (wordDisplay == undefined) {
-                    wordDisplay = 1;
-                    chrome.storage.sync.set({
-                        'wordDisplay': wordDisplay
-                    });
-                }
-                console.log('wordDisplay ' + wordDisplay);
-                if (wordDisplay == 0) { // show target (e.g., Chinese)
-                    document.getElementById('displaySource').className = 'btn btn-default';
-                    document.getElementById('displayTarget').className = 'btn btn-primary active';
-                } else {
-                    document.getElementById('displaySource').className = 'btn btn-primary active';
-                    document.getElementById('displayTarget').className = 'btn btn-default';
-                }
+                }               
 
                 translationUrl = result.translationUrl || "http://wordnews-mobile.herokuapp.com/";
                 console.log('transUrl', translationUrl);
@@ -188,27 +189,8 @@ function syncUser() {
                     document.getElementById('bingTranslations').className = 'btn btn-default';
                 }
 
-                //TODO: Need to shift this to tab level settings
-                wordsLearn = result.wordsLearn;
-                // console.log('wordsLearn '+wordsLearn);
-                if (wordsLearn == undefined) {
-                    wordsLearn = 2;
-                    // console.log('Set to default wordsLearn
-                    // setting');
-                    chrome.storage.sync.set({
-                        'wordsLearn': wordsLearn
-                    });
-                } else {
-                    // document.getElementById('wordsLearn').value =
-                    // wordsLearn;
-                    $('#wordsLearn').slider({
-                        precision: 2,
-                        value: wordsLearn
-                            // Slider will instantiate showing 8.12 due to
-                            // specified precision
-                    });
-                }
-                //TODO: Need to shift this to tab level settings
+                
+                //TODO: Need to shift this to app level settings
                 websiteSetting = result.websiteSetting;
                 // console.log('websiteSetting '+websiteSetting);
                 if (websiteSetting == undefined) {
@@ -257,6 +239,7 @@ function syncUser() {
             });
 }
 
+//TODO: Need to update wordsLearn variable at background.js
 function setWordReplace() {
     $('#wordsLearn').on('slide', function(slideEvt) {
         chrome.storage.sync.set({
@@ -295,12 +278,7 @@ function setWebsite() {
 
         chrome.storage.sync.set({
             'websiteSetting': websiteSetting
-        });
-        chrome.storage.sync.get('websiteSetting', function(result) {
-            // TODO: why? should be websiteSetting = result.websiteSetting
-            userAccount = result.websiteSetting;
-            // console.log('user websiteSetting: '+ result.websiteSetting);
-        });
+        });        
     });
 }
 

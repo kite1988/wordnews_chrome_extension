@@ -10,6 +10,10 @@ var modeENUM = { disable: 0, learn : 1, annotation :2 };
 //Have a local copy of current window store in Google storage local
 var currentWindowInfo;
 
+var userID;
+
+var websiteSetting = {};
+
 /**
  * Obtains a OAuth2 token_id from google. Validate the token_id with the backend and obtain the email to be
  * used as the idenfifier of the user.
@@ -103,7 +107,8 @@ chrome.runtime.onMessage.addListener(
             tabsInfoCont[tabID] = { mode: 1, 
                                     ann_lang: 'zh_CN', 
                                     learn_lang: 'zh_CN',
-                                    wordDisplay: 1,
+                                    wordsDisplay: 0,
+                                    wordsLearn: 0
                                   };
             //Sync tab information container in google local storage
             chrome.storage.local.set({
