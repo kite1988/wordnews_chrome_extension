@@ -142,7 +142,7 @@ function syncUser() {
 
                     //This temporary method of generating will not create a true unique ID
                     var i = new Date().getTime();;
-                    i = i & 0xffffffff;
+                    i = i & 0xffffff;
                     userAccount = (i + Math.floor(Math.random() * i)); //'id' + d.getTime() + '_1';
 
                     chrome.storage.sync.set({
@@ -234,11 +234,12 @@ function syncUser() {
 }
 
 //TODO: Need to update wordsLearn variable at background.js
-function setWordReplace() {
-    $('#wordsLearn').on('slide', function(slideEvt) {
-        chrome.storage.sync.set({
-            'wordsLearn': slideEvt.value
-        });
+function setWordReplace() {   
+   $('#wordsLearn').on('slide', function(slideEvt) {
+        chrome.runtime.sendMessage(
+            { type: "update_tab", tab_id: currentTabID, settings: {wordsLearn: slideEvt.value}, update_mode: false },
+            function(response) { }
+        );               
     });
 }
 
