@@ -5,19 +5,20 @@ var logoImgDir = [  "images/logo-gray.png", //disable
                     "images/logo.png" //annotation
                  ];
                  
-var modeENUM = { disable: 0, learn : 1, annotation :2 };
+var modeENUM = { disable: 0, learn : 1, annotation: 2 };
 
 //Have a local copy of current window store in Google storage local
 var currentWindowInfo;
 
 var userID;
 
-var websiteSetting = {};
+
 
 /**
  * Obtains a OAuth2 token_id from google. Validate the token_id with the backend and obtain the email to be
  * used as the idenfifier of the user.
  */
+ 
 chrome.storage.sync.get(null, function(result) {
   var url = makeUrlForGoogleOAuth();
 
@@ -25,12 +26,13 @@ chrome.storage.sync.get(null, function(result) {
      // launchGoogleLoginFlow(url);
   //}
   
-  var isWorking = result.isWorking;
-  if (isWorking == 0) {
-      
-      var imgURL = chrome.extension.getURL("images/logo-gray.png");
-      chrome.browserAction.setIcon({ path: imgURL });
-  } 
+  // isWorking does not exists anymore
+  //var isWorking = result.isWorking;
+  //if (isWorking == 0) {
+  //    
+  //    var imgURL = chrome.extension.getURL("images/logo-gray.png");
+  //    chrome.browserAction.setIcon({ path: imgURL });
+  //} 
 });
 
 function updateLogo (mode) {
@@ -152,7 +154,9 @@ chrome.runtime.onMessage.addListener(
             if (request.update_mode) {
                 setMode(tabsInfoCont[tabID].mode, tabID);
             }
-        }        
+        } else if (request.type == "new_page") {
+            
+        }
     }
 );
 

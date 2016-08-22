@@ -617,13 +617,14 @@ function paragraphsInArticle() {
 function beginTranslating() {
 
     var isWebsiteForTranslation = 0;
-    var splitedWebsite = websiteSetting.split("_");
+    //var splitedWebsite = websiteSetting.split("_");
 
-    if (websiteSetting.indexOf('all') !== -1) {
+    if (appSetting.websiteSetting.indexOf(websiteSettingENUM.all) !== -1) {
         isWebsiteForTranslation = 1;
     } else {
-        for (var k = 0; k < splitedWebsite.length; k++) {
-            if (document.URL.indexOf(splitedWebsite[k]) !== -1 && websiteSetting !== "") {
+        for (var k = 0; k < appSetting.websiteSetting.length; k++) {
+            var website = websiteSettingLookupTable[appSetting.websiteSetting[k]];
+            if (document.URL.indexOf(website) !== -1) {
                 isWebsiteForTranslation = 1;
             }
         }

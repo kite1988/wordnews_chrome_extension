@@ -33,6 +33,8 @@ var currentTabID;
 var modeLookUpTable = ["disable", "learn", "annotate"];
 var mostAnnotatedArticle = 10;
 
+var websiteSetting = [];
+
 //This function will inject all the the scripts
 function programmaticInjection () {
     var js = [  "jquery-2.1.1.min.js",
@@ -125,8 +127,10 @@ function initalize() {
     });
 }
 
-//TODO: Need to revamp this whole function!!!
+//TODO: Need to revamp this whole function!
 function syncUser() {            
+    //chrome.storage.sync.clear();
+    
     chrome.storage.sync
         .get(
             null, //
@@ -188,31 +192,21 @@ function syncUser() {
                     document.getElementById('imsTranslations').className = 'btn btn-primary active';
                     document.getElementById('bingTranslations').className = 'btn btn-default';
                 }
-
-                
-                //TODO: Need to shift this to app level settings
+                                
                 websiteSetting = result.websiteSetting;
-                // console.log('websiteSetting '+websiteSetting);
+                
+                console.log('websiteSetting '+ websiteSetting);
                 if (websiteSetting == undefined) {
-                    websiteSetting = 'cnn.com_bbc.co';
+                    websiteSetting = [1,3];//'cnn.com & bbc.co';
                     // console.log('Set to default website setting');
                     chrome.storage.sync.set({
                         'websiteSetting': websiteSetting
                     });
                 }
-                //TODO: Double check this code again, there is no "all" checkbox
-                if (websiteSetting.indexOf('cnn.com') !== -1) {
-                    document.getElementById('inlineCheckbox1').checked = true;
-                }
-                if (websiteSetting.indexOf('chinadaily.com.cn') !== -1) {
-                    document.getElementById('inlineCheckbox2').checked = true;
-                }
-                if (websiteSetting.indexOf('bbc.co') !== -1) {
-                    document.getElementById('inlineCheckbox3').checked = true;
-                }
-                //if (websiteSetting.indexOf('all') !== -1) {
-                //    document.getElementById('inlineCheckbox4').checked = true;
-                //}                
+                //Update the UI
+                for (var i = 0; i < websiteSetting.length; ++i) {
+                    document.getElementById('inlineCheckbox' + websiteSetting[i]).checked = true;
+                }                
 
                 // TODO: use $.get()
                 var remembered = new HttpClient();
@@ -250,32 +244,15 @@ function setWordReplace() {
 
 function setWebsite() {
     $('input').change(function() {
-
-        websiteSetting = '';
-        if (document.getElementById('inlineCheckbox1').checked == true) {
-            if (websiteSetting !== '')
-                websiteSetting += '_';
-            websiteSetting += document.getElementById('inlineCheckbox1').value;
+        console.log("Set Website");
+        websiteSetting = [];
+        //Iterate the checkbox, as for now, there is only 3 checkboxes      
+        for (var i = 1; i <= 3; ++i)
+        {
+            if (document.getElementById('inlineCheckbox' + i).checked) {
+                websiteSetting.push(i);
+            }
         }
-
-        if (document.getElementById('inlineCheckbox2').checked == true) {
-            if (websiteSetting !== '')
-                websiteSetting += '_';
-            websiteSetting += document.getElementById('inlineCheckbox2').value;
-        }
-        if (document.getElementById('inlineCheckbox3').checked == true) {
-            if (websiteSetting !== '')
-                websiteSetting += '_';
-            websiteSetting += document.getElementById('inlineCheckbox3').value;
-        }
-
-        // Comment out temporarily for now, to prevent the use of 'All website'
-        /*
-         * if(document.getElementById('inlineCheckbox4').checked == true) {
-         * if(websiteSetting !== '') websiteSetting += '_'; websiteSetting+=
-         * document.getElementById('inlineCheckbox4').value; }
-         */
-
         chrome.storage.sync.set({
             'websiteSetting': websiteSetting
         });        

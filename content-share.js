@@ -1,21 +1,30 @@
 // Shared functions and configurations for learning and annotation mode
 
 //TODO: Variables such as isWorking, userAccount, wordDisplay, wordsReplace and translationUrl
-//      are declared in learn.js BUT initalized at here!!!
+//      are declared in learn.js BUT initalized at here
 //      Need to remove these variables from learn.js and shift them to their respective settings.
 
+var websiteSettingENUM = {cnn: 1, chinadaily: 2, bbc: 3};
+var websiteSettingLookupTable = ['none', 'cnn.com', 'chinadaily.com.cn', 'bbc.co']; //none is just a buffer
+var appSetting = {
+    websiteSetting: [],
+    userId: ""
+};
 
 // TODO: move common variables to here
 var hostUrl = "https://wordnews-server-kite19881.c9users.io";
 //TODO: Need to find ways to put websiteSetting to user level settings.
 //      For now it is hardcoded        
-var websiteSetting = "cnn.com_bbc.co";
 
-//TODO: Better to bring this over to background.js since there is a similar function as this.
-//      Also, why is handleInitResult is stored in sync???
+//TODO: Why is handleInitResult is stored in sync???
 if (typeof chrome != 'undefined') {
     console.log('Chrome, initializating with chrome storage.');
-    //TODO: Revamp initalize function
+    //Save a local copy of the application settings in content-share.js
+    chrome.storage.sync.get(null, function(result) {
+        for (var key in result) {
+            appSetting[key] = result[key];
+        }
+    });
     //chrome.storage.sync.get(null, handleInitResult);
 } else {
     console.log('Not chrome, waiting for manual initialization.');
@@ -215,6 +224,27 @@ $(window).on("blur focus", function(e) {
     $(this).data("prevType", e.type);
 })
 
+
+chrome.storage.onChanged.addListener( function(changes, namespace){
+    
+    if (namespace == "sync") {
+        for (key in changes) {
+            var storageChange = changes[key];
+            
+            appSetting[key] = storageChange.newValue;
+            
+            //console.log('Storage key "%s" in namespace "%s" changed. ' +
+            //        'Old value was "%s", new value is "%s".',
+            //        key,
+            //        namespace,
+            //        storageChange.oldValue,
+            //        storageChange.newValue);
+        }
+    }
+    
+    
+})
+
 //This is temporary variable to use for checking the differences of mode and when to reload the page
 var currentMode = "disable";
 
@@ -222,22 +252,25 @@ var currentMode = "disable";
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     //console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
     
+    // If it is not app settings update
+        
+    //TODO: refine/improve on this condition/logic
     //If request mode is disable or current mode is disable and current mode is different from request mode
     if (request.mode == "disable" || ((currentMode != "disable") && (currentMode != request.mode)) ) {
-	    //Need to clear both annotation and learn 
-	    //TODO: Need ways to disable the functionality of annotation and learn without restarting
+        //Need to clear both annotation and learn 
+        //TODO: Need ways to disable the functionality of annotation and learn without restarting
         window.location.reload();        
-	} 
+    } 
     
-	if (request.mode == "annotate") {
+    if (request.mode == "annotate") {
         annotationLanguage = request.ann_lang;
-	    //console.log("annotate mode lang:" + annotationLanguage);        
-	    beginAnnotation(request.user_id);
-	}     
+        //console.log("annotate mode lang:" + annotationLanguage);        
+        beginAnnotation(request.user_id);
+    }     
     else if (request.mode == "learn") {
         learnLanguage = request.learn_lang;
         beginTranslating();
-    }
+    }    
     
     currentMode = request.mode;
     
