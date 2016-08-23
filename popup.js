@@ -32,7 +32,7 @@ var learnLanguage = '';
 var currentTabID;
 var modeLookUpTable = ["disable", "learn", "annotate"];
 var mostAnnotatedArticle = 10;
-
+var currentTabInfo = undefined;
 var websiteSetting = [];
 
 //This function will inject all the the scripts
@@ -90,6 +90,8 @@ function updatePopupUI (currentTabInfo) {
             // specified precision
     });
     
+    showAnnotationHistory();
+    
 }
 
 function initalize() {
@@ -102,7 +104,7 @@ function initalize() {
         currentTabID = arrayOfTabs[0].id;        
         //Grab all the data from the google local storage
         chrome.storage.local.get(null, function (result) {                        
-            var currentTabInfo = undefined;
+            
             if (result.hasTabs) {
                 //Use the current tab id to get the tab information
                 currentTabInfo = result.tabsInfoCont[currentTabID];
@@ -116,7 +118,7 @@ function initalize() {
                     function(response) {
                         //background.js will respond back with current tab info to update the UI
                         console.log("New tab message sent.");         
-                        //console.log("New tab response", response);
+                        currentTabInfo = response;
                         updatePopupUI(response);
                     }
                 );
@@ -229,7 +231,7 @@ function syncUser() {
                         }
                     }
                 );
-                showAnnotationHistory();
+                
             });
 }
 
@@ -394,12 +396,17 @@ function setLearnLanguage() {
 }
 
 function showAnnotationHistory() {
+    console.log(currentTabInfo);
     $.ajax({
         type: "get",
         beforeSend: function(request) {
             request.setRequestHeader("Accept", "application/json");
         },
-        url: hostUrl + '/show_user_annotation_history?user_id=' + userId + '&lang=' + annotationLanguage,
+        url: hostUrl + '/show_user_annotation_history',
+        data: {
+            user_id: userId,
+            lang: currentTabInfo.ann_lang
+        },
         success: function(obj) {
             if ('history' in obj) {
                 document.getElementById('annotations').innerHTML = obj['history']['annotation'];
@@ -411,7 +418,6 @@ function showAnnotationHistory() {
         }
     });
 }
-
 // TODO: refine code
 //       and shift this to tab level settings
 function setReplace() {
