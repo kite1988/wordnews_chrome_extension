@@ -11,7 +11,7 @@
   },
 
   "background":{
-    "scripts": ["jquery-2.1.1.min.js", "login.js", "background.js"]
+    "scripts": ["jquery-2.1.1.min.js", "common.js", "login.js", "background.js"]
     },
   "content_scripts": [
     {
@@ -34,7 +34,8 @@
         "slider/js/bootstrap-slider.js",
         "bootstrap/js/bootstrap-formhelpers.min.js",
         "bootstrap/js/bootstrap.min.js",
-		"content-share.js",
+        "common.js",
+        "content-share.js",
         "annotate.js",
         "learn.js"        
       ],

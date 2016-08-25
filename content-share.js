@@ -11,8 +11,6 @@ var appSetting = {
     userId: ""
 };
 
-// TODO: move common variables to here
-var hostUrl = "https://wordnews-server-kite19881.c9users.io";
 //TODO: Need to find ways to put websiteSetting to user level settings.
 //      For now it is hardcoded        
 

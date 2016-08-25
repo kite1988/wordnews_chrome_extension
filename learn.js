@@ -1,14 +1,5 @@
 'use strict';
 
-
-// TODO: FYP translation and bing translation are broken 
-
-
-//var hostUrl = 'http://wordnews.herokuapp.com/';
-//var hostUrl = "http://wordnews-mobile.herokuapp.com";
-//var hostUrl = "http://wordnews-annotate.herokuapp.com/";
-//var hostUrl = "http://localhost:3000/";
-
 // TODO: move into UserSettings
 var userAccount = '';
 var categoryParameter = '';

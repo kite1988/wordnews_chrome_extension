@@ -12,11 +12,6 @@ var HttpClient = function() {
     }
 }
 
-//var hostUrl = 'http://wordnews-annotate.herokuapp.com';
-var hostUrl = 'https://wordnews-server-kite19881.c9users.io'
-//var hostUrl = 'http://wordnews.herokuapp.com/';
-//var hostUrl = 'http://localhost:3000/';
-
 //TODO: Need to remove isWorking from learn.js, annotate.js and content-share.js
 
 //These variables are only "alive" as long as popup.html is showing
