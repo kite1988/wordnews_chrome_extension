@@ -689,15 +689,11 @@ function showAnnotationCounterForCNNRelatedURL () {
     }
 }
 
-function getURLPostfix(url) {
-    var index = url.search('//');
-    var noHTTPString = url.substr(index + 2); // this will get the string with http://
-    index = noHTTPString.search('/');
-    return noHTTPString.substr(index + 1);
-}
+
+
+
 
 function appendAnnotationCounterForURL (link) {    
-
     var linkElem = link;
     console.log(linkElem.href);
     //console.log(getURLPostfix(linkElem.href));

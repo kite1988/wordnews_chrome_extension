@@ -10,10 +10,6 @@ var modeENUM = { disable: 0, learn : 1, annotation: 2 };
 //Have a local copy of current window store in Google storage local
 var currentWindowInfo;
 
-var userID;
-
-
-
 /**
  * Obtains a OAuth2 token_id from google. Validate the token_id with the backend and obtain the email to be
  * used as the idenfifier of the user.
@@ -62,7 +58,7 @@ function setMode (mode, tabID) {
     else if (modeENUM.learn == mode) {
         chrome.tabs.sendMessage(
             tabID, 
-            { mode: "learn" }, 
+            { mode: "learn", learn_lang: tabsInfoCont[tabID].learn_lang}, 
             function(response) {
                 
             } 

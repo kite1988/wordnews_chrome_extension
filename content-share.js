@@ -14,7 +14,6 @@ var appSetting = {
 //TODO: Need to find ways to put websiteSetting to user level settings.
 //      For now it is hardcoded        
 
-//TODO: Why is handleInitResult is stored in sync???
 if (typeof chrome != 'undefined') {
     console.log('Chrome, initializating with chrome storage.');
     //Save a local copy of the application settings in content-share.js
@@ -23,9 +22,17 @@ if (typeof chrome != 'undefined') {
             appSetting[key] = result[key];
         }
     });
+    //TODO: Why is handleInitResult is stored in sync?
     //chrome.storage.sync.get(null, handleInitResult);
 } else {
     console.log('Not chrome, waiting for manual initialization.');
+}
+
+function getURLPostfix(url) {
+    var index = url.search('//');
+    var noHTTPString = url.substr(index + 2); // this will get the string with http://
+    index = noHTTPString.search('/');
+    return noHTTPString.substr(index + 1);
 }
 
 // This function is called from Android client, with appropriate params

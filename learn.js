@@ -1,7 +1,15 @@
 'use strict';
 
+
+// TODO: FYP translation and bing translation are broken 
+
+
+//var hostUrl = 'http://wordnews.herokuapp.com/';
+//var hostUrl = "http://wordnews-mobile.herokuapp.com";
+//var hostUrl = "http://wordnews-annotate.herokuapp.com/";
+//var hostUrl = "http://localhost:3000/";
+
 // TODO: move into UserSettings
-var userAccount = '';
 var categoryParameter = '';
 var wordDisplay;
 
@@ -15,7 +23,7 @@ var TranslationDirection = {
 };
 var isTranslatingByParagraph = true;
 
-var learnLanguage = '';
+var learnLanguage = 'zh_CN';
 
 var wordsReplaced = '';
 // a dictionary of english to chinese words 
@@ -24,7 +32,8 @@ var vocabularyListDisplayed;
 var displayID = '';
 var contentToPopupForDisplayId = {};
 
-
+var learnTypeLookup = ["view", "test"];
+var learnTypeENUM = {view: 0, test: 1};
 var idToOriginalWordDictionary = {};
 
 // a dictionary of word : times returned by server for translation
@@ -36,321 +45,188 @@ var pageWordsLearned = new Set();
 // retrieved from chrome
 var startTime;
 
-var UserSettings = (function() {
-    var _numWordsToTranslate;
-    var _isWorking;
-
-    function UserSettings() {
-        _numWordsToTranslate = 4;
-    }
-
-    UserSettings.prototype.updateNumWords = function(newNumWords) {
-        _numWordsToTranslate = newNumWords;
-    }
-
-    UserSettings.prototype.readNumWords = function() {
-        return _numWordsToTranslate;
-    }
-
-    return UserSettings;
-}());
-
-var userSettings = new UserSettings();
-
-function sendRememberWords(userAccount, tempWordID, isRemembered, url, onSuccessCallback = null) {
-    var params = 'name=' + userAccount + '&wordID=' + tempWordID + '&isRemembered=' + isRemembered + '&url=' + encodeURIComponent(url);
-    var httpClient = new HttpClient();
-
-    httpClient.post(hostUrl + '/remember', params, onSuccessCallback);
+function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback = null) {
+    
+    $.ajax({
+        type: "post",
+        beforeSend : function (request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url: hostUrl + '/remember',
+        dataType: "json",
+        data: {
+            name: userID,
+            wordID: wordID,
+            isRemembered: isRemembered,
+            url: url
+            
+        },
+        success: function (result) {
+            console.log("Remember words successful.", result);
+            onSuccessCallback();
+        },
+        error: function (error) {
+            console.log("Remember words error.");
+            alert(error.responseText);
+        }        
+    })
+    
+    //var params = 'name=' + appSetting.userId + '&wordID=' + tempWordID + '&isRemembered=' + isRemembered + '&url=' + encodeURIComponent(url);
+    //var httpClient = new HttpClient();
+    //
+    //httpClient.post(hostUrl + '/remember', params, onSuccessCallback);
 }
 
-function sendUserAction(userAccount, elapsed_time, action, onSuccessCallback = null) {
-    var loggingUrl = hostUrl + '/log';
-
-    var params = 'name=' + userAccount + '&time=' + encodeURIComponent(elapsed_time) + '&move=' + action;
-    var httpClient = new HttpClient();
-
-    httpClient.post(loggingUrl, params, onSuccessCallback);
+function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) {
+    $.ajax({
+        type: "post",
+        beforeSend : function (request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url: hostUrl + '/log',
+        dataType: "json",
+        data: {
+            name: userID,
+            time: elapsed_time,
+            move: action,
+            
+        },
+        success: function (result) {
+            console.log("Log successful.", result);
+            onSuccessCallback();
+        },
+        error: function (error) {
+            console.log("Log words error.");
+            alert(error.responseText);
+        }        
+    })
+    
+    //var loggingUrl = hostUrl + '/log';
+    //
+    //var params = 'name=' + appSetting.userId + '&time=' + encodeURIComponent(elapsed_time) + '&move=' + action;
+    //var httpClient = new HttpClient();
+    //
+    //httpClient.post(loggingUrl, params, onSuccessCallback);
 }
 
-function requestTranslatedWords(url, params, index) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', url, true);
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            var response = xhr.responseText.replace(/&quot;/g, '"');
-            var obj = JSON.parse(response);
-            console.log(obj);
-
-            var sourceWords = [];
-            var targetWords = [];
-            var testType = [];
-            var pronunciation = [];
-            var choices1 = {};
-            var choices2 = {};
-            var choices3 = {};
-            var wordID = [];
-
-            // TODO: Refactored API will return translation list under 'translate_text'.
-            // TODO: This is a temporary hack to support Refactored API.
-            if ('translate_text' in obj) {
-                obj = obj['translate_text']
-            }
-
-            for (var wordToReplace in obj) {
-
-                sourceWords.push(wordToReplace);
-                targetWords.push(obj[wordToReplace].chinese);
-                testType.push(obj[wordToReplace].isTest);
-                pageDictionary[wordToReplace] = obj[wordToReplace].chinese;
-
-                if (obj[wordToReplace].pronunciation != undefined) {
-                    pronunciation.push(obj[wordToReplace].pronunciation);
-                } else {
-                    pronunciation.push("/pronunciation/");
-                }
-
-                if (obj[wordToReplace].wordID != undefined) {
-                    wordID.push(obj[wordToReplace]['wordID']);
-                    idToOriginalWordDictionary[obj[wordToReplace]['wordID']] = wordToReplace;
-                }
-
-                if (obj[wordToReplace].isTest === 1 || obj[wordToReplace].isTest === 2) {
-                    choices1[wordToReplace.toLowerCase()] = obj[wordToReplace]['choices']['0'];
-                    choices2[wordToReplace.toLowerCase()] = obj[wordToReplace]['choices']['1'];
-                    choices3[wordToReplace.toLowerCase()] = obj[wordToReplace]['choices']['2'];
-                } else {
-                    choices1[wordToReplace.toLowerCase()] = ' ';
-                    choices2[wordToReplace.toLowerCase()] = ' ';
-                    choices3[wordToReplace.toLowerCase()] = ' ';
-                }
-
-                var isChoicesProvided = obj[wordToReplace].hasOwnProperty('isChoicesProvided') && obj[wordToReplace]['isChoicesProvided'];
-
-                if (obj[wordToReplace].isTest > 0 && !isChoicesProvided) {
-                    // make a seperate request to get the quiz options
-                    $.ajax({ url: hostUrl + '/getQuiz.json?word=' + wordToReplace.toLowerCase() + '&category=' + 'Technology' + '&level=3' })
-                        .done(function(quizOptions) {
-                            // Callback for successful retrieval
-
-                            // TODO: Refactored API will return quiz under 'quiz'.
-                            // TODO: Should set quizOptions to quizOptions['quiz'] permanently
-                            if ('quiz' in quizOptions) {
-                                quizOptions = quizOptions['quiz'];
-                            }
-
-                            for (var quizStart in quizOptions) {
-                                var choices = quizOptions[quizStart]['choices'];
-                                choices1[quizStart.toLowerCase()] = choices['0'];
-                                choices2[quizStart.toLowerCase()] = choices['1'];
-                                choices3[quizStart.toLowerCase()] = choices['2'];
-                            }
-                            replaceWords(sourceWords, targetWords, testType, pronunciation, wordID, choices1, choices2, choices3, index);
-                        })
-                        .fail(function() {
-                            //console.log("Retrieving of quiz options failed!");
-                        });
-
-                }
-            }
-
-            replaceWords(sourceWords, targetWords, testType, pronunciation, wordID, choices1, choices2, choices3, index);
-
+function requestTranslatedWords(paragraphs, translatorType) {
+    console.log(paragraphs);
+    var title_date = getArticleTitleAndPublicationDate();
+    $.ajax({
+        type: "post",
+        beforeSend : function (request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url: hostUrl + "/show_learn_words",
+        dataType: "json",
+        data: {
+            paragraphs: [paragraphs],
+            num_of_words: 1, //Hardcoded for now
+            lang: learnLanguage,
+            translator: translatorType,
+            user_id: appSetting.userId,
+            url_postfix: getURLPostfix(window.location.href),
+            url: window.location.href,
+            title: title_date[0],
+            publication_date: title_date[1]
+            
+        },
+        success: function (result) {
+            console.log("Request for tranlsated words successful.");
+            translateWords(result);
+        },
+        error: function (error) {
+            console.log("Request for tranlsated words error.");
+            //alert(error.responseText);
         }
-    }
-    xhr.send(params);
+        
+    })
 }
 
-function replaceWordsWithoutQuiz(sourceWords, targetWords) {
-    var paragraphs = paragraphsInArticle();
+function translateWords (result) {
+    
+    var wordsCont = result;
+    replaceWords(wordsCont.words_to_learn);
+    
+}
 
-    for (var j = 0; j < sourceWords.length; j++) {
-        var sourceWord = sourceWords[j];
-        var targetWord = targetWords[j];
-
-        console.log(sourceWord);
-        console.log(targetWord);
-        /*if (sourceWord.toLowerCase() in translatedWords) {
-          // only translate the same word 1 time(s) at the most
-          if (translatedWords[sourceWord.toLowerCase()] >= 1) {
-            continue;
-          }
-          translatedWords[sourceWord.toLowerCase()] += 1;
+const CHINESE_TO_ENGLISH_QUIZ = 1;
+const ENGLISH_TO_CHINESE_QUIZ = 2;
+    
+function addOptionsForQuiz(word, translatedWord, wordID, quiz) {
+    
+    var arrayShuffle = shuffle([1, 2, 3, 4]);
+    var html = "";
+    
+    for (var i = 0; i < arrayShuffle.length; ++i) {
+        //Append div tag
+        if (i == 0 || i == 2) {
+            html += '<div style="width: 100%;">';
+        }
+        
+        var num = arrayShuffle[i];
+        
+        if (num != 4) {
+            //w_num is used for appending in the div tag, if num is 1, append nothing else append num
+            var w_num = num == 1 ? "" : num;
+            html += '<div id="' + wordID + '_w' + w_num + '" align="center" class="choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">' + quiz.choices[toString(num)] + '</div>';
         } else {
-          translatedWords[sourceWord.toLowerCase()] = 1;
-        }*/
-
-        for (var i = 0; i < paragraphs.length; i++) {
-            var paragraph = paragraphs[i];
-            var text = paragraph.innerHTML;
-
-            var id = 'myID_' + sourceWord + '_' + i.toString() + '_';
-
-            var popoverContent = '';
-            var joinString = '';
-
-            joinString += '  <span ';
-            joinString += 'class = "fypSpecialClass" ';
-            joinString += 'style="text-decoration:underline; font-weight: bold; "';
-            joinString += 'data-placement="above" ';
-
-            joinString += 'id = "' + id + '" >';
-            // TODO: fix the bug of displaying word correctly
-            if (wordDisplay == 1) {
-                joinString += sourceWord;
-            } else {
-                joinString += targetWord;
-            }
-            joinString += '</span>  ';
-
-
-            var append = '<div id=\"' + id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1;">';
-            append += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
-            append += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
-            append += '<div class="content" style="border: 0px; margin: 0">';
-            append += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
-            append += '<div class="gtx-language">ENGLISH</div>';
-            append += '<div class="gtx-body" style="padding-left:21px;">' + sourceWord + '</div><br>';
-            append += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
-            append += '<p style = "margin: 0px;padding-left:10px;">';
-
-            append += '</div>';
-
-            var see_more_id = "myIDmore_" + sourceWord + "_" + "_" + i.toString();
-
-            append += '</p>';
-            append += '<a id="' + see_more_id + '" target="_blank" class="myIdMore" href="http://dict.cn/en/search?q=' + sourceWord + '" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
-            append += '</div></div></div></div></div>';
-            append += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
-            append += '<div class="jfk-bubble-arrowimplbefore"></div>';
-            append += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
-
-            contentToPopupForDisplayId[id + "_popup"] = append;
-
-
-
-            $(document).off('click.wordnews').on('click.wordnews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
-
-            var parts = text.split(new RegExp('\\b' + sourceWord + '\\b'));
-            var result = '';
-            if (parts.length > 1) {
-                var n = occurrences(parts[0], '\"');
-                //if (n%2 === 1) {  // TODO figure out the goal of this code
-                //result += parts[0] + '"' + joinString + '"';
-                //} else {
-                result += parts[0] + joinString;
-                //}
-                parts.splice(0, 1);
-            }
-
-            result += parts.join(' ' + sourceWord + ' ');
-
-            paragraph.innerHTML = result;
+            var appendWord = (quiz.testType == CHINESE_TO_ENGLISH_QUIZ) ? word : translatedWord;
+            html += '<div id="' + wordID + '_c" align="center"' +
+                    'class="choice_class" onMouseOver="this.style.color=\'#FF9900\'"' +
+                    'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
+                    'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:' +
+                    '16px;">' + appendWord + '</div>';
+        }
+        //Append the end of div tag
+        if (k == 1 || k == 3) {
+            html += "</div>";
         }
     }
+    return html;
 }
-
-// accesses the global variable translatedWords
-function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID, choices1, choices2, choices3, i) {
-    const CHINESE_TO_ENGLISH_QUIZ = 1;
-    const ENGLISH_TO_CHINESE_QUIZ = 2;
-
+    
+function replaceWords (wordsCont) {
     var paragraphs = paragraphsInArticle();
     
-    function addOptionsForQuiz() {
-        var myArrayShuffle = shuffle([1, 2, 3, 4]);
-        var result = "";
-        for (var k = 0; k < myArrayShuffle.length; k++) {
-            if (k == 0 || k == 2) {
-                append += '<div style="width: 100%;">';
-            }
-
-            var wordToUse = sourceWord.toLowerCase();
-            switch (myArrayShuffle[k]) {
-                case 1:
-                    result += '<div id="' + wordID[j] + '_w" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">' + choices1[wordToUse] + '</div>';
-                    break;
-                case 2:
-                    result += '<div id="' + wordID[j] + '_w2" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">' + choices2[wordToUse] + '</div>';
-                    break;
-                case 3:
-                    result += '<div id="' + wordID[j] + '_w3" align="center" class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">' + choices3[wordToUse] + '</div>';
-                    break;
-                case 4:
-                    if (testType[j] == CHINESE_TO_ENGLISH_QUIZ) {
-                        result += '<div id="' + wordID[j] + '_c" align="center"' +
-                            'class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'"' +
-                            'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
-                            'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:' +
-                            '16px;">' + sourceWord.toLowerCase() + '</div>';
-                    } else if (testType[j] == ENGLISH_TO_CHINESE_QUIZ) {
-                        result += '<div id="' + wordID[j] + '_c" align="center"' +
-                            'class="fyp_choice_class" onMouseOver="this.style.color=\'#FF9900\'"' +
-                            'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
-                            'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:' +
-                            '16px;">' + targetWord + '</div>';
-                    }
-                    break;
-                default:
-                    break;
-            }
-            if (k == 1 || k == 3) {
-                result += "</div>";
-            }
-        }
-        return result;
-    }
-
-    for (var j = 0; j < sourceWords.length; j++) {
-        var sourceWord = sourceWords[j];
-
-        var targetWord = targetWords[j];
-        // only translate the same word 1 time(s) at the most
-        translatedWords[sourceWord.toLowerCase()] = sourceWord.toLowerCase() in translatedWords ?
-            translatedWords[sourceWord.toLowerCase()] + 1 :
-            1;
-        if (translatedWords[sourceWord.toLowerCase()] >= 2) {
+    for (var i = 0; i < wordsCont.length; ++i) {
+        var wordElem = wordsCont[i];
+        var wordLowerCase = wordElem.text.toLowerCase();
+        //We only need to translate the same word once, therefore, 
+        //translatedWords will be a global container to keep track of the number times the translated word appear.        
+        translatedWords[wordLowerCase] =  wordElem.text in translateWords ? translatedWords[wordLowerCase] + 1 : 1;
+        
+        if (translatedWords[wordLowerCase] >= 2) {
             continue;
-        }
-
-
-        var paragraph = paragraphs[i];
-
-        var text = paragraph.innerHTML;
-
-        var id = 'myID_' + sourceWord + '_' + wordID[j] + '_' + i.toString() + '_' + testType[j];
+        }    
+        
+        var paragraph = paragraphs[wordElem.paragraph_index];
+        var text = paragraph.innerHTML;    
+        //Set learnType to a int
+        var learnType = wordElem.learn_type == "view" ? 0 : 1;
+        var id =  wordElem.text + '_' + wordElem.word_id + '_' + wordElem.paragraph_index + '_' + learnType;
+        var pronunciation = wordElem.pronunciation.replace('5', '');
+        
         var joinString = '';
-
-        pronunciation[j] = pronunciation[j].replace('5', '');
-
-        if (testType[j] === 0) { // no quiz for the j'th paragraph
-            var splitPinyin = pronunciation[j].split(' ');
-
-
-            var chineseCharacters = targetWord.replace('(', '').replace(')', '').split('');
-            joinString += '  <span ';
-            joinString += 'class = "fypSpecialClass" ';
-            joinString += 'style="text-decoration:underline; font-weight: bold; "';
-
-            joinString += 'data-placement="above" ';
-            joinString += 'id = "' + id + '" >';
-            if (wordDisplay == 1) {
-                joinString += sourceWord;
-            } else {
-                joinString += targetWord;
-            }
-
-
-            joinString += '</span>  ';
+        joinString += '<span ';
+        joinString += 'class = "translate_class" ';
+        joinString += 'style="text-decoration:underline; font-weight: bold; "';
+        joinString += 'data-placement="above" ';
+        
+        //If it is view mode
+        if (learnType == 0) {
+            
+            //TODO: More like scalable by using generic variable names
+            var splitPinyin = pronunciation.split(' ');
+            var chineseCharacters = wordElem.translation.replace('(', '').replace(')', '').split('');                       
+            
             var append = '<div id=\"' + id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1;">';
             append += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
             append += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
             append += '<div class="content" style="border: 0px; margin: 0">';
             append += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
             append += '<div class="gtx-language">ENGLISH</div>';
-            append += '<div class="gtx-body" style="padding-left:21px;">' + sourceWord + '</div><br>';
+            append += '<div class="gtx-body" style="padding-left:21px;">' + wordElem.text + '</div><br>';
             append += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
 
             append += '<p style = "margin: 0px;padding-left:10px;">';
@@ -369,62 +245,45 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
                 append += '<div style="height:21px;width:15px;display:inline-block;"> </div>';
                 append += '<small>' + splitPinyin[k] + '</small> ';
             }
-
             append += '</div>';
-            var see_more_id = "myIDmore_" + sourceWord + "_" + wordID[j] + "_" + i.toString() + "_" + testType[j];
-
+            
+            var see_more_id = "more_" + id;
             append += '</p>';
-            append += '<a id="' + see_more_id + '" target="_blank" class="myIdMore" href="http://dict.cn/en/search?q=' + sourceWord + '" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
+            append += '<a id="' + see_more_id + '" target="_blank" class="More" href="http://dict.cn/en/search?q=' + wordElem.text + '" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
             append += '</div></div></div></div></div>';
             append += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
             append += '<div class="jfk-bubble-arrowimplbefore"></div>';
-
             append += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
 
             contentToPopupForDisplayId[id + "_popup"] = append;
-        } else { // has quiz
-            // first check if the quiz options are provided, otherwise we must wait for the new xml http request to be completed
-            if (typeof choices3[sourceWord] == 'undefined' && typeof choices3[targetWord] == 'undefined') { // test if all choices are provided
-                //console.log("SKIP " + sourceWord);
-            }
-
-
-
-            joinString += ' <span ';
-            joinString += 'class = "fypSpecialClass" ';
-            joinString += 'style="text-decoration:underline; font-weight: bold; " ';
-            joinString += 'data-placement="above" ';
-            if (testType[j] === CHINESE_TO_ENGLISH_QUIZ) {
+        } else {
+            //TODO: Need to make this more generic
+            if (wordElem.testType === CHINESE_TO_ENGLISH_QUIZ) {
                 joinString += 'title="Which of the following is the corresponding English word?" ';
-            } else if (testType[j] === ENGLISH_TO_CHINESE_QUIZ) {
+            } else if (wordElem.testType === ENGLISH_TO_CHINESE_QUIZ) {
                 joinString += 'title="Which of the following is the corresponding Chinese word?" ';
             }
-            joinString += 'href="#" ';
-
-
-            joinString += 'id = "' + id + '" >';
-
-            if (testType[j] === 1) {
-                joinString += targetWord;
-            } else {
-                joinString += sourceWord;
-            }
-            joinString += '</span> ';
+            joinString += 'href="#" ';          
+           
             var append = '<div id=\"' + id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">' + '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">' + '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">' + '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">' + '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';
 
-
             append += addOptionsForQuiz();
-
-
             append += '</div></div></div></div>' + '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">' + '<div class="jfk-bubble-arrowimplbefore"></div>' + '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
-
-            contentToPopupForDisplayId[id + "_popup"] = append;
+            contentToPopupForDisplayId[id + "_popup"] = append;                        
         }
-
-
+        joinString += 'id = "' + id + '" >';
+            
+        //TODO: Check what is wordDisplay for
+        if (wordDisplay == 1) {
+            joinString += wordElem.text;
+        } else {
+            joinString += wordElem.translation;
+        }
+        joinString += '</span> ';        
+        
         $(document).off('click.wordnews').on('click.wordnews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
 
-        var parts = text.split(new RegExp('\\b' + sourceWord + '\\b'));
+        var parts = text.split(new RegExp('\\b' + wordElem.text + '\\b'));
         var result = '';
         if (parts.length > 1) {
             var n = occurrences(parts[0], '\"');
@@ -436,112 +295,100 @@ function replaceWords(sourceWords, targetWords, testType, pronunciation, wordID,
             parts.splice(0, 1);
         }
 
-        result += parts.join(' ' + sourceWord + ' ');
+        result += parts.join(' ' + wordElem.text + ' ');
 
         paragraph.innerHTML = result;
+        
     }
 
-
+    //This code below is bought over from the previous code
     $(document).off('mousedown.wordnews').on('mousedown.wordnews', function(e) {
         e = e || window.event;
         var id = (e.target || e.srcElement).id;
         var thisClass = (e.target || e.srcElement).className;
-        var container = $('.jfk-bubble')
-
+        //Get all the tag that has jfk-bubble
+        var container = $(".jfk-bubble");
+        
         var currentTime = new Date();
         var timeElapsed = currentTime - startTime;
-
+    
+        //Why check for first container only?
         if (container[0]) {
-            if (!container.is(e.target) && container.has(e.target).length === 0) { // if the target of the click isn't the container... // ... nor a descendant of the container
-
+            // if the target of the click is neither the container 
+            // nor a descendant of the container
+            if (!container.is(e.target) && container.has(e.target).length === 0) { 
                 var id = container.attr('id');
-                console.log("container id" + id);
+                console.log("container id: " + id);
                 var englishWord = id.split('_')[1];
                 var tempWordID = id.split('_')[2];
-                var mainOrTest = id.split('_')[4];
-
-                if (mainOrTest === '0') {
+                var viewOrTest = id.split('_')[4];
+                
+                if (viewOrTest == '0') {
                     // increase the number of words encountered
-                    sendRememberWords(userAccount, tempWordID, 1, document.URL)
-
+                    sendRememberWords(appSetting.userId, tempWordID, 1, document.URL)
                     // Fire logging
-                    sendUserAction(userAccount, timeElapsed, 'see_' + tempWordID);
-
+                    sendUserAction(appSetting.userId, timeElapsed, 'see_' + tempWordID);
                     // add to page's learned words
-                    pageWordsLearned.add(tempWordID);
-                    
+                    pageWordsLearned.add(tempWordID);                        
                     console.log("wid: " + tempWordID);
                 }
-
-                document.body.removeChild(container[0]);
-            }
-
-            if (thisClass === 'myIdMore') {
-
-                id = container.attr('id');
-
-                var englishWord = id.split('_')[1];
-                var tempWordID = id.split('_')[2];
-
-                sendRememberWords(userAccount, tempWordID, 0, document.URL)
-
-                sendUserAction(userAccount, timeElapsed, 'myId_more_wordID_' + tempWordID);
-
-            }
-
-            if (thisClass === 'audioButton') {
-                ////console.log("clicked id is "+id);
-                var myAudio = document.getElementById("myAudio_" + id);
-
-                sendUserAction(userAccount, timeElapsed, 'clickAudioButton_wordID_' + id);
-
-                if (myAudio.paused) {
-                    myAudio.play();
-                } else {
-                    myAudio.pause();
+                
+                if (thisClass === 'More') {    
+                    sendRememberWords(appSetting.userId, tempWordID, 0, document.URL)        
+                    sendUserAction(appSetting.userId, timeElapsed, 'more_wordID_' + tempWordID);    
                 }
-            }
+                
+                if (thisClass === 'audioButton') {
+                    ////console.log("clicked id is "+id);
+                    var myAudio = document.getElementById("myAudio_" + id);
+                    sendUserAction(appSetting.userId, timeElapsed, 'clickAudioButton_wordID_' + id);
 
-            if (thisClass === 'fyp_choice_class') {
-
-                var tempWordID = id.split("_")[0];
-                var isCorrect = id.split("_")[1];
-                if (isCorrect === 'c') {
-                    // Answered correctly. So we increase the remembered count
-                    sendRememberWords(userAccount, tempWordID, 1, document.URL)
-
-                    sendUserAction(userAccount, timeElapsed, 'correct_quiz_answer_wordId_' + tempWordID);
-
-                    $('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");
-
-                    $('.jfk-bubble').css("background-size", "cover");
-
-                    $('.content').css("background-color", "#cafffb");
-                } else {
-
-                    // Answered incorrectly.
-                    sendRememberWords(userAccount, tempWordID, 0, document.URL)
-
-                    sendUserAction(userAccount, timeElapsed, 'wrong_quiz_answer_wordID_' + tempWordID);
-
-                    $('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");
-                    $('.jfk-bubble').css("background-size", "cover");
+                    if (myAudio.paused) {
+                        myAudio.play();
+                    } else {
+                        myAudio.pause();
+                    }
                 }
+                
+                if (thisClass === 'choice_class') {
+                   
+                    var isCorrect = englishWord;
+                    if (isCorrect === 'c') {
+                        // Answered correctly. So we increase the remembered count
+                        sendRememberWords(appSetting.userId, tempWordID, 1, document.URL);
 
+                        sendUserAction(appSetting.userId, timeElapsed, 'correct_quiz_answer_wordId_' + tempWordID);
+
+                        $('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");
+
+                        $('.jfk-bubble').css("background-size", "cover");
+
+                        $('.content').css("background-color", "#cafffb");
+                    } else {
+
+                        // Answered incorrectly.
+                        sendRememberWords(appSetting.userId, tempWordID, 0, document.URL)
+
+                        sendUserAction(appSetting.userId, timeElapsed, 'wrong_quiz_answer_wordID_' + tempWordID);
+
+                        $('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");
+                        $('.jfk-bubble').css("background-size", "cover");
+                    }
+                }                
             }
         }
     });
+    $(".translate_class").off('click.wordnews').on('click.wordnews', appendPopUp);
 
-    $(".fypSpecialClass").off('click.wordnews').on('click.wordnews', appendPopUp);
-
-    $('.fypSpecialClass').mouseover(function() {
+    $('.translate_class').mouseover(function() {
         $(this).css("color", "#FF9900");
         $(this).css("cursor", "pointer");
     });
-    $('.fypSpecialClass').mouseout(function() {
+    $('.translate_class').mouseout(function() {
         $(this).css("color", "black");
     });
 }
+
 
 function documentClickOnInlineRadioButton() {
     var id = $(this).attr('id');
@@ -554,16 +401,16 @@ function documentClickOnInlineRadioButton() {
 
     if (document.getElementById('inlineRadioCorrect').checked) {
 
-        sendRememberWords(userAccount, tempWordID, 1, document.URL)
+        sendRememberWords(appSetting.userId, tempWordID, 1, document.URL)
 
         document.getElementById('alertSuccess').style.display = 'inline-flex';
-        setTimeout(function() { $('.fypSpecialClass').popover('hide') }, 1000);
+        setTimeout(function() { $('.translate_class').popover('hide') }, 1000);
     } else {
 
-        sendRememberWords(userAccount, tempWordID, 0, document.URL)
+        sendRememberWords(appSetting.userId, tempWordID, 0, document.URL)
 
         document.getElementById('alertDanger').style.display = 'inline-flex';
-        setTimeout(function() { $('.fypSpecialClass').popover('hide') }, 2500);
+        setTimeout(function() { $('.translate_class').popover('hide') }, 2500);
     }
 
 }
@@ -604,22 +451,22 @@ function paragraphsInArticle() {
     return paragraphs;
 }
 
+function preproccessParagraph(paragraph) {
+    //paragraph = paragraph.replace("\n", " ");
+    return paragraph.replace(/[^\x00-\x7F]/g, " ");
+}
 
 function beginTranslating() {
 
     var isWebsiteForTranslation = 0;
-    //var splitedWebsite = websiteSetting.split("_");
 
-    if (appSetting.websiteSetting.indexOf(websiteSettingENUM.all) !== -1) {
-        isWebsiteForTranslation = 1;
-    } else {
-        for (var k = 0; k < appSetting.websiteSetting.length; k++) {
-            var website = websiteSettingLookupTable[appSetting.websiteSetting[k]];
-            if (document.URL.indexOf(website) !== -1) {
-                isWebsiteForTranslation = 1;
-            }
+    //Iterate website setting to check whehter the current URL is eligible for translation
+    for (var k = 0; k < appSetting.websiteSetting.length; k++) {
+        var website = websiteSettingLookupTable[appSetting.websiteSetting[k]];
+        if (document.URL.indexOf(website) !== -1) {
+            isWebsiteForTranslation = 1;
         }
-    }
+    }    
 
     console.log('websiteCheck ' + isWebsiteForTranslation);
 
@@ -645,45 +492,22 @@ function beginTranslating() {
         });
 
         var paragraphs = paragraphsInArticle();
-
+        
         var articleText = "";
         for (var i = 0; i < paragraphs.length; i++) {
-
-            var sourceWords = [];
-            var targetWords = [];
-
             var paragraph = paragraphs[i];
-
-            // if the paragraph is followed or preceeded by another p, 
-            // then translate it
-            //if ((paragraph.nextSibling && (paragraph.nextSibling.nodeName.toLowerCase() === "p" || paragraph.nextSibling.nodeName.toLowerCase() === "#text")) || 
-            //   (paragraph.previousSibling && (paragraph.previousSibling.nodeName.toLowerCase() === "p" || paragraph.previousSibling.nodeName.toLowerCase() === "#text"))) {
-
-            var stringToServer = paragraph.innerText;
-
-            var url = (typeof translationUrl === 'undefined' ? hostUrl + '/show' : translationUrl);
-            articleText += stringToServer;
-
-            if (isTranslatingByParagraph) {
-                var stringToServer = paragraph.innerText;
-
-                var params = 'text=' + encodeURIComponent(stringToServer) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
-
-                requestTranslatedWords(url, params, i);
+            var text = preproccessParagraph(paragraph.innerText);
+            if (text.split(' ').length > 1 )
+            {
+                requestTranslatedWords({ paragraph_index : i,  text: text }, "dict");
             }
-            //} 
+            //console.log("Before: " + paragraph.innerText);
+            //console.log("After: " +  paragraph.innerText.replace(/[^\x00-\x7F]/g, " ")); //encodeURIComponent(paragraph.innerText));
+            
         }
-
-        if (!isTranslatingByParagraph) {
-            var params = 'text=' + encodeURIComponent(articleText) + '&url=' + encodeURIComponent(document.URL) + '&name=' + userAccount + '&num_words=' + userSettings.readNumWords();
-
-            requestTranslatedWords(url, params, i);
-        }
+        
     }
-
-
 };
-
 
 var HttpClient = function() {
     this.get = function(aUrl, onSuccessCallback = null, onFailureCallback = null) {
