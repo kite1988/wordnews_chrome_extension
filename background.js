@@ -151,7 +151,9 @@ chrome.runtime.onMessage.addListener(
                 setMode(tabsInfoCont[tabID].mode, tabID);
             }
         } else if (request.type == "new_page") {
-            
+            if (tabID in tabsInfoCont) {
+                setMode(tabsInfoCont[tabID].mode, tabID);
+            }
         }
     }
 );

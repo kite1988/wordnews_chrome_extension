@@ -22,6 +22,13 @@ if (typeof chrome != 'undefined') {
             appSetting[key] = result[key];
         }
     });
+    //Send message to background to notify new page
+    chrome.runtime.sendMessage(
+        { type: "new_page" },
+        function(response) {                
+            
+        }
+    );
     //TODO: Why is handleInitResult is stored in sync?
     //chrome.storage.sync.get(null, handleInitResult);
 } else {
@@ -245,9 +252,7 @@ chrome.storage.onChanged.addListener( function(changes, namespace){
             //        storageChange.oldValue,
             //        storageChange.newValue);
         }
-    }
-    
-    
+    }    
 })
 
 //This is temporary variable to use for checking the differences of mode and when to reload the page
