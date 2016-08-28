@@ -83,9 +83,6 @@ function handleInitResult(result, androidID) {
 
 // TODO: keep consistent with the synUser() in popup.js
 function initLearn(result) {
-    if ( typeof result.userAccount != 'undefined' ) {
-        userAccount = result.userAccount
-    }
     if ( typeof result.wordDisplay != 'undefined' ) {
         wordDisplay = result.wordDisplay
     }
@@ -102,7 +99,6 @@ function initLearn(result) {
         translationUrl = result.translationUrl;
     }
 
-    //console.log("user acc: "+ result.userAccount);
     //console.log("user isWorking: "+ result.isWorking);
     console.log("user wordDisplay: "+ result.wordDisplay);
     //console.log("user wordsReplaced: "+ result.wordsReplaced);
@@ -136,26 +132,8 @@ function initLearn(result) {
         saveSetting ({'learnLanguage': 'zh_CN'});
     }    
 
-    if (userAccount == undefined) {
-        // Register an account
-        var registerUser = new HttpClient();
-        registerUser.get(hostUrl + '/getNumber',
-            function(onSuccessAnswer) {
-                var obj = JSON.parse(onSuccessAnswer);
-                if ('userID' in obj) {
-                    userAccount = obj['userID'];
-                    saveSetting({ 'userAccount': userAccount });
-                    beginTranslating();
-                }
-            },
-            function(onFailureAnswer) {
-                var obj = JSON.parse(onFailureAnswer);
-                console.log("Server error: " + obj['msg']);
-            }
-        );
-    } else {
-        beginTranslating();
-    }
+
+    beginTranslating();
 }
 
 //TODO: 1) keep consistent with the synUser() in popup.js and 
@@ -167,50 +145,8 @@ function initAnnotate(result) {
     	saveSetting({'annotationLanguage': 'zh_CN'});
     }
     
-    userAccount = result.userAccount;
     userId = result.userId;
-    // console.log('user acc: '+ result.userAccount);
 
-    if (userAccount == undefined || typeof userAccount == "string") {
-
-        //This temporary method of generating will not create a true unique ID
-        var i = new Date().getTime();;
-        i = i & 0xffffffff;
-        userAccount = (i + Math.floor(Math.random() * i)); //'id' + d.getTime() + '_1';
-
-        chrome.storage.sync.set({
-            'userAccount': userAccount
-        }, function() {});
-    }
-    
-    //if (userId == undefined) {
-    //	$.ajax({
-    //        type : "get",
-    //        beforeSend : function(request) {
-    //            request.setRequestHeader("Accept", "application/json");
-    //        },
-    //        url : hostUrl + "/get_user_id_by_user_name",
-    //        dataType : "json",
-    //        data : {         
-    //        	user_name: userAccount
-    //        },
-    //        success : function(result) { // get successful and result returned by server
-    //        	if ('user_id' in obj) {
-    //                userId = obj['user_id'];
-    //                chrome.storage.sync.set({
-    //                    'userId': userId
-    //                }, function() {
-    //                	beginAnnotation(userId);
-    //                });
-    //            }
-    //        },
-    //        error : function(result) {
-    //            console.log( "get user id failed" );
-    //        }
-    //    });  
-    //} else {
-    //	beginAnnotation(userId);
-    //}
 }
 
 //Window event to check whether window is focused 

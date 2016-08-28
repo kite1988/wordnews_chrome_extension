@@ -15,7 +15,6 @@ var HttpClient = function() {
 //TODO: Need to remove isWorking from learn.js, annotate.js and content-share.js
 
 //These variables are only "alive" as long as popup.html is showing
-var userAccount = ''; //this is username
 var userId = -1; // this is user internal id
 var categoryParameter = '';
 var wordDisplay = ''; //0: in target language, 1: in source language
@@ -132,47 +131,7 @@ function syncUser() {
         .get(
             null, //
             function(result) {
-                userAccount = result.userAccount;
                 userId = result.userId;
-                
-                if (userAccount == undefined || typeof userAccount == "string") {
-
-                    //This temporary method of generating will not create a true unique ID
-                    var i = new Date().getTime();;
-                    i = i & 0xffffff;
-                    userAccount = (i + Math.floor(Math.random() * i)); //'id' + d.getTime() + '_1';
-
-                    chrome.storage.sync.set({
-                        'userAccount': userAccount
-                    }, function() {});
-                }
-                // console.log('userAccount ' + userAccount);
-
-                // Ask the server to generate the User ID
-                if (userId == undefined) {
-                    $.ajax({
-                        type : "get",
-                        beforeSend : function(request) {
-                            request.setRequestHeader("Accept", "application/json");
-                        },
-                        url : hostUrl + "/get_user_id_by_user_name",
-                        dataType : "json",
-                        data : {         
-                        	user_name: userAccount
-                        },
-                        success : function(result) { // get successful and result returned by server
-                        	if ('user_id' in result) {
-                                userId = result['user_id'];
-                                chrome.storage.sync.set({
-                                    'userId': userId
-                                }, function() {});
-                            }
-                        },
-                        error : function(result) {
-                            console.log( "get user id failed" );
-                        }
-                    });  
-                }               
 
                 translationUrl = result.translationUrl || "http://wordnews-mobile.herokuapp.com/";
                 console.log('transUrl', translationUrl);
@@ -213,7 +172,7 @@ function syncUser() {
                 document.getElementById('toLearn').innerHTML = '-';
 
                 remembered.get(
-                    hostUrl + '/getNumber?name=' + userAccount,
+                    hostUrl + '/getNumber?user_id=' + userId,
                     function(answer) {
                         var obj = JSON.parse(answer);
                         if ('learnt' in obj) {
@@ -462,11 +421,11 @@ function reload() {
 
 function setLinks() {
     $('#learn-panel .btn-block').click(function() {
-        window.open(hostUrl + '/displayHistory?name=' + userAccount);
+        window.open(hostUrl + '/displayHistory?user_id=' + userId);
     });
-    // http://testnaijia.herokuapp.com/settings?name='+userAccount'
+
     $('#setting').click(function() {
-        window.open(hostUrl + '/settings?name=' + userAccount);
+        window.open(hostUrl + '/settings?user_id=' + userId);
     });
     // http://testnaijia.herokuapp.com/howtouse
     $('#learn-tutorial').click(function() {
@@ -475,6 +434,14 @@ function setLinks() {
 
     $('#annotate-tutorial').click(function() {
         window.open(hostUrl + '/how-to-annotate');
+    });
+
+    $('#sign-up').click(function() {
+        window.open(hostUrl + '/sign_up?user_id=' + userId);
+    });
+
+    $('#login').click(function() {
+        window.open(hostUrl + '/login');
     });
 
     setAnnotationLinks();

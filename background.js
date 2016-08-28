@@ -7,6 +7,8 @@ var logoImgDir = [  "images/logo-gray.png", //disable
                  
 var modeENUM = { disable: 0, learn : 1, annotation: 2 };
 
+var userSettings = UserSettings.getInstance();
+
 //Have a local copy of current window store in Google storage local
 var currentWindowInfo;
 
@@ -157,6 +159,27 @@ chrome.runtime.onMessage.addListener(
         }
     }
 );
+
+chrome.cookies.onChanged.addListener(
+    function (changeInfo) {
+        var link = document.createElement("a");
+        link.href = hostUrl;
+        if ( changeInfo['cookie']['domain'] == link.hostname ) {
+            if ( changeInfo['cookie']['name'] == "user_id" && changeInfo['removed'] == false ) {
+                console.log(JSON.stringify(changeInfo));
+                chrome.cookies.get( { "url": hostUrl, "name" : "user_id" },
+                    function (cookies) {
+                        if ( cookies != null ) {
+                            userSettings.setUserId(parseInt(cookies['value']));
+                        }
+                    }
+                );
+            }
+        }
+
+    }
+);
+
 
 //Since there is no proper on close event for chrome yet
 //We will clear the local storage of chrome when background.js is loaded

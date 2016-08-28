@@ -1,14 +1,5 @@
 'use strict';
 
-
-// TODO: FYP translation and bing translation are broken 
-
-
-//var hostUrl = 'http://wordnews.herokuapp.com/';
-//var hostUrl = "http://wordnews-mobile.herokuapp.com";
-//var hostUrl = "http://wordnews-annotate.herokuapp.com/";
-//var hostUrl = "http://localhost:3000/";
-
 // TODO: move into UserSettings
 var categoryParameter = '';
 var wordDisplay;
@@ -55,7 +46,7 @@ function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback 
         url: hostUrl + '/remember',
         dataType: "json",
         data: {
-            name: userID,
+            user_id: userID,
             wordID: wordID,
             isRemembered: isRemembered,
             url: url
@@ -71,7 +62,7 @@ function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback 
         }        
     })
     
-    //var params = 'name=' + appSetting.userId + '&wordID=' + tempWordID + '&isRemembered=' + isRemembered + '&url=' + encodeURIComponent(url);
+    //var params = 'user_id=' + appSetting.userId + '&wordID=' + tempWordID + '&isRemembered=' + isRemembered + '&url=' + encodeURIComponent(url);
     //var httpClient = new HttpClient();
     //
     //httpClient.post(hostUrl + '/remember', params, onSuccessCallback);
@@ -86,7 +77,7 @@ function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) 
         url: hostUrl + '/log',
         dataType: "json",
         data: {
-            name: userID,
+            user_id: userID,
             time: elapsed_time,
             move: action,
             
@@ -103,7 +94,7 @@ function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) 
     
     //var loggingUrl = hostUrl + '/log';
     //
-    //var params = 'name=' + appSetting.userId + '&time=' + encodeURIComponent(elapsed_time) + '&move=' + action;
+    //var params = 'user_id=' + appSetting.userId + '&time=' + encodeURIComponent(elapsed_time) + '&move=' + action;
     //var httpClient = new HttpClient();
     //
     //httpClient.post(loggingUrl, params, onSuccessCallback);
