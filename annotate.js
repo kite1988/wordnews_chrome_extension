@@ -429,13 +429,17 @@ function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex
 			dataType : "json",
 			data : {			
                 id: annotation_id,
+                user_id: appSetting.userId,
                 translation: textAreaElem.value                 
 			},
 			success : function(result) { // get successful and result returned by server
 				console.log( "update annotaiton get success" );    
+                var panelID  = annotationPanelID + "_panel";
+                $('#' + panelID).data('id', result.id); // update annotation id from server
 			},
 			error : function(result) {
 				console.log( "update annotation get error" );
+                alert(result.responseText);
 			}
 		});
     }
@@ -688,10 +692,6 @@ function showAnnotationCounterForCNNRelatedURL () {
         }
     }
 }
-
-
-
-
 
 function appendAnnotationCounterForURL (link) {    
     var linkElem = link;
