@@ -9,6 +9,9 @@ var modeENUM = { disable: 0, learn : 1, annotation: 2 };
 
 var userSettings = UserSettings.getInstance();
 
+var testSettings = userSettings.getSettings();
+var userid = userSettings.getUserId();
+
 //Have a local copy of current window store in Google storage local
 var currentWindowInfo;
 
@@ -153,10 +156,14 @@ chrome.runtime.onMessage.addListener(
                 setMode(tabsInfoCont[tabID].mode, tabID);
             }
         } else if (request.type == "new_page") {
-            if (tabID in tabsInfoCont) {
+            //Send back a copy of user settings
+            sendResponse(userSettings.getSettings());
+            if (tabID in tabsInfoCont) {                
                 setMode(tabsInfoCont[tabID].mode, tabID);
-            }
-        }
+                //See "new_tab" condition for the reason of putting return true
+                return true;
+            }   
+        }            
     }
 );
 

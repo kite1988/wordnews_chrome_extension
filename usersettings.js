@@ -25,8 +25,8 @@ var UserSettings = (function ( onCompleteCallback = null ) {
         var websiteSetting;
         var userId;
         var currentState = "ON_INSTANCE_INIT";
-        var onInitCompleteCallback = onCompleteCallback
-
+        var onInitCompleteCallback = onCompleteCallback        
+                
         chrome.storage.sync.get(null, handleInitResult);
 
         console.log("UserSettingsInit")

@@ -6,7 +6,7 @@
 
 var websiteSettingENUM = {cnn: 1, chinadaily: 2, bbc: 3};
 var websiteSettingLookupTable = ['none', 'cnn.com', 'chinadaily.com.cn', 'bbc.co']; //none is just a buffer
-var appSetting = {
+var userSettings = {
     websiteSetting: [],
     userId: ""
 };
@@ -16,17 +16,23 @@ var appSetting = {
 
 if (typeof chrome != 'undefined') {
     console.log('Chrome, initializating with chrome storage.');
-    //Save a local copy of the application settings in content-share.js
-    chrome.storage.sync.get(null, function(result) {
-        for (var key in result) {
-            appSetting[key] = result[key];
-        }
-    });
+
+   
+    
+    //chrome.storage.sync.get(null, function(result) {
+    //    for (var key in result) {
+    //        userSettings[key] = result[key];
+    //    }
+    //});
     //Send message to background to notify new page
     chrome.runtime.sendMessage(
         { type: "new_page" },
-        function(response) {                
-            
+        function(response) {   
+            //Respone will be a copy of user settings
+            //Save a local copy of the user settings in content-share.js
+            for (var key in response) {
+                userSettings[key] = response[key];
+            }
         }
     );
     //TODO: Why is handleInitResult is stored in sync?
@@ -179,7 +185,7 @@ chrome.storage.onChanged.addListener( function(changes, namespace){
         for (key in changes) {
             var storageChange = changes[key];
             
-            appSetting[key] = storageChange.newValue;
+            userSettings[key] = storageChange.newValue;
             
             //console.log('Storage key "%s" in namespace "%s" changed. ' +
             //        'Old value was "%s", new value is "%s".',

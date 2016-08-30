@@ -429,7 +429,7 @@ function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex
 			dataType : "json",
 			data : {			
                 id: annotation_id,
-                user_id: appSetting.userId,
+                user_id: userSettings.userId,
                 translation: textAreaElem.value                 
 			},
 			success : function(result) { // get successful and result returned by server

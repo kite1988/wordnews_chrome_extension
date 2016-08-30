@@ -62,7 +62,7 @@ function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback 
         }        
     })
     
-    //var params = 'user_id=' + appSetting.userId + '&wordID=' + tempWordID + '&isRemembered=' + isRemembered + '&url=' + encodeURIComponent(url);
+    //var params = 'user_id=' + userSettings.userId + '&wordID=' + tempWordID + '&isRemembered=' + isRemembered + '&url=' + encodeURIComponent(url);
     //var httpClient = new HttpClient();
     //
     //httpClient.post(hostUrl + '/remember', params, onSuccessCallback);
@@ -94,7 +94,7 @@ function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) 
     
     //var loggingUrl = hostUrl + '/log';
     //
-    //var params = 'user_id=' + appSetting.userId + '&time=' + encodeURIComponent(elapsed_time) + '&move=' + action;
+    //var params = 'user_id=' + userSettings.userId + '&time=' + encodeURIComponent(elapsed_time) + '&move=' + action;
     //var httpClient = new HttpClient();
     //
     //httpClient.post(loggingUrl, params, onSuccessCallback);
@@ -115,7 +115,7 @@ function requestTranslatedWords(paragraphs, translatorType) {
             num_of_words: 1, //Hardcoded for now
             lang: learnLanguage,
             translator: translatorType,
-            user_id: appSetting.userId,
+            user_id: userSettings.userId,
             url_postfix: getURLPostfix(window.location.href),
             url: window.location.href,
             title: title_date[0],
@@ -159,7 +159,7 @@ function addOptionsForQuiz(word, translatedWord, wordID, quiz) {
         
         if (num != 4) {
             //w_num is used for appending in the div tag, if num is 1, append nothing else append num
-            var w_num = num == 1 ? "" : num;
+            var w_num = (num == 1) ? "" : num;
             html += '<div id="' + wordID + '_w' + w_num + '" align="center" class="choice_class" onMouseOver="this.style.color=\'#FF9900\'" onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold; cursor:pointer; color: #626262; width: 50%; float: left; padding-top: 16px;">' + quiz.choices[toString(num)] + '</div>';
         } else {
             var appendWord = (quiz.testType == CHINESE_TO_ENGLISH_QUIZ) ? word : translatedWord;
@@ -208,38 +208,46 @@ function replaceWords (wordsCont) {
         if (learnType == 0) {
             
             //TODO: More like scalable by using generic variable names
-            var splitPinyin = pronunciation.split(' ');
-            var chineseCharacters = wordElem.translation.replace('(', '').replace(')', '').split('');                       
+            var splitPronunciation = pronunciation.split(' ');
+            var translatedCharacters = wordElem.translation.replace('(', '').replace(')', '').split(' ');                       
             
             var append = '<div id=\"' + id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1;">';
             append += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
             append += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
             append += '<div class="content" style="border: 0px; margin: 0">';
             append += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
+            //TODO: Language is hardcoded
             append += '<div class="gtx-language">ENGLISH</div>';
             append += '<div class="gtx-body" style="padding-left:21px;">' + wordElem.text + '</div><br>';
-            append += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
+            //TODO: Language is hardcoded
+            append += '<div class="gtx-language">CHINESE (SIMPLIFIED) <span style ="color:red;">Accurate?</span></div>';
 
             append += '<p style = "margin: 0px;padding-left:10px;">';
-            for (var k = 0; k < chineseCharacters.length; k++) {
-                append += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  id="' + splitPinyin[k] + '" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
-                append += chineseCharacters[k] + ' ';
-            }
-            for (var k = 0; k < splitPinyin.length; k++) {
-                append += '<audio id="myAudio_' + splitPinyin[k] + '" style = "display: none;">'
-                append += '<source src="http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/' + splitPinyin[k] + '.mp3" type="audio/mp3">';
-                append += '</audio>';
-            }
+            //"audio speaker" image
+            append += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
+            append += translatedCharacters;            
+           
             append += '<div class="row" style="margin-left:10px">';
-            for (var k = 0; k < splitPinyin.length; k++) {
+            for (var k = 0; k < splitPronunciation.length; k++) {
 
-                append += '<div style="height:21px;width:15px;display:inline-block;"> </div>';
-                append += '<small>' + splitPinyin[k] + '</small> ';
+                //append += '<div style="height:21px;width:15px;display:inline-block;"> </div>';
+                append += '<small>' + splitPronunciation[k] + '</small> ';
             }
             append += '</div>';
             
+            //Audio bar div
+            append += '<div class="row" >';
+            append += '<audio id="pronunciation_audio_' + id + '" controls="" autoplay="">'
+            for (var k = 0; k < splitPronunciation.length; k++) {
+                append += '<source src="' + wordElem.audio_urls[k] +' " type="audio/mp3" />'
+            }            
+            append += '</audio>';
+            append += '</div>';
+            //End of audio bar div
+            
             var see_more_id = "more_" + id;
             append += '</p>';
+            //href is hardcoded
             append += '<a id="' + see_more_id + '" target="_blank" class="More" href="http://dict.cn/en/search?q=' + wordElem.text + '" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
             append += '</div></div></div></div></div>';
             append += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
@@ -316,23 +324,23 @@ function replaceWords (wordsCont) {
                 
                 if (viewOrTest == '0') {
                     // increase the number of words encountered
-                    sendRememberWords(appSetting.userId, tempWordID, 1, document.URL)
+                    sendRememberWords(userSettings.userId, tempWordID, 1, document.URL)
                     // Fire logging
-                    sendUserAction(appSetting.userId, timeElapsed, 'see_' + tempWordID);
+                    sendUserAction(userSettings.userId, timeElapsed, 'see_' + tempWordID);
                     // add to page's learned words
                     pageWordsLearned.add(tempWordID);                        
                     console.log("wid: " + tempWordID);
                 }
                 
                 if (thisClass === 'More') {    
-                    sendRememberWords(appSetting.userId, tempWordID, 0, document.URL)        
-                    sendUserAction(appSetting.userId, timeElapsed, 'more_wordID_' + tempWordID);    
+                    sendRememberWords(userSettings.userId, tempWordID, 0, document.URL)        
+                    sendUserAction(userSettings.userId, timeElapsed, 'more_wordID_' + tempWordID);    
                 }
                 
                 if (thisClass === 'audioButton') {
                     ////console.log("clicked id is "+id);
                     var myAudio = document.getElementById("myAudio_" + id);
-                    sendUserAction(appSetting.userId, timeElapsed, 'clickAudioButton_wordID_' + id);
+                    sendUserAction(userSettings.userId, timeElapsed, 'clickAudioButton_wordID_' + id);
 
                     if (myAudio.paused) {
                         myAudio.play();
@@ -346,9 +354,9 @@ function replaceWords (wordsCont) {
                     var isCorrect = englishWord;
                     if (isCorrect === 'c') {
                         // Answered correctly. So we increase the remembered count
-                        sendRememberWords(appSetting.userId, tempWordID, 1, document.URL);
+                        sendRememberWords(userSettings.userId, tempWordID, 1, document.URL);
 
-                        sendUserAction(appSetting.userId, timeElapsed, 'correct_quiz_answer_wordId_' + tempWordID);
+                        sendUserAction(userSettings.userId, timeElapsed, 'correct_quiz_answer_wordId_' + tempWordID);
 
                         $('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");
 
@@ -358,9 +366,9 @@ function replaceWords (wordsCont) {
                     } else {
 
                         // Answered incorrectly.
-                        sendRememberWords(appSetting.userId, tempWordID, 0, document.URL)
+                        sendRememberWords(userSettings.userId, tempWordID, 0, document.URL)
 
-                        sendUserAction(appSetting.userId, timeElapsed, 'wrong_quiz_answer_wordID_' + tempWordID);
+                        sendUserAction(userSettings.userId, timeElapsed, 'wrong_quiz_answer_wordID_' + tempWordID);
 
                         $('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");
                         $('.jfk-bubble').css("background-size", "cover");
@@ -392,13 +400,13 @@ function documentClickOnInlineRadioButton() {
 
     if (document.getElementById('inlineRadioCorrect').checked) {
 
-        sendRememberWords(appSetting.userId, tempWordID, 1, document.URL)
+        sendRememberWords(userSettings.userId, tempWordID, 1, document.URL)
 
         document.getElementById('alertSuccess').style.display = 'inline-flex';
         setTimeout(function() { $('.translate_class').popover('hide') }, 1000);
     } else {
 
-        sendRememberWords(appSetting.userId, tempWordID, 0, document.URL)
+        sendRememberWords(userSettings.userId, tempWordID, 0, document.URL)
 
         document.getElementById('alertDanger').style.display = 'inline-flex';
         setTimeout(function() { $('.translate_class').popover('hide') }, 2500);
@@ -419,7 +427,29 @@ function appendPopUp(event) {
     }
 
     $('body').append(contentToPopupForDisplayId[id + '_popup']);
-    document.getElementById(id + '_popup').style.left = (rect.left - 100) + 'px';
+    
+    //Get Audio elem
+    var audioElem = document.getElementById('pronunciation_audio_' + id);
+    //Get audio sources from element
+    var audioSources =  audioElem.getElementsByTagName("source");
+    var index = 1;
+    var playNext = function() {
+        if(index < audioSources.length) {            
+            audioElem.src = audioSources[index].src;
+            index += 1;
+        } else {
+            //Reset back to first audio source
+            audioElem.src = audioSources[0].src;
+            audioElem.pause();            
+            index = 1;            
+        }
+    };
+    
+    audioElem.addEventListener('ended', playNext);    
+    audioElem.src = audioSources[0].src;
+    
+    var elem = document.getElementById(id + '_popup'); 
+    elem.style.left = (rect.left - 100) + 'px';     
     // Fix left overflow out of screen
     if (rect.left - 100 < 0) {
         document.getElementById(id + '_popup').style.left = '0';
@@ -452,8 +482,8 @@ function beginTranslating() {
     var isWebsiteForTranslation = 0;
 
     //Iterate website setting to check whehter the current URL is eligible for translation
-    for (var k = 0; k < appSetting.websiteSetting.length; k++) {
-        var website = websiteSettingLookupTable[appSetting.websiteSetting[k]];
+    for (var k = 0; k < userSettings.websiteSetting.length; k++) {
+        var website = websiteSettingLookupTable[userSettings.websiteSetting[k]];
         if (document.URL.indexOf(website) !== -1) {
             isWebsiteForTranslation = 1;
         }
