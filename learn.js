@@ -518,7 +518,7 @@ function beginTranslating() {
         for (var i = 0; i < paragraphs.length; i++) {
             var paragraph = paragraphs[i];
             var text = preproccessParagraph(paragraph.innerText);
-            if (text.split(' ').length > 1 )
+            if (text.split(' ').length >= 10  )
             {
                 requestTranslatedWords({ paragraph_index : i,  text: text }, "dict");
             }
