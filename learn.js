@@ -176,6 +176,32 @@ function addOptionsForQuiz(word, translatedWord, wordID, quiz) {
     }
     return html;
 }
+
+
+function voteTranslation(translationPairID, score, source) {
+    $.ajax({
+        type: "post",
+        beforeSend : function (request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url: hostUrl + '/vote',
+        dataType: "json",
+        data: {
+            translation_pair_id: translationPairID,
+            user_id: userSettings.userId,
+            score: score,
+            source: source
+        },
+        success: function (result) {
+            console.log("vote successful.", result);
+            
+        },
+        error: function (error) {
+            console.log("vote error.");
+            
+        }        
+    })
+}
     
 function replaceWords (wordsCont) {
     var paragraphs = paragraphsInArticle();
@@ -221,11 +247,17 @@ function replaceWords (wordsCont) {
             append += '<div class="gtx-body" style="padding-left:21px;">' + wordElem.text + '</div><br>';
             //TODO: Language is hardcoded
             append += '<div class="gtx-language">CHINESE (SIMPLIFIED) <span style ="color:red;">Accurate?</span></div>';
-
+            
             append += '<p style = "margin: 0px;padding-left:10px;">';
             //"audio speaker" image
             append += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
             append += translatedCharacters;            
+            
+            //0 is for machine and 1 is for human
+            var source = 0;
+            //Accurate "Yes/No buttons"
+            append += '<button class ="button" id="vote_yes_button_' + id + '" data-pair_id="'+ wordElem.machine_translation_id + '" data-source="' + source + '" style="border-radius: 5px; border: none; padding: 10px 24px;">Yes</button>';
+            append += '<button class ="button" id="vote_no_button_' + id +  '" data-pair_id="'+ wordElem.machine_translation_id + '" data-source="' + source + '" style="border-radius: 5px; border: none; padding: 10px 24px;">No</button>';
            
             append += '<div class="row" style="margin-left:10px">';
             for (var k = 0; k < splitPronunciation.length; k++) {
@@ -447,6 +479,18 @@ function appendPopUp(event) {
     
     audioElem.addEventListener('ended', playNext);    
     audioElem.src = audioSources[0].src;
+    
+    //Setting up onclick function for the vote buttons
+    var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
+    var voteNoBtnElem = document.getElementById('vote_no_button_' + id);
+    
+    voteYesBtnElem.addEventListener("click", function (){        
+        voteTranslation($('#vote_yes_button_' + id).data('pair_id'), 1, $('#vote_yes_button_' + id).data('source'))
+    });
+    
+    voteNoBtnElem.addEventListener("click", function (){        
+        voteTranslation($('#vote_no_button_' + id).data('pair_id'), -1, $('#vote_no_button_' + id).data('source'))
+    });
     
     var elem = document.getElementById(id + '_popup'); 
     elem.style.left = (rect.left - 100) + 'px';     
