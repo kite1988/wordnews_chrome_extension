@@ -174,7 +174,7 @@ function addOptionsForQuiz(word, translatedWord, wordID, quiz) {
 }
 
 
-function voteTranslation(translationPairID, score, source) {
+function voteTranslation(translationPairID, score, source, isExplicit) {
     $.ajax({
         type: "post",
         beforeSend : function (request) {
@@ -186,7 +186,8 @@ function voteTranslation(translationPairID, score, source) {
             translation_pair_id: translationPairID,
             user_id: userSettings.userId,
             score: score,
-            source: source
+            source: source,
+            is_explicit: isExplicit
         },
         success: function (result) {
             console.log("vote successful.", result);
@@ -496,6 +497,28 @@ function appendPopUp(event) {
     var popupData = popupDataCont[id];
     $('body').append(popupData.html);
     
+    //Send ajax post /view 
+    $.ajax({
+        type: "post",
+        beforeSend : function (request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url: hostUrl + '/view',
+        dataType: "json",
+        data: {
+            translation_pair_id: popupData.pairID,
+            user_id: userSettings.userId,
+        },
+        success: function (result) {
+            console.log("view successful.", result);
+            
+        },
+        error: function (error) {
+            console.log("view error.");
+            
+        }        
+    })
+    
     //Get select translated character elem    
     var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
     
@@ -512,6 +535,7 @@ function appendPopUp(event) {
     //Get audio sources from element
     var audioSources =  audioElem.getElementsByTagName("source");
     var index = 1;
+    //This function will auto loop to play the next track until the last one and reset it back to 0 
     var playNext = function() {
         if(index <  popupData.translatedWords[popupData.translatedWordIndex].audio_urls.length) {            
             audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[index];
@@ -523,7 +547,7 @@ function appendPopUp(event) {
             index = 1;            
         }
     };
-    
+    //Add event for end of audio play to play next track
     audioElem.addEventListener('ended', playNext);    
     audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
     
@@ -540,12 +564,13 @@ function appendPopUp(event) {
     var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
     var voteNoBtnElem = document.getElementById('vote_no_button_' + id);
     
+    //Add onclick event for yes button
     voteYesBtnElem.addEventListener("click", function () {        
-        voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source)
+        voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 1)
     });
-    
+    //Add onclick event for no button
     voteNoBtnElem.addEventListener("click", function () {        
-        voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source)
+        voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1)
     });
     
     var elem = document.getElementById(id + '_popup'); 
