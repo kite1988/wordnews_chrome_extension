@@ -21,11 +21,14 @@ var wordsReplaced = '';
 var pageDictionary = {};
 var vocabularyListDisplayed;
 var displayID = '';
-var contentToPopupForDisplayId = {};
+
+
+var popupDataCont = {};
 
 var learnTypeLookup = ["view", "test"];
 var learnTypeENUM = {view: 0, test: 1};
 var idToOriginalWordDictionary = {};
+
 
 // a dictionary of word : times returned by server for translation
 var translatedWords = {};
@@ -91,13 +94,6 @@ function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) 
             alert(error.responseText);
         }        
     })
-    
-    //var loggingUrl = hostUrl + '/log';
-    //
-    //var params = 'user_id=' + userSettings.userId + '&time=' + encodeURIComponent(elapsed_time) + '&move=' + action;
-    //var httpClient = new HttpClient();
-    //
-    //httpClient.post(loggingUrl, params, onSuccessCallback);
 }
 
 function requestTranslatedWords(paragraphs, translatorType) {
@@ -222,7 +218,21 @@ function replaceWords (wordsCont) {
         //Set learnType to a int
         var learnType = wordElem.learn_type == "view" ? 0 : 1;
         var id =  wordElem.text + '_' + wordElem.word_id + '_' + wordElem.paragraph_index + '_' + learnType;
+                
         var pronunciation = wordElem.pronunciation.replace('5', '');
+        
+        //Create a map to store popup data
+        var popupData = {html: "", pairID: wordElem.pair_id, translatedWordIndex: 0, translatedWords : []}; 
+        
+        //Create a map to store all the translated words
+        var translatedWordsCont = [];
+        //Push machine translation into translated word container
+        translatedWordsCont.push({ id: wordElem.machine_translation_id, 
+                                  translation: wordElem.translation, 
+                                  pronunciation: pronunciation,
+                                  audio_urls: wordElem.audio_urls, 
+                                  source: 0,//machine 
+                                  vote: wordElem.vote})
         
         var joinString = '';
         joinString += '<span ';
@@ -251,7 +261,7 @@ function replaceWords (wordsCont) {
             append += '<p style = "margin: 0px;padding-left:10px;">';
             //"audio speaker" image
             append += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
-            append += translatedCharacters;            
+            append += '<select id = "translatedSelect_' + id + '"> </select>';//translatedCharacters;            
             
             //0 is for machine and 1 is for human
             var source = 0;
@@ -270,9 +280,7 @@ function replaceWords (wordsCont) {
             //Audio bar div
             append += '<div class="row" >';
             append += '<audio id="pronunciation_audio_' + id + '" controls="" autoplay="">'
-            for (var k = 0; k < splitPronunciation.length; k++) {
-                append += '<source src="' + wordElem.audio_urls[k] +' " type="audio/mp3" />'
-            }            
+                 
             append += '</audio>';
             append += '</div>';
             //End of audio bar div
@@ -285,8 +293,33 @@ function replaceWords (wordsCont) {
             append += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
             append += '<div class="jfk-bubble-arrowimplbefore"></div>';
             append += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
+            
+            popupData.html = append;
+            
+            //In learn mode, there will be annotation property in wordElem
+            for (var annotationIndex = 0; annotationIndex < wordElem.annotations.length; ++annotationIndex) {
+                translatedWordsCont.push({  id: wordElem.annotations[annotationIndex].id, 
+                                            translation: wordElem.annotations[annotationIndex].translation, 
+                                            pronunciation: wordElem.annotations[annotationIndex].pronunciation,
+                                            audio_urls: wordElem.annotations[annotationIndex].audio_urls, 
+                                            source: 1,//user/human 
+                                            vote: wordElem.annotations[annotationIndex].vote })
+            }
+            
+            //Sort the translated words in decreasing order according to vote
+            function compare(lhs, rhs) {
+                if (lhs.vote < rhs.vote) {
+                    return -1;
+                }
+                    
+                if (lhs.vote > rhs.vote) {
+                        return 1;
+                }
+                return 0;
+            }
 
-            contentToPopupForDisplayId[id + "_popup"] = append;
+            translatedWordsCont.sort(compare);            
+            
         } else {
             //TODO: Need to make this more generic
             if (wordElem.testType === CHINESE_TO_ENGLISH_QUIZ) {
@@ -300,7 +333,8 @@ function replaceWords (wordsCont) {
 
             append += addOptionsForQuiz();
             append += '</div></div></div></div>' + '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">' + '<div class="jfk-bubble-arrowimplbefore"></div>' + '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
-            contentToPopupForDisplayId[id + "_popup"] = append;                        
+            
+            popupData.html = append;
         }
         joinString += 'id = "' + id + '" >';
             
@@ -327,9 +361,11 @@ function replaceWords (wordsCont) {
         }
 
         result += parts.join(' ' + wordElem.text + ' ');
-
-        paragraph.innerHTML = result;
+        paragraph.innerHTML = result;       
         
+        //add this popup data to container
+        popupData.translatedWords = translatedWordsCont;
+        popupDataCont[id] = popupData;
     }
 
     //This code below is bought over from the previous code
@@ -415,6 +451,7 @@ function replaceWords (wordsCont) {
         $(this).css("color", "#FF9900");
         $(this).css("cursor", "pointer");
     });
+    
     $('.translate_class').mouseout(function() {
         $(this).css("color", "black");
     });
@@ -443,7 +480,6 @@ function documentClickOnInlineRadioButton() {
         document.getElementById('alertDanger').style.display = 'inline-flex';
         setTimeout(function() { $('.translate_class').popover('hide') }, 2500);
     }
-
 }
 
 function appendPopUp(event) {
@@ -457,8 +493,25 @@ function appendPopUp(event) {
     if (myElem != null) {
         document.body.removeChild(myElem);
     }
-
-    $('body').append(contentToPopupForDisplayId[id + '_popup']);
+    var popupData = popupDataCont[id];
+    $('body').append(popupData.html);
+    
+    //Get select translated character elem    
+    var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
+    
+    for (var i = 0; i < popupData.translatedWords.length; ++i) {
+        var opt = document.createElement('option');
+        opt.value = i;
+        opt.innerHTML = popupData.translatedWords[i].translation;
+        translatedCharSelectElem.appendChild(opt);
+    }
+    
+    translatedCharSelectElem.addEventListener("change", function() {
+        popupData.translatedWordIndex = translatedCharSelectElem.selectedIndex;
+        //set audio urls
+        audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
+        
+    });
     
     //Get Audio elem
     var audioElem = document.getElementById('pronunciation_audio_' + id);
@@ -466,30 +519,30 @@ function appendPopUp(event) {
     var audioSources =  audioElem.getElementsByTagName("source");
     var index = 1;
     var playNext = function() {
-        if(index < audioSources.length) {            
-            audioElem.src = audioSources[index].src;
+        if(index <  popupData.translatedWords[popupData.translatedWordIndex].audio_urls.length) {            
+            audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[index];
             index += 1;
         } else {
             //Reset back to first audio source
-            audioElem.src = audioSources[0].src;
+            audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
             audioElem.pause();            
             index = 1;            
         }
     };
     
     audioElem.addEventListener('ended', playNext);    
-    audioElem.src = audioSources[0].src;
+    audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
     
     //Setting up onclick function for the vote buttons
     var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
     var voteNoBtnElem = document.getElementById('vote_no_button_' + id);
     
-    voteYesBtnElem.addEventListener("click", function (){        
-        voteTranslation($('#vote_yes_button_' + id).data('pair_id'), 1, $('#vote_yes_button_' + id).data('source'))
+    voteYesBtnElem.addEventListener("click", function () {        
+        voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source)
     });
     
-    voteNoBtnElem.addEventListener("click", function (){        
-        voteTranslation($('#vote_no_button_' + id).data('pair_id'), -1, $('#vote_no_button_' + id).data('source'))
+    voteNoBtnElem.addEventListener("click", function () {        
+        voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source)
     });
     
     var elem = document.getElementById(id + '_popup'); 
