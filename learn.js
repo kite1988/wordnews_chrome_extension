@@ -244,7 +244,7 @@ function replaceWords (wordsCont) {
         if (learnType == 0) {
             
             //TODO: More like scalable by using generic variable names
-            var splitPronunciation = pronunciation.split(' ');
+            //var splitPronunciation = pronunciation.split(' ');
             var translatedCharacters = wordElem.translation.replace('(', '').replace(')', '').split(' ');                       
             
             var append = '<div id=\"' + id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1;">';
@@ -270,11 +270,11 @@ function replaceWords (wordsCont) {
             append += '<button class ="button" id="vote_no_button_' + id +  '" data-pair_id="'+ wordElem.machine_translation_id + '" data-source="' + source + '" style="border-radius: 5px; border: none; padding: 10px 24px;">No</button>';
            
             append += '<div class="row" style="margin-left:10px">';
-            for (var k = 0; k < splitPronunciation.length; k++) {
-
-                //append += '<div style="height:21px;width:15px;display:inline-block;"> </div>';
-                append += '<small>' + splitPronunciation[k] + '</small> ';
-            }
+            //for (var k = 0; k < splitPronunciation.length; k++) {
+            //
+            //    //append += '<div style="height:21px;width:15px;display:inline-block;"> </div>';
+            append += '<small id="pronunciation_' + id + '">' + pronunciation + '</small> ';
+            //}
             append += '</div>';
             
             //Audio bar div
@@ -499,19 +499,13 @@ function appendPopUp(event) {
     //Get select translated character elem    
     var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
     
+    //Create the list of translated words according to votes
     for (var i = 0; i < popupData.translatedWords.length; ++i) {
         var opt = document.createElement('option');
         opt.value = i;
         opt.innerHTML = popupData.translatedWords[i].translation;
         translatedCharSelectElem.appendChild(opt);
-    }
-    
-    translatedCharSelectElem.addEventListener("change", function() {
-        popupData.translatedWordIndex = translatedCharSelectElem.selectedIndex;
-        //set audio urls
-        audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
-        
-    });
+    }    
     
     //Get Audio elem
     var audioElem = document.getElementById('pronunciation_audio_' + id);
@@ -532,6 +526,15 @@ function appendPopUp(event) {
     
     audioElem.addEventListener('ended', playNext);    
     audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
+    
+    //Add event listener for select onchange to update the other html elem
+    translatedCharSelectElem.addEventListener("change", function() {
+        popupData.translatedWordIndex = translatedCharSelectElem.selectedIndex;
+        //set audio urls
+        audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
+        var pronunciationElem = document.getElementById('pronunciation_' + id);
+        pronunciationElem.value = popupData.translatedWords[popupData.translatedWordIndex].pronunciation;
+    });
     
     //Setting up onclick function for the vote buttons
     var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
