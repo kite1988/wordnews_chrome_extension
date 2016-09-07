@@ -316,7 +316,7 @@ function replaceWords (wordsCont) {
             translatedWordsCont.sort(compare);            
             
         } else {
-            popupData.type = 0;
+            popupData.type = 1;
             //TODO: Need to make this more generic
             if (wordElem.testType === CHINESE_TO_ENGLISH_QUIZ) {
                 joinString += 'title="Which of the following is the corresponding English word?" ';
@@ -477,7 +477,9 @@ function appendPopUp(event) {
             
         }        
     })
-    if (popupData.type == 1)
+     
+    
+    if (popupData.type == 0)
     {
         //Get select translated character elem    
         var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
@@ -544,8 +546,32 @@ function appendPopUp(event) {
         }        
     }
      
+    //var panel = $(element);
+    //panel.mouseenter(function() {
+    //    console.log(id + " mouse enter");
+    //    if (panel.is(':hidden')) {
+    //        panel.show();
+    //    }
+    //});
+
+
+    
     var elem = document.getElementById(id + '_popup'); 
-    elem.style.left = (rect.left - 100) + 'px';     
+    elem.style.left = (rect.left - 100) + 'px';   
+    
+    console.log($(id + '_popup'));
+    console.log(elem);
+    
+    //$(id + '_popup').hide();
+    //elem.hide();
+ 
+    document.addEventListener("click", function (event) {  
+        console.log("hide panel")
+        elem.style.visibility = "hidden";
+    }, true);
+        
+
+
     // Fix left overflow out of screen
     if (rect.left - 100 < 0) {
         document.getElementById(id + '_popup').style.left = '0';
@@ -584,7 +610,7 @@ function beginTranslating() {
             isWebsiteForTranslation = 1;
         }
     }    
-
+    
     console.log('websiteCheck ' + isWebsiteForTranslation);
 
     if (isWebsiteForTranslation) {

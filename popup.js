@@ -155,6 +155,7 @@ function syncUser() {
         .get(
             null, //
             function(result) {
+                console.log(result);
                 userId = result.userId;
 
                 translationUrl = result.translationUrl || "http://wordnews-mobile.herokuapp.com/";
@@ -336,6 +337,7 @@ function setAnnotationLanguage() {
 }
 
 function setLearnLanguage() {
+    learnLanguage = $('#learn-panel .bfh-selectbox').val();
     $('#learn-panel .bfh-selectbox').on('change.bfhselectbox', function() {
         learnLanguage = $(this).val();
         console.log("set learning language on popup.html: " + learnLanguage);
@@ -419,7 +421,7 @@ function reload() {
 
 function setLinks() {
     $('#learn-panel .btn-block').click(function() {
-        window.open(hostUrl + '/displayHistory?user_id=' + userId);
+        window.open(hostUrl + '/show_user_words?user_id=' + userId + '&lang=' + learnLanguage + '&is_learning=1');
     });
 
     $('#setting').click(function() {
