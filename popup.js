@@ -84,8 +84,32 @@ function updatePopupUI (currentTabInfo) {
             // specified precision
     });
     
-    showAnnotationHistory();
+    document.getElementById('learnt').innerHTML = '-';
+    document.getElementById('toLearn').innerHTML = '-';
+    console.log("show learning history")
+    $.ajax({
+        type: "post",
+        beforeSend: function(request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url: hostUrl + '/show_user_learning_history',
+        data: {
+            user_id: userId,
+            lang: currentTabInfo.ann_lang
+        },
+        success: function(result) {
+            console.log("show user learning history successful.");
+            console.log(result);
+            document.getElementById('learnt').innerHTML = result.history.learnt_count;
+            document.getElementById('toLearn').innerHTML = result.history.learning_count;
+        },
+        error: function (error) {
+            console.log("show user learning history error.");
+            alert(error.responseText);
+        } 
+    });
     
+    showAnnotationHistory();    
 }
 
 function initalize() {
@@ -162,30 +186,7 @@ function syncUser() {
                 //Update the UI
                 for (var i = 0; i < websiteSetting.length; ++i) {
                     document.getElementById('inlineCheckbox' + websiteSetting[i]).checked = true;
-                }                
-
-                // TODO: use $.get()
-                var remembered = new HttpClient();
-                var answer;
-
-                document.getElementById('learnt').innerHTML = '-';
-                document.getElementById('toLearn').innerHTML = '-';
-
-                remembered.get(
-                    hostUrl + '/getNumber?user_id=' + userId,
-                    function(answer) {
-                        var obj = JSON.parse(answer);
-                        if ('learnt' in obj) {
-                            document
-                                .getElementById('learnt').innerHTML = obj['learnt'];
-                        }
-                        if ('toLearn' in obj) {
-                            document
-                                .getElementById('toLearn').innerHTML = obj['toLearn'];
-                        }
-                    }
-                );
-                
+                }                             
             });
 }
 
@@ -413,9 +414,6 @@ function reload() {
             code: code
         });
     });
-
-    // window.location.reload();
-    // chrome.tabs.reload();
 
 }
 
