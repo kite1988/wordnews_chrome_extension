@@ -461,7 +461,8 @@ function deleteAnnotationFromServer(annotationPanelID) {
 			url : hostUrl + "/delete_annotation",
 			dataType : "json",
 			data : {			
-                id: annotationID                   
+                id: annotationID,
+                user_id: userSettings.userId
 			},
 			success : function(result) { // getsuccessful and result returned by server
 				console.log( "delete annotaiton get success" );    
