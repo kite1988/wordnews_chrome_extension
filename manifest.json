@@ -34,6 +34,7 @@
         "slider/js/bootstrap-slider.js",
         "bootstrap/js/bootstrap-formhelpers.min.js",
         "bootstrap/js/bootstrap.min.js",
+        "notifyjs/notify.min.js",
         "common.js",
         "content-share.js",
         "annotate.js",
