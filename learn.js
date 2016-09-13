@@ -141,7 +141,7 @@ function translateWords (result) {
 const CHINESE_TO_ENGLISH_QUIZ = 1;
 const ENGLISH_TO_CHINESE_QUIZ = 2;
     
-function generateHTMLForQuiz(word, translatedWord, wordID, quiz) {
+function generateHTMLForQuiz(word, translatedWord, popupID, quiz) {
     
     var arrayShuffle = shuffle([0, 1, 2, 3]);
     var html = '<div id=\"' + popupID + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">';
@@ -158,7 +158,7 @@ function generateHTMLForQuiz(word, translatedWord, wordID, quiz) {
         
         var num = arrayShuffle[i];    
 
-        html += '<div id="quiz_' + wordID + '_' + i + '" align="center"' +
+        html += '<div id="quiz_' + popupID + '_' + i + '" align="center"' +
                 'onMouseOver="this.style.color=\'#FF9900\'"' +
                 'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
                 'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:' +
@@ -191,11 +191,11 @@ function generateHTMLForViewPopup(popupID, word, wordElem) {
     html += '<p style = "margin: 0px;padding-left:10px;">';
     //"audio speaker" image
     html += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
-    html += '<select id = "translatedSelect_' + popupID + '"> </select>';//translatedCharacters;            
+    html += '<select id = "translatedSelect_' + popupID + '" style="font-size:16px"> </select>';//translatedCharacters;            
     
     //Accurate "Yes/No buttons"
-    html += '<button class ="button" id="vote_yes_button_' + popupID + '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="border-radius: 5px; border: none; padding: 10px 24px;">Yes</button>';
-    html += '<button class ="button" id="vote_no_button_' + popupID +  '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="border-radius: 5px; border: none; padding: 10px 24px;">No</button>';
+    html += '<button class="button" id="vote_yes_button_' + popupID + '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="background-color: #4CAF50; border-radius: 5px; border: none; font-size:16px; padding: 10px 24px;">Yes</button>';
+    html += '<button class="button" id="vote_no_button_' + popupID +  '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="background-color: #4CAF50; border-radius: 5px; border: none; font-size:16px; padding: 10px 24px;">No</button>';
    
     html += '<div class="row" style="margin-left:10px">';
     html += '<small id="pronunciation_' + popupID + '">' + wordElem.pronunciation + '</small> ';
@@ -392,8 +392,8 @@ function documentClickOnInlineRadioButton() {
     }
 }
 
-function validateQuizInput(wordID, input) {
-    var popupData = popupDataCont[wordID];
+function validateQuizInput(popupID, input) {
+    var popupData = popupDataCont[popupID];
     var answer = popupData.word;
     //Can be changed to number
     var isCorrect =  (answer == input) ? "correct" : "wrong";
@@ -412,7 +412,8 @@ function validateQuizInput(wordID, input) {
             lang: learnLanguage
         },
         success: function (result) {
-            console.log("take quiz successful.", result);            
+            console.log("take quiz successful.", result);   
+            popupData.html = generateHTMLForViewPopup(popupID, answer, popupData.translatedWords[popupData.translatedWordIndex]);
         },
         error: function (error) {
             console.log("take quiz error.");            
