@@ -137,13 +137,18 @@ function translateWords (result) {
     
 }
 
+//TODO: Need to remove this hardcoded const variable and change to a more scalable method
 const CHINESE_TO_ENGLISH_QUIZ = 1;
 const ENGLISH_TO_CHINESE_QUIZ = 2;
     
-function addOptionsForQuiz(word, translatedWord, wordID, quiz) {
+function generateHTMLForQuiz(word, translatedWord, wordID, quiz) {
     
     var arrayShuffle = shuffle([0, 1, 2, 3]);
-    var html = "";
+    var html = '<div id=\"' + popupID + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">';
+    html += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
+    html += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">'; 
+    html += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">'
+    html += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';   
     
     for (var i = 0; i < arrayShuffle.length; ++i) {
         //Append div tag
@@ -164,6 +169,56 @@ function addOptionsForQuiz(word, translatedWord, wordID, quiz) {
             html += "</div>";
         }
     }
+    html += '</div></div></div></div>' + '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
+    html += '<div class="jfk-bubble-arrowimplbefore"></div>'; 
+    html += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
+    return html;
+}
+
+//This function takes in id and wordElem and gerneate html for view popup
+function generateHTMLForViewPopup(popupID, word, wordElem) {
+    var html = '<div id=\"' + popupID + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1;">';
+    html += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
+    html += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
+    html += '<div class="content" style="border: 0px; margin: 0">';
+    html += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
+    //TODO: Language is hardcoded
+    html += '<div class="gtx-language">ENGLISH</div>';
+    html += '<div class="gtx-body" style="padding-left:21px;">' + word + '</div><br>';
+    //TODO: Language is hardcoded
+    html += '<div class="gtx-language">CHINESE (SIMPLIFIED) <span style ="color:red;">Accurate?</span></div>';
+    
+    html += '<p style = "margin: 0px;padding-left:10px;">';
+    //"audio speaker" image
+    html += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
+    html += '<select id = "translatedSelect_' + popupID + '"> </select>';//translatedCharacters;            
+    
+    //Accurate "Yes/No buttons"
+    html += '<button class ="button" id="vote_yes_button_' + popupID + '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="border-radius: 5px; border: none; padding: 10px 24px;">Yes</button>';
+    html += '<button class ="button" id="vote_no_button_' + popupID +  '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="border-radius: 5px; border: none; padding: 10px 24px;">No</button>';
+   
+    html += '<div class="row" style="margin-left:10px">';
+    html += '<small id="pronunciation_' + popupID + '">' + wordElem.pronunciation + '</small> ';
+
+    html += '</div>';
+    
+    //Audio bar div
+    html += '<div class="row" >';
+    html += '<audio id="pronunciation_audio_' + popupID + '" controls="" autoplay="">'
+         
+    html += '</audio>';
+    html += '</div>';
+    //End of audio bar div
+    
+    var see_more_id = "more_" + popupID;
+    html += '</p>';
+    //TODO: href is hardcoded
+    html += '<a id="' + see_more_id + '" target="_blank" class="More" href="http://dict.cn/en/search?q=' + word + '" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
+    html += '</div></div></div></div></div>';
+    html += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
+    html += '<div class="jfk-bubble-arrowimplbefore"></div>';
+    html += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
+    
     return html;
 }
 
@@ -212,12 +267,12 @@ function replaceWords (wordsCont) {
         var text = paragraph.innerHTML;    
         //Set learnType to a int
         var learnType = wordElem.learn_type == "view" ? 0 : 1;
-        var id =  wordElem.text + '_' + wordElem.word_id + '_' + wordElem.paragraph_index + '_' + learnType;
+        var popupID =  wordElem.text + '_' + wordElem.word_id + '_' + wordElem.paragraph_index + '_' + learnType;
                 
         var pronunciation = wordElem.pronunciation.replace('5', '');
         
         //Create a map to store popup data
-        var popupData = {html: "", word: wordElem.text, type: 0, pairID: wordElem.pair_id, translatedWordIndex: 0, translatedWords : []}; 
+        var popupData = {html: "", clickCounter: 0, word: wordElem.text, type: 0, pairID: wordElem.pair_id, translatedWordIndex: 0, translatedWords : []}; 
         
         //Create a map to store all the translated words
         var translatedWordsCont = [];
@@ -238,60 +293,8 @@ function replaceWords (wordsCont) {
         //If it is view mode
         if (learnType == 0) {
             
-            //TODO: More like scalable by using generic variable names
-            //var splitPronunciation = pronunciation.split(' ');
-            var translatedCharacters = wordElem.translation.replace('(', '').replace(')', '').split(' ');                       
-            
-            var append = '<div id=\"' + id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1;">';
-            append += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
-            append += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
-            append += '<div class="content" style="border: 0px; margin: 0">';
-            append += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">';
-            //TODO: Language is hardcoded
-            append += '<div class="gtx-language">ENGLISH</div>';
-            append += '<div class="gtx-body" style="padding-left:21px;">' + wordElem.text + '</div><br>';
-            //TODO: Language is hardcoded
-            append += '<div class="gtx-language">CHINESE (SIMPLIFIED) <span style ="color:red;">Accurate?</span></div>';
-            
-            append += '<p style = "margin: 0px;padding-left:10px;">';
-            //"audio speaker" image
-            append += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
-            append += '<select id = "translatedSelect_' + id + '"> </select>';//translatedCharacters;            
-            
-            //0 is for machine and 1 is for human
-            var source = 0;
-            //Accurate "Yes/No buttons"
-            append += '<button class ="button" id="vote_yes_button_' + id + '" data-pair_id="'+ wordElem.machine_translation_id + '" data-source="' + source + '" style="border-radius: 5px; border: none; padding: 10px 24px;">Yes</button>';
-            append += '<button class ="button" id="vote_no_button_' + id +  '" data-pair_id="'+ wordElem.machine_translation_id + '" data-source="' + source + '" style="border-radius: 5px; border: none; padding: 10px 24px;">No</button>';
-           
-            append += '<div class="row" style="margin-left:10px">';
-            //for (var k = 0; k < splitPronunciation.length; k++) {
-            //
-            //    //append += '<div style="height:21px;width:15px;display:inline-block;"> </div>';
-            append += '<small id="pronunciation_' + id + '">' + pronunciation + '</small> ';
-            //}
-            append += '</div>';
-            
-            //Audio bar div
-            append += '<div class="row" >';
-            append += '<audio id="pronunciation_audio_' + id + '" controls="" autoplay="">'
-                 
-            append += '</audio>';
-            append += '</div>';
-            //End of audio bar div
-            
-            var see_more_id = "more_" + id;
-            append += '</p>';
-            //href is hardcoded
-            append += '<a id="' + see_more_id + '" target="_blank" class="More" href="http://dict.cn/en/search?q=' + wordElem.text + '" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
-            append += '</div></div></div></div></div>';
-            append += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
-            append += '<div class="jfk-bubble-arrowimplbefore"></div>';
-            append += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
-            
-            popupData.html = append;
-            
-            //In learn mode, there will be annotation property in wordElem
+            //In learn mode, there will be annotation property in wordElem.
+            //Therefore, we need to insert all the different translation avaialble into a container and sort the ranking
             for (var annotationIndex = 0; annotationIndex < wordElem.annotations.length; ++annotationIndex) {
                 translatedWordsCont.push({  id: wordElem.annotations[annotationIndex].id, 
                                             translation: wordElem.annotations[annotationIndex].translation, 
@@ -313,7 +316,8 @@ function replaceWords (wordsCont) {
                 return 0;
             }
 
-            translatedWordsCont.sort(compare);            
+            translatedWordsCont.sort(compare); 
+            popupData.html = generateHTMLForViewPopup(popupID, wordElem.text, translatedWordsCont[0]);
             
         } else {
             popupData.type = 1;
@@ -324,15 +328,9 @@ function replaceWords (wordsCont) {
                 joinString += 'title="Which of the following is the corresponding Chinese word?" ';
             }
             joinString += 'href="#" ';          
-           
-            var append = '<div id=\"' + id + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">' + '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">' + '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">' + '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">' + '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';
-            
-            append += addOptionsForQuiz(wordElem.text, wordElem.translation, id, wordElem.quiz);
-            append += '</div></div></div></div>' + '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">' + '<div class="jfk-bubble-arrowimplbefore"></div>' + '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
-            
-            popupData.html = append;
+            popupData.html = generateHTMLForQuiz(wordElem.text, wordElem.translation, popupID, wordElem.quiz);
         }
-        joinString += 'id = "' + id + '" >';
+        joinString += 'id = "' + popupID + '" >';
             
         //TODO: Check what is wordDisplay for
         if (wordDisplay == 1) {
@@ -348,22 +346,18 @@ function replaceWords (wordsCont) {
         var result = '';
         if (parts.length > 1) {
             var n = occurrences(parts[0], '\"');
-            //if (n%2 === 1) {  // TODO figure out the goal of this code...
-            //result += parts[0] + '"' + joinString + '"';
-            //} else {
-            result += parts[0] + joinString;
-            //}
+            result += parts[0] + joinString;  
             parts.splice(0, 1);
         }
 
         result += parts.join(' ' + wordElem.text + ' ');
+        //Create the inner html for highlighted/underlined translated text
         paragraph.innerHTML = result;       
         
-        //add this popup data to container
+        //add popup data to container
         popupData.translatedWords = translatedWordsCont;
-        popupDataCont[id] = popupData;
+        popupDataCont[popupID] = popupData;
     }
-
    
     $(".translate_class").off('click.wordnews').on('click.wordnews', appendPopUp);
 
@@ -388,15 +382,11 @@ function documentClickOnInlineRadioButton() {
     document.getElementById('inlineRadioCorrect').disabled = true;
 
     if (document.getElementById('inlineRadioCorrect').checked) {
-
-        sendRememberWords(userSettings.userId, tempWordID, 1, document.URL)
-
+        sendRememberWords(userSettings.userId, tempWordID, 1, document.URL);
         document.getElementById('alertSuccess').style.display = 'inline-flex';
         setTimeout(function() { $('.translate_class').popover('hide') }, 1000);
     } else {
-
-        sendRememberWords(userSettings.userId, tempWordID, 0, document.URL)
-
+        sendRememberWords(userSettings.userId, tempWordID, 0, document.URL);
         document.getElementById('alertDanger').style.display = 'inline-flex';
         setTimeout(function() { $('.translate_class').popover('hide') }, 2500);
     }
@@ -407,7 +397,7 @@ function validateQuizInput(wordID, input) {
     var answer = popupData.word;
     //Can be changed to number
     var isCorrect =  (answer == input) ? "correct" : "wrong";
-    //Send ajax post /view 
+    //Send ajax post /take_quiz 
     $.ajax({
         type: "post",
         beforeSend : function (request) {
@@ -418,11 +408,11 @@ function validateQuizInput(wordID, input) {
         data: {
             user_id: userSettings.userId,
             translation_pair_id: popupData.pairID,            
-            answer: isCorrect
+            answer: isCorrect,
+            lang: learnLanguage
         },
         success: function (result) {
-            console.log("take quiz successful.", result);
-            
+            console.log("take quiz successful.", result);            
         },
         error: function (error) {
             console.log("take quiz error.");            
@@ -431,9 +421,7 @@ function validateQuizInput(wordID, input) {
     
     if (isCorrect == "correct") {
         $('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");
-
         $('.jfk-bubble').css("background-size", "cover");
-
         $('.content').css("background-color", "#cafffb");
     }
     else {
@@ -455,32 +443,33 @@ function appendPopUp(event) {
     }
     var popupData = popupDataCont[id];
     $('body').append(popupData.html);
-    
-    //Send ajax post /view 
-    $.ajax({
-        type: "post",
-        beforeSend : function (request) {
-            request.setRequestHeader("Accept", "application/json");
-        },
-        url: hostUrl + '/view',
-        dataType: "json",
-        data: {
-            translation_pair_id: popupData.pairID,
-            user_id: userSettings.userId,
-        },
-        success: function (result) {
-            console.log("view successful.", result);
-            
-        },
-        error: function (error) {
-            console.log("view error.");
-            
-        }        
-    })
-     
-    
-    if (popupData.type == 0)
-    {
+    //If the translated word has not been clicked yet, send ajax post to server 
+    if (popupData.clickCounter == 0) {
+        //Send ajax post /view 
+        $.ajax({
+            type: "post",
+            beforeSend : function (request) {
+                request.setRequestHeader("Accept", "application/json");
+            },
+            url: hostUrl + '/view',
+            dataType: "json",
+            data: {
+                translation_pair_id: popupData.pairID,
+                user_id: userSettings.userId,
+                lang: learnLanguage
+            },
+            success: function (result) {
+                console.log("view successful.", result);
+                
+            },
+            error: function (error) {
+                console.log("view error.");            
+            }        
+        })     
+        
+    }
+    ++popupData.clickCounter;
+    if (popupData.type == 0)    {
         //Get select translated character elem    
         var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
         
@@ -545,32 +534,15 @@ function appendPopUp(event) {
             });
         }        
     }
-     
-    //var panel = $(element);
-    //panel.mouseenter(function() {
-    //    console.log(id + " mouse enter");
-    //    if (panel.is(':hidden')) {
-    //        panel.show();
-    //    }
-    //});
-
-
     
     var elem = document.getElementById(id + '_popup'); 
     elem.style.left = (rect.left - 100) + 'px';   
     
-    console.log($(id + '_popup'));
-    console.log(elem);
-    
-    //$(id + '_popup').hide();
-    //elem.hide();
- 
+    //Add an event to close the translation/quiz popup
     document.addEventListener("click", function (event) {  
         console.log("hide panel")
         elem.style.visibility = "hidden";
-    }, true);
-        
-
+    }, true);        
 
     // Fix left overflow out of screen
     if (rect.left - 100 < 0) {
@@ -580,9 +552,7 @@ function appendPopUp(event) {
     document.getElementById(id + '_popup').style.top = (rect.top + 30) + 'px';
 }
 
-
 vocabularyListDisplayed = 0;
-
 
 function paragraphsInArticle() {
     var paragraphs;
