@@ -221,6 +221,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }     
     else if (request.mode == "learn") {
         learnLanguage = request.learn_lang;
+        translationType = request.translationType;
         beginTranslating();
     }    
     

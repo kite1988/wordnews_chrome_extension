@@ -21,19 +21,19 @@ var currentWindowInfo;
  */
  
 chrome.storage.sync.get(null, function(result) {
-  var url = makeUrlForGoogleOAuth();
-
-  //if (!result.hasOwnProperty('userAccount')) {
-     // launchGoogleLoginFlow(url);
-  //}
-  
-  // isWorking does not exists anymore
-  //var isWorking = result.isWorking;
-  //if (isWorking == 0) {
-  //    
-  //    var imgURL = chrome.extension.getURL("images/logo-gray.png");
-  //    chrome.browserAction.setIcon({ path: imgURL });
-  //} 
+    var url = makeUrlForGoogleOAuth();
+    
+    //if (!result.hasOwnProperty('userAccount')) {
+    // launchGoogleLoginFlow(url);
+    //}
+    
+    // isWorking does not exists anymore
+    //var isWorking = result.isWorking;
+    //if (isWorking == 0) {
+    //    
+    //    var imgURL = chrome.extension.getURL("images/logo-gray.png");
+    //    chrome.browserAction.setIcon({ path: imgURL });
+    //} 
 });
 
 function updateLogo (mode) {
@@ -63,7 +63,7 @@ function setMode (mode, tabID) {
     else if (modeENUM.learn == mode) {
         chrome.tabs.sendMessage(
             tabID, 
-            { mode: "learn", learn_lang: tabsInfoCont[tabID].learn_lang}, 
+            { mode: "learn", learn_lang: tabsInfoCont[tabID].learn_lang, translationType: tabsInfoCont[tabID].translationType}, 
             function(response) {
                 
             } 
@@ -111,7 +111,8 @@ chrome.runtime.onMessage.addListener(
                                     ann_lang: 'zh_CN', 
                                     learn_lang: 'zh_CN',
                                     wordsDisplay: 0,
-                                    wordsLearn: 0
+                                    wordsLearn: 0,
+                                    translationType: 'dict'
                                   };
             //Sync tab information container in google local storage
             chrome.storage.local.set({
@@ -163,7 +164,11 @@ chrome.runtime.onMessage.addListener(
                 //See "new_tab" condition for the reason of putting return true
                 return true;
             }   
-        }            
+        }  else if (request.type == "change_translation") {
+            tabsInfoCont[tabID].translationType = request.translationType;
+            setMode(tabsInfoCont[tabID].mode, tabID);
+        }    
+           
     }
 );
 

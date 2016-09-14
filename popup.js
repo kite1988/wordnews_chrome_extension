@@ -59,8 +59,8 @@ function programmaticInjection () {
 }
 
 function updatePopupUI (currentTabInfo) {
-    var mode = modeLookUpTable[currentTabInfo.mode];
-    setMode(mode);            
+    //var mode = modeLookUpTable[currentTabInfo.mode];
+    //setMode(mode);            
     
     //Update Learn language UI
     $('#learn-panel .bfh-selectbox').val(currentTabInfo.learn_lang);
@@ -137,7 +137,8 @@ function initalize() {
                         //background.js will respond back with current tab info to update the UI
                         console.log("New tab message sent.");         
                         currentTabInfo = response;
-                        updatePopupUI(response);
+                        updatePopupUI(currentTabInfo);
+                        setMode(modeLookUpTable[currentTabInfo.mode]); 
                     }
                 );
             } else {                
@@ -227,30 +228,29 @@ function setTranslation() {
                 $("#translationUrl .btn").addClass('btn-default');
 
                 var translationType = $(this).attr('id');
-                if (translationType.indexOf('ims') >= 0) {
-                    chrome.storage.sync
-                        .set({
-                            'translationUrl': 'http://imsforwordnews.herokuapp.com/show'
-                        });
+                console.log(translationType);
+                var translationTypeShortForm = "";
+                if (translationType.indexOf('ims') >= 0) {                    
+                    translationTypeShortForm = 'ims';
                     $("#translationUrl #imsTranslations").addClass(
                         'active btn-primary');
                 } else if (translationType.indexOf('dictionary') >= 0) {
-                    chrome.storage.sync
-                        .set({
-                            'translationUrl': 'http://wordnews.herokuapp.com/show_by_dictionary'
-                        });
+                    translationTypeShortForm = 'dict';
                     $("#translationUrl #dictionaryTranslations")
                         .addClass('active btn-primary');
                 } else {
                     // this one uses Bing translator
-                    chrome.storage.sync
-                        .set({
-                            'translationUrl': hostUrl + '/show'
-                        });
+                    translationTypeShortForm = 'bing';
                     $("#translationUrl #bingTranslations").addClass(
                         'active btn-primary');
                 }
                 reload();
+                chrome.runtime.sendMessage(
+                    { type: "change_translation", tab_id: currentTabID, translationType: translationTypeShortForm },
+                    function(response) {
+                        //console.log("New tab message sent.");
+                    }
+                ); 
             });
 }
 

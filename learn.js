@@ -15,6 +15,7 @@ var TranslationDirection = {
 var isTranslatingByParagraph = true;
 
 var learnLanguage = 'zh_CN';
+var translationType = "";
 
 var wordsReplaced = '';
 // a dictionary of english to chinese words 
@@ -613,7 +614,7 @@ function beginTranslating() {
             var text = preproccessParagraph(paragraph.innerText);
             if (text.split(' ').length >= 10  )
             {
-                requestTranslatedWords({ paragraph_index : i,  text: text }, "dict");
+                requestTranslatedWords({ paragraph_index : i,  text: text }, translationType);
             }
             //console.log("Before: " + paragraph.innerText);
             //console.log("After: " +  paragraph.innerText.replace(/[^\x00-\x7F]/g, " ")); //encodeURIComponent(paragraph.innerText));
