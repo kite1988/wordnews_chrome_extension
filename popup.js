@@ -1,17 +1,3 @@
-var HttpClient = function() {
-    this.get = function(aUrl, aCallback) {
-        anHttpRequest = new XMLHttpRequest();
-        anHttpRequest.onreadystatechange = function() {
-            if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
-                aCallback(anHttpRequest.responseText);
-            }
-
-        }
-        anHttpRequest.open('GET', aUrl, true);
-        anHttpRequest.send(null);
-    }
-}
-
 //TODO: Need to remove isWorking from learn.js, annotate.js and content-share.js
 
 //These variables are only "alive" as long as popup.html is showing

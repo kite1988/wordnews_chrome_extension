@@ -8,16 +8,13 @@ var websiteSettingENUM = {cnn: 1, chinadaily: 2, bbc: 3};
 var websiteSettingLookupTable = ['none', 'cnn.com', 'chinadaily.com.cn', 'bbc.co']; //none is just a buffer
 var userSettings = {
     websiteSetting: [],
-    userId: ""
+    userId: "",
+    score: 0,
+    rank: 0
 };
 
-//TODO: Need to find ways to put websiteSetting to user level settings.
-//      For now it is hardcoded        
-
 if (typeof chrome != 'undefined') {
-    console.log('Chrome, initializating with chrome storage.');
-
-   
+    console.log('Chrome, initializating with chrome storage.');   
     
     //chrome.storage.sync.get(null, function(result) {
     //    for (var key in result) {
@@ -39,6 +36,18 @@ if (typeof chrome != 'undefined') {
     //chrome.storage.sync.get(null, handleInitResult);
 } else {
     console.log('Not chrome, waiting for manual initialization.');
+}
+
+function updateScoreAndRank(score, rank) {
+    chrome.runtime.sendMessage(
+        { type: "update_score_rank",
+          score: score,
+          rank: rank 
+        },
+        function(response) {   
+            console.log("Score and rank updated");
+        }
+    );    
 }
 
 function getURLPostfix(url) {

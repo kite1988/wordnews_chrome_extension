@@ -466,6 +466,7 @@ function deleteAnnotationFromServer(annotationPanelID) {
 			},
 			success : function(result) { // getsuccessful and result returned by server
 				console.log( "delete annotaiton get success" );    
+                updateScoreAndRank(result.user.score, result.user.rank)
 			},
 			error : function(result) {
 				console.log( "delete annotation get error" );

@@ -24,6 +24,8 @@ var UserSettings = (function ( onCompleteCallback = null ) {
 
         var websiteSetting;
         var userId;
+        var rank;
+        var score;
         var currentState = "ON_INSTANCE_INIT";
         var onInitCompleteCallback = onCompleteCallback        
                 
@@ -110,7 +112,12 @@ var UserSettings = (function ( onCompleteCallback = null ) {
                     success : function(result) { // get successful and result returned by server
                         if ('user_id' in result) {
                             userId = result['user_id'];
+                            score = result['score'];
+                            rank = result['rank'];
+                            
                             saveSetting({ 'userId': userId });
+                            saveSetting({ 'score': score });
+                            saveSetting({ 'rank': rank });
                         }
                         currentState = "ON_INIT_COMPLETE";
                         if ( onInitCompleteCallback != null ) {

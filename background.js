@@ -164,10 +164,19 @@ chrome.runtime.onMessage.addListener(
                 //See "new_tab" condition for the reason of putting return true
                 return true;
             }   
-        }  else if (request.type == "change_translation") {
+        } else if (request.type == "change_translation") {
             tabsInfoCont[tabID].translationType = request.translationType;
             setMode(tabsInfoCont[tabID].mode, tabID);
-        }    
+            
+        } else if (request.type == "update_score_rank") {
+            if (request.rank > userSettings.rank) {
+                //Send message to notify js 
+                console.log("Rank increase");
+                userSettings.rank = request.rank;                
+            }
+            userSettings.score = request.score;
+    
+        }
            
     }
 );

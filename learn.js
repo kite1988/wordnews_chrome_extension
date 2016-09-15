@@ -65,11 +65,6 @@ function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback 
             alert(error.responseText);
         }        
     })
-    
-    //var params = 'user_id=' + userSettings.userId + '&wordID=' + tempWordID + '&isRemembered=' + isRemembered + '&url=' + encodeURIComponent(url);
-    //var httpClient = new HttpClient();
-    //
-    //httpClient.post(hostUrl + '/remember', params, onSuccessCallback);
 }
 
 function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) {
@@ -121,6 +116,7 @@ function requestTranslatedWords(paragraphs, translatorType) {
         },
         success: function (result) {
             console.log("Request for tranlsated words successful.");
+            console.log(JSON.stringify(result));
             translateWords(result);
         },
         error: function (error) {
@@ -138,6 +134,13 @@ function translateWords (result) {
     
 }
 
+
+var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"test","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"quiz":{"test_type":1,"choices":{"0":"possible","1":"potential","2":"green","3":"medical"}}}]};
+translateWords(temp_result);
+
+
+
+
 //TODO: Need to remove this hardcoded const variable and change to a more scalable method
 const CHINESE_TO_ENGLISH_QUIZ = 1;
 const ENGLISH_TO_CHINESE_QUIZ = 2;
@@ -145,7 +148,8 @@ const ENGLISH_TO_CHINESE_QUIZ = 2;
 function generateHTMLForQuiz(word, translatedWord, popupID, quiz) {
     
     var arrayShuffle = shuffle([0, 1, 2, 3]);
-    var html = '<div id=\"' + popupID + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">';
+    var html = '<div tabindex="-1" id=\"' + popupID + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">';
+    html += '<a href="#" style="position: absolute; right: 8px;" id=\"' + popupID + '_close">X</a>';
     html += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
     html += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">'; 
     html += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">'
@@ -178,7 +182,8 @@ function generateHTMLForQuiz(word, translatedWord, popupID, quiz) {
 
 //This function takes in id and wordElem and gerneate html for view popup
 function generateHTMLForViewPopup(popupID, word, wordElem) {
-    var html = '<div id=\"' + popupID + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1;">';
+    var html = '<div tabindex="-1" id=\"' + popupID + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1;">';
+    html += '<a href="#" style="position: absolute; right: 8px;" id=\"' + popupID + '_close">X</a>';
     html += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
     html += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
     html += '<div class="content" style="border: 0px; margin: 0">';
@@ -240,12 +245,12 @@ function voteTranslation(translationPairID, score, source, isExplicit) {
             is_explicit: isExplicit
         },
         success: function (result) {
-            console.log("vote successful.", result);
+            console.log("vote successful.");
+            updateScoreAndRank(result.user.score, result.user.rank)
             
         },
         error: function (error) {
-            console.log("vote error.");
-            
+            console.log("vote error.");            
         }        
     })
 }
@@ -322,10 +327,10 @@ function replaceWords (wordsCont) {
             
         } else {
             popupData.type = 1;
-            //TODO: Need to make this more generic
-            if (wordElem.testType === CHINESE_TO_ENGLISH_QUIZ) {
+            //TODO: Need to make this more generic and remove hardcoded print text
+            if (wordElem.quiz.test_type === 1) {
                 joinString += 'title="Which of the following is the corresponding English word?" ';
-            } else if (wordElem.testType === ENGLISH_TO_CHINESE_QUIZ) {
+            } else if (wordElem.quiz.test_type === 2) {
                 joinString += 'title="Which of the following is the corresponding Chinese word?" ';
             }
             joinString += 'href="#" ';          
@@ -414,17 +419,21 @@ function validateQuizInput(popupID, input) {
         },
         success: function (result) {
             console.log("take quiz successful.", result);   
-            popupData.html = generateHTMLForViewPopup(popupID, answer, popupData.translatedWords[popupData.translatedWordIndex]);
+            updateScoreAndRank(result.user.score, result.user.rank)
+            
         },
         error: function (error) {
             console.log("take quiz error.");            
         }        
     })
-    
+    //TODO: This way of changing the backgroud image is wrong
     if (isCorrect == "correct") {
         $('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");
         $('.jfk-bubble').css("background-size", "cover");
         $('.content').css("background-color", "#cafffb");
+        popupData.html = generateHTMLForViewPopup(popupID, answer, popupData.translatedWords[popupData.translatedWordIndex]);
+        popupData.type = 0;
+        //$('#'+popupID+'_popup').fadeOut(300);
     }
     else {
         $('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");
@@ -461,7 +470,9 @@ function appendPopUp(event) {
                 lang: learnLanguage
             },
             success: function (result) {
-                console.log("view successful.", result);
+                
+                console.log("view successful.");
+                updateScoreAndRank(result.user.score, result.user.rank)
                 
             },
             error: function (error) {
@@ -531,20 +542,36 @@ function appendPopUp(event) {
         for (var i = 0; i < 4; ++i) {
             var  elem = document.getElementById('quiz_' + id + '_' + i);
             var input = elem.innerHTML;
-            elem.addEventListener("click", function () {        
-                validateQuizInput(id, input);
+            elem.addEventListener("click", function () {  
+                console.log(this.innerHTML);
+                validateQuizInput(id, this.innerHTML);
             });
         }        
     }
     
     var elem = document.getElementById(id + '_popup'); 
     elem.style.left = (rect.left - 100) + 'px';   
+        
+    $('#'+displayID).fadeIn(300, function(){
+        //$(this).focus();
+    });
+    
+    $('#'+ id + '_close').bind('click', function(e)
+    {
+        // Prevents the default action to be triggered. 
+        e.preventDefault();
+        $('#'+displayID).fadeOut(300);
+    });
+    
+    $('#'+displayID).on('blur',function(){
+        $(this).fadeOut(300);
+    })
     
     //Add an event to close the translation/quiz popup
-    document.addEventListener("click", function (event) {  
-        console.log("hide panel")
-        elem.style.visibility = "hidden";
-    }, true);        
+    //document.addEventListener("click", function (event) {  
+    //    console.log("hide panel")
+    //    elem.style.visibility = "hidden";
+    //}, true);        
 
     // Fix left overflow out of screen
     if (rect.left - 100 < 0) {
@@ -592,7 +619,7 @@ function beginTranslating() {
         $(window).scroll(function() {
             // if the user scrolls to the button of the page, display the list of words learned
             if ($(window).scrollTop() + $(window).height() === $(document).height() - 300) {
-                var wordList = [];//TODO: word list is not being used
+                var wordList = [];
 
                 for (var key of pageWordsLearned) {
                     var value = idToOriginalWordDictionary[key];
@@ -623,43 +650,6 @@ function beginTranslating() {
         
     }
 };
-
-var HttpClient = function() {
-    this.get = function(aUrl, onSuccessCallback = null, onFailureCallback = null) {
-        var anHttpRequest = new XMLHttpRequest();
-        anHttpRequest.onreadystatechange = function() {
-            if (anHttpRequest.readyState == 4) {
-                if (anHttpRequest.status == 200 && onSuccessCallback != null) {
-                    onSuccessCallback(anHttpRequest.responseText);
-                } else {
-                    if (onFailureCallback != null) {
-                        onFailureCallback(anHttpRequest.responseText);
-                    }
-                }
-            }
-        }
-        anHttpRequest.open("GET", aUrl, true);
-        anHttpRequest.send(null);
-    }
-    this.post = function(url, params = null, onSuccessCallback = null, onFailureCallback = null) {
-        var httpRequest = new XMLHttpRequest();
-        httpRequest.onreadystatechange = function() {
-            if (httpRequest.readyState == 4) {
-                if (httpRequest.status == 200 && onSuccessCallback != null) { // 200 OK
-                    onSuccessCallback(httpRequest.responseText);
-                } else { // Not 200 OK
-                    if (onFailureCallback != null) {
-                        onFailureCallback(httpRequest.responseText)
-                    }
-                }
-            }
-        }
-        httpRequest.open("POST", url, true);
-        httpRequest.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-        httpRequest.send(params);
-
-    }
-}
 
 function shuffle(o) { //v1.0
     for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
