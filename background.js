@@ -174,12 +174,7 @@ chrome.runtime.onMessage.addListener(
                 console.log("Rank increase");
                 userSettings.rank = request.rank;                
             }
-            userSettings.score = request.score;
-    
-        } else if () {
-            
-        }
-           
+            userSettings.score = request.score;               
     }
 );
 
