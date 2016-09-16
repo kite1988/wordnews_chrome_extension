@@ -136,7 +136,7 @@ function translateWords (result) {
 
 
 var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"test","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"quiz":{"test_type":1,"choices":{"0":"possible","1":"potential","2":"green","3":"medical"}}}]};
-//translateWords(temp_result);
+translateWords(temp_result);
 
 
 
@@ -145,7 +145,7 @@ var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_ind
 const CHINESE_TO_ENGLISH_QUIZ = 1;
 const ENGLISH_TO_CHINESE_QUIZ = 2;
     
-function generateHTMLForQuiz(word, translatedWord, popupID, quiz) {
+function generateHTMLForQuiz(word, translatedWord, popupID, quiz, access) {
     
     var arrayShuffle = shuffle([0, 1, 2, 3]);
     var html = '<div tabindex="-1" id=\"' + popupID + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">';
@@ -153,28 +153,35 @@ function generateHTMLForQuiz(word, translatedWord, popupID, quiz) {
     html += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
     html += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">'; 
     html += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">'
-    html += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';   
-    
-    for (var i = 0; i < arrayShuffle.length; ++i) {
-        //Append div tag
-        if (i == 0 || i == 2) {
-            html += '<div style="width: 100%;">';
-        }
+    if (access == USER_HAS_ACCESS) {
+            
+        html += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';   
         
-        var num = arrayShuffle[i];    
-
-        html += '<div id="quiz_' + popupID + '_' + i + '" align="center"' +
-                'onMouseOver="this.style.color=\'#FF9900\'"' +
-                'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
-                'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:' +
-                '16px;">' + quiz.choices[num] + '</div>';
-
-        //Append the end of div tag
-        if (i == 1 || i == 3) {
-            html += "</div>";
+        for (var i = 0; i < arrayShuffle.length; ++i) {
+            //Append div tag
+            if (i == 0 || i == 2) {
+                html += '<div style="width: 100%;">';
+            }
+            
+            var num = arrayShuffle[i];    
+    
+            html += '<div id="quiz_' + popupID + '_' + i + '" align="center"' +
+                    'onMouseOver="this.style.color=\'#FF9900\'"' +
+                    'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
+                    'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:' +
+                    '16px;">' + quiz.choices[num] + '</div>';
+    
+            //Append the end of div tag
+            if (i == 1 || i == 3) {
+                html += "</div>";
+            }
         }
+    } else {
+        html += '<div style="font-size: 80%;" class="gtx-language">You do not have enough rank to do quiz.</div>';   
     }
-    html += '</div></div></div></div>' + '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
+    
+    html += '</div></div></div></div>';
+    html += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
     html += '<div class="jfk-bubble-arrowimplbefore"></div>'; 
     html += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
     return html;
@@ -252,7 +259,7 @@ function voteTranslation(translationPairID, score, source, isExplicit) {
         error: function (error) {
             console.log("vote error.");            
         }        
-    })
+    });
 }
     
 function replaceWords (wordsCont) {
@@ -278,7 +285,15 @@ function replaceWords (wordsCont) {
         var pronunciation = wordElem.pronunciation.replace('5', '');
         
         //Create a map to store popup data
-        var popupData = {html: "", clickCounter: 0, word: wordElem.text, type: 0, pairID: wordElem.pair_id, translatedWordIndex: 0, translatedWords : []}; 
+        var popupData = {   html: "", 
+                            clickCounter: 0, 
+                            word: wordElem.text, 
+                            type: 0, 
+                            pairID: wordElem.pair_id, 
+                            translatedWordIndex: 0, 
+                            translatedWords : [],
+                            quiz: []
+                        }; 
         
         //Create a map to store all the translated words
         var translatedWordsCont = [];
@@ -323,18 +338,11 @@ function replaceWords (wordsCont) {
             }
 
             translatedWordsCont.sort(compare); 
-            popupData.html = generateHTMLForViewPopup(popupID, wordElem.text, translatedWordsCont[0]);
+            
             
         } else {
-            popupData.type = 1;
-            //TODO: Need to make this more generic and remove hardcoded print text
-            if (wordElem.quiz.test_type === 1) {
-                joinString += 'title="Which of the following is the corresponding English word?" ';
-            } else if (wordElem.quiz.test_type === 2) {
-                joinString += 'title="Which of the following is the corresponding Chinese word?" ';
-            }
-            joinString += 'href="#" ';          
-            popupData.html = generateHTMLForQuiz(wordElem.text, wordElem.translation, popupID, wordElem.quiz);
+            popupData.type = 1;                  
+            popupData.quiz = wordElem.quiz;
         }
         joinString += 'id = "' + popupID + '" >';
             
@@ -453,7 +461,8 @@ function appendPopUp(event) {
         document.body.removeChild(myElem);
     }
     var popupData = popupDataCont[id];
-    $('body').append(popupData.html);
+    
+    
     //If the translated word has not been clicked yet, send ajax post to server 
     if (popupData.clickCounter == 0) {
         //Send ajax post /view 
@@ -478,11 +487,13 @@ function appendPopUp(event) {
             error: function (error) {
                 console.log("view error.");            
             }        
-        })     
-        
+        });
     }
+    
     ++popupData.clickCounter;
-    if (popupData.type == 0)    {
+    if (popupData.type == 0) {
+        popupData.html = generateHTMLForViewPopup(id, popupData.text, popupData.translatedWords[0]);
+        $('body').append(popupData.html);
         //Get select translated character elem    
         var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
         
@@ -537,16 +548,21 @@ function appendPopUp(event) {
             voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
         });
     } 
-    else {
+    else { // Quiz
+        var result = checkRankAndLogin(1);
+        popupData.html = generateHTMLForQuiz(popupData.text, popupData.translation, id, popupData.quiz, result);
+        $('body').append(popupData.html);
+        if (result == USER_HAS_ACCESS) {
         //4 is hardcoded
-        for (var i = 0; i < 4; ++i) {
-            var  elem = document.getElementById('quiz_' + id + '_' + i);
-            var input = elem.innerHTML;
-            elem.addEventListener("click", function () {  
-                console.log(this.innerHTML);
-                validateQuizInput(id, this.innerHTML);
-            });
-        }        
+            for (var i = 0; i < 4; ++i) {
+                var  elem = document.getElementById('quiz_' + id + '_' + i);
+                var input = elem.innerHTML;
+                elem.addEventListener("click", function () {  
+                    console.log(this.innerHTML);
+                    validateQuizInput(id, this.innerHTML);
+                });
+            }
+        }
     }
     
     var elem = document.getElementById(id + '_popup'); 
@@ -646,8 +662,7 @@ function beginTranslating() {
             //console.log("Before: " + paragraph.innerText);
             //console.log("After: " +  paragraph.innerText.replace(/[^\x00-\x7F]/g, " ")); //encodeURIComponent(paragraph.innerText));
             
-        }
-        
+        }        
     }
 };
 
@@ -690,8 +705,6 @@ var cumulativeOffset = function(element) {
     };
 };
 
-
-
 // creates a notification
 function spawnNotification(bodyOfNotification, iconOfNotification, titleOfNotification) {
     var actualBody = bodyOfNotification ? bodyOfNotification : '';
@@ -699,7 +712,6 @@ function spawnNotification(bodyOfNotification, iconOfNotification, titleOfNotifi
         body: actualBody,
         icon: iconOfNotification
     }
-
     var n = new Notification(titleOfNotification, options);
     window.setTimeout(function() { n.close(); }, 5000);
 }

@@ -38,6 +38,7 @@ if (typeof chrome != 'undefined') {
     console.log('Not chrome, waiting for manual initialization.');
 }
 
+// Common function to 
 function updateScoreAndRank(score, rank) {
     chrome.runtime.sendMessage(
         { type: "update_score_rank",
@@ -48,6 +49,21 @@ function updateScoreAndRank(score, rank) {
             console.log("Score and rank updated");
         }
     );    
+}
+
+const USER_RANK_INSUFFICIENT = -1;
+const USER_NOT_LOGGED_IN = -2
+const USER_HAS_ACCESS = 0;
+
+function checkRankAndLogin(requiredRank) {
+    var NOT_LOGIN = false;
+    //TODO: How to even check is it login?
+    if (requiredRank > userSettings.rank) {
+        return USER_RANK_INSUFFICIENT;
+    } else if (userSettings.rank >= 4 && NOT_LOGIN) { //IF not login return, -2 to prompt for login
+        return USER_NOT_LOGGED_IN;        
+    }
+    return USER_HAS_ACCESS; //No problem with rank and login
 }
 
 function getURLPostfix(url) {

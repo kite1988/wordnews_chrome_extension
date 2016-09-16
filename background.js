@@ -176,6 +176,8 @@ chrome.runtime.onMessage.addListener(
             }
             userSettings.score = request.score;
     
+        } else if () {
+            
         }
            
     }
