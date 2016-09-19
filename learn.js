@@ -127,20 +127,16 @@ function requestTranslatedWords(paragraphs, translatorType) {
     })
 }
 
-function translateWords (result) {
-    
+function translateWords (result) {    
     var wordsCont = result;
-    replaceWords(wordsCont.words_to_learn);
-    
+    replaceWords(wordsCont.words_to_learn);    
 }
 
 
-var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"test","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"quiz":{"test_type":1,"choices":{"0":"possible","1":"potential","2":"green","3":"medical"}}}]};
+//var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"test","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"quiz":{"test_type":1,"choices":{"0":"possible","1":"potential","2":"green","3":"medical"}}}]};
 //translateWords(temp_result);
-
-
-
-
+var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"view","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"annotations":[ { "id" : 15, "translation": "采取", }  ]}]};
+translateWords(temp_result);
 //TODO: Need to remove this hardcoded const variable and change to a more scalable method
 const CHINESE_TO_ENGLISH_QUIZ = 1;
 const ENGLISH_TO_CHINESE_QUIZ = 2;
@@ -207,8 +203,10 @@ function generateHTMLForViewPopup(popupID, word, wordElem) {
     html += '<select id = "translatedSelect_' + popupID + '" style="font-size:16px"> </select>';//translatedCharacters;            
     
     //Accurate "Yes/No buttons"
+    html += '<div id="tooltip_' + popupID + '" class="tooltip-wrapper disabled" data-title="Not enough rank to vote.">';
     html += '<button class="button" id="vote_yes_button_' + popupID + '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="background-color: #4CAF50; border-radius: 5px; border: none; font-size:16px; padding: 10px 24px;">Yes</button>';
     html += '<button class="button" id="vote_no_button_' + popupID +  '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="background-color: #4CAF50; border-radius: 5px; border: none; font-size:16px; padding: 10px 24px;">No</button>';
+    html += '</div>';
    
     html += '<div class="row" style="margin-left:10px">';
     html += '<small id="pronunciation_' + popupID + '">' + wordElem.pronunciation + '</small> ';
@@ -234,7 +232,6 @@ function generateHTMLForViewPopup(popupID, word, wordElem) {
     
     return html;
 }
-
 
 function voteTranslation(translationPairID, score, source, isExplicit) {
     $.ajax({
@@ -336,10 +333,7 @@ function replaceWords (wordsCont) {
                 }
                 return 0;
             }
-
             translatedWordsCont.sort(compare); 
-            
-            
         } else {
             popupData.type = 1;                  
             popupData.quiz = wordElem.quiz;
@@ -384,7 +378,6 @@ function replaceWords (wordsCont) {
         $(this).css("color", "black");
     });
 }
-
 
 function documentClickOnInlineRadioButton() {
     var id = $(this).attr('id');
@@ -491,14 +484,22 @@ function appendPopUp(event) {
     }
     
     ++popupData.clickCounter;
+    
     if (popupData.type == 0) {
+        
         popupData.html = generateHTMLForViewPopup(id, popupData.text, popupData.translatedWords[0]);
         $('body').append(popupData.html);
         //Get select translated character elem    
         var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
         
+        var result = USER_RANK_INSUFFICIENT;
+        result = checkRankAndLogin(3);
+        
+        //Determine the length of translation words to display
+        var lenOfTranslatedWords = result < 0 ? 1 : popupData.translatedWords.length;
+        
         //Create the list of translated words according to votes
-        for (var i = 0; i < popupData.translatedWords.length; ++i) {
+        for (var i = 0; i < lenOfTranslatedWords; ++i) {
             var opt = document.createElement('option');
             opt.value = i;
             opt.innerHTML = popupData.translatedWords[i].translation;
@@ -539,14 +540,21 @@ function appendPopUp(event) {
         var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
         var voteNoBtnElem = document.getElementById('vote_no_button_' + id);
         
+        //$('#vote_yes_button_' + id).prop('disabled', true); 
+        //$('#vote_no_button_' + id).prop('disabled', true); 
+        $('#tooltip_' + id).tooltip();
+        
+        result = checkRankAndLogin(4);
         //Add onclick event for yes button
-        voteYesBtnElem.addEventListener("click", function () {        
-            voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
-        });
-        //Add onclick event for no button
-        voteNoBtnElem.addEventListener("click", function () {        
-            voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
-        });
+        if (result == 0 ) {
+            voteYesBtnElem.addEventListener("click", function () {        
+                voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
+            });
+            //Add onclick event for no button
+            voteNoBtnElem.addEventListener("click", function () {        
+                voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
+            });
+        }
     } 
     else { // Quiz
         var result = checkRankAndLogin(1);

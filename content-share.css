@@ -1,0 +1,29 @@
+.annotate-highlight {
+	background-color: yellow;
+}
+
+.annotate-panel {
+	border: 2px solid #ff8040;
+    border-color:#ffffff;
+    background-color: #83eafc;
+    opacity: 1;
+    z-index: 10;
+    padding: 10px;
+    
+}
+
+.tooltip-wrapper {
+  display: inline-block; /* display: block works as well */
+  margin: 10px; /* make some space so the tooltip is visible */
+}
+
+.tooltip-wrapper .btn[disabled] {
+  /* don't let button block mouse events from reaching wrapper */
+  pointer-events: none;
+}
+
+.tooltip-wrapper.disabled {
+  /* OPTIONAL pointer-events setting above blocks cursor setting, so set it here */
+  cursor: not-allowed;
+}
+
