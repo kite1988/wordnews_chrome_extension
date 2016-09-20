@@ -487,7 +487,7 @@ function appendPopUp(event) {
     
     if (popupData.type == 0) {
         
-        popupData.html = generateHTMLForViewPopup(id, popupData.text, popupData.translatedWords[0]);
+        popupData.html = generateHTMLForViewPopup(id, popupData.word, popupData.translatedWords[0]);
         $('body').append(popupData.html);
         //Get select translated character elem    
         var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
@@ -558,7 +558,7 @@ function appendPopUp(event) {
     } 
     else { // Quiz
         var result = checkRankAndLogin(1);
-        popupData.html = generateHTMLForQuiz(popupData.text, popupData.translation, id, popupData.quiz, result);
+        popupData.html = generateHTMLForQuiz(popupData.word, popupData.translation, id, popupData.quiz, result);
         $('body').append(popupData.html);
         if (result == USER_HAS_ACCESS) {
         //4 is hardcoded
