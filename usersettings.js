@@ -110,10 +110,10 @@ var UserSettings = (function ( onCompleteCallback = null ) {
                     url : hostUrl + "/create_new_user",
                     dataType : "json",
                     success : function(result) { // get successful and result returned by server
-                        if ('user_id' in result) {
-                            userId = result['user_id'];
-                            score = result['score'];
-                            rank = result['rank'];
+                        if ('user' in result) {
+                            userId = result['user']['user_id'];
+                            score = result['user']['score'];
+                            rank = result['user']['rank'];
                             
                             saveSetting({ 'userId': userId });
                             saveSetting({ 'score': score });
