@@ -172,9 +172,10 @@ chrome.runtime.onMessage.addListener(
             if (request.rank > userSettings.rank) {
                 //Send message to notify js 
                 console.log("Rank increase");
-                userSettings.rank = request.rank;                
+                userSettings.rank = request.rank;
             }
-            userSettings.score = request.score;               
+            userSettings.score = request.score;
+        }
     }
 );
 
