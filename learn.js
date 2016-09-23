@@ -46,7 +46,7 @@ function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback 
         type: "post",
         beforeSend : function (request) {
             request.setRequestHeader("Accept", "application/json");
-        },
+        },    
         url: hostUrl + '/remember',
         dataType: "json",
         data: {

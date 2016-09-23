@@ -158,7 +158,7 @@ function initLearn(result) {
     userSettings.updateNumWords(wordsReplaced);
     
     learnLanguage = result.learnLanguage;
-    if (learnLanguage == null) {
+    if (learnLanguage == undefined) {
     	learnLanguage = 'zh_CN';
         saveSetting ({'learnLanguage': 'zh_CN'});
     }    
@@ -171,7 +171,7 @@ function initLearn(result) {
 // 2) wrap some code as a utility function for annotate.js 
 function initAnnotate(result) {
 	annotationLanguage = result.annotationLanguage;
-    if (annotationLanguage == null) {
+    if (annotationLanguage == undefined) {
     	annotationLanguage = 'zh_CN';
     	saveSetting({'annotationLanguage': 'zh_CN'});
     }

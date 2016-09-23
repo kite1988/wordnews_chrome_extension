@@ -7,8 +7,8 @@ var wordDisplay = ''; //0: in target language, 1: in source language
 var wordsLearn = ''; // number of words to learn
 var websiteSetting = '';
 var translationUrl = '';
-var annotationLanguage = '';
-var learnLanguage = '';
+var annotationLanguage = ''; // TODO: init this according to users' setting
+var learnLanguage = ''; // TODO: init this according to user's setting
 var currentTabID;
 var modeLookUpTable = ["disable", "learn", "annotate"];
 var mostAnnotatedArticle = 10;
