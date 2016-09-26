@@ -107,8 +107,8 @@ function initalize() {
         //Get the current tab id 
         currentTabID = arrayOfTabs[0].id;        
         //Grab all the data from the google local storage
-        chrome.storage.local.get(null, function (result) {                        
-            
+        chrome.storage.local.get(null, function (result) {      
+        
             if (result.hasTabs) {
                 //Use the current tab id to get the tab information
                 currentTabInfo = result.tabsInfoCont[currentTabID];
@@ -162,6 +162,8 @@ function syncUser() {
                 }
                                 
                 websiteSetting = result.websiteSetting;
+                learnLanguage = result.learnLanguage;
+                annotationLanguage = result.annotationLanguage;
                 
                 console.log('websiteSetting '+ websiteSetting);
                 if (websiteSetting == undefined) {
@@ -381,13 +383,13 @@ function setReplace() {
         	wordDisplay = 0;
         }
         
-        console.log("change replaced lang to " + wordDisplay);
-        
-        chrome.storage.sync.set({
-            'wordDisplay': wordDisplay
-        }, function() {
-            reload();
-        });
+        //console.log("change replaced lang to " + wordDisplay);
+        //
+        //chrome.storage.sync.set({
+        //    'wordDisplay': wordDisplay
+        //}, function() {
+        //    reload();
+        //});
     });
 }
 
@@ -405,9 +407,15 @@ function reload() {
 
 }
 
+//Set link for the buttons
 function setLinks() {
-    $('#learn-panel .btn-block').click(function() {
+    
+    $('#learn-seen-btn').click(function() {
         window.open(hostUrl + '/show_user_words?user_id=' + userId + '&lang=' + learnLanguage + '&is_learning=1');
+    });
+    
+    $('#learn-learnt-btn').click(function() {
+        window.open(hostUrl + '/show_user_words?user_id=' + userId + '&lang=' + learnLanguage + '&is_learning=0');
     });
 
     $('#setting').click(function() {

@@ -7,12 +7,13 @@ var website;
 
 var selectionMaxNoOfWords = 5;
 var selectionMinNoOfWords = 1;
-var annotationLanguage = '';
+
 //A container to keep all the annotations' panel ID
 var annotationPanelIDCont = [];
 
 //var hostUrl = "https://wordnews-annotate.herokuapp.com";
-console.log(hostUrl);
+//console.log(hostUrl);
+
 function selectHTML() {
     try {
         var nNd = document.createElement("em");
@@ -297,13 +298,13 @@ function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex, 
     var highlightWords = $("#" + annotationPanelID);   
     var panelID  = annotationPanelID + "_panel";
     var editorID = annotationPanelID + "_editor";
-    
-    var lang = BFHLanguagesList[annotationLanguage.split('_')[0]]; // in native language
-    var country = annotationLanguage.split('_')[1];
+    var annotationLanguageSplit = userSettings.annotationLanguage.split('_');
+    var lang = BFHLanguagesList[annotationLanguageSplit[0]]; // in native language
+    var country = annotationLanguageSplit[1];
     
     var panelHtml = '<div id=\"' + panelID + '\" class=\"panel\" data-state=\"' + state  + ' \"data-id=\"' + id + '\">';
     panelHtml += '<span class=\"bfh-languages\" data-language=\"' + 
-    			 annotationLanguage + '\" data-flags=\"true\">' + 
+    			 userSettings.annotationLanguage + '\" data-flags=\"true\">' + 
     			 '<i class="glyphicon bfh-flag-'+country+ '" title="' + lang + '"></i></span><br>';
     panelHtml += '<textarea id=\"' + editorID + '\" style="background:yellow"></textarea><br>';
     panelHtml += '<div class=\"btn-group\" style=\"margin:5px;\">'
@@ -394,7 +395,7 @@ function saveAnnotation(annotationPanelID, word, userId, editorID, paragrahIndex
                     user_id: userId,
                     selected_text: word,
                     translation: textAreaElem.value,
-                    lang: annotationLanguage,
+                    lang: userSettings.annotationLanguage,
                     url: window.location.href,
                     url_postfix: getURLPostfix(window.location.href),
                     website: website,
@@ -486,7 +487,7 @@ function showAnnotations(userid) {
         data : {            
             user_id: userid,
             url_postfix: getURLPostfix(window.location.href),
-            lang: annotationLanguage
+            lang: userSettings.annotationLanguage
         },
         success : function(result) { // get successful and result returned by server
             for (var i = 0; i < result.annotations.length; ++i) {
@@ -708,7 +709,7 @@ function appendAnnotationCounterForURL (link) {
         dataType : "json",
         data : {         
             url_postfix: getURLPostfix(linkElem.href),
-            lang: annotationLanguage
+            lang: userSettings.annotationLanguage
         },
         success : function(result) { // get successful and result returned by server
             console.log(linkElem.href + " annotation counter: " + result.annotation_count);

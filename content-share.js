@@ -10,8 +10,12 @@ var userSettings = {
     websiteSetting: [],
     userId: "",
     score: 0,
-    rank: 0
+    rank: 0,
+    learnLanguage: "",
+    annotationLanguage: ""
 };
+
+
 
 if (typeof chrome != 'undefined') {
     console.log('Chrome, initializating with chrome storage.');   
@@ -95,7 +99,7 @@ function saveSetting(obj) {
 function handleInitResult(result, androidID) {
 
     var allKeys = Object.keys(result);
-    isWorking = result.isWorking;// || undefined;
+    isWorking = result.isWorking;//undefined;
     
     console.log("isWorking in init " + isWorking);
     

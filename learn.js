@@ -14,7 +14,7 @@ var TranslationDirection = {
 };
 var isTranslatingByParagraph = true;
 
-var learnLanguage = 'zh_CN';
+
 var translationType = "";
 
 var wordsReplaced = '';
@@ -105,7 +105,7 @@ function requestTranslatedWords(paragraphs, translatorType) {
         data: {
             paragraphs: [paragraphs],
             num_of_words: 1, //Hardcoded for now
-            lang: learnLanguage,
+            lang: userSettings.learnLanguage,
             translator: translatorType,
             user_id: userSettings.userId,
             url_postfix: getURLPostfix(window.location.href),
@@ -416,7 +416,7 @@ function validateQuizInput(popupID, input) {
             user_id: userSettings.userId,
             translation_pair_id: popupData.pairID,            
             answer: isCorrect,
-            lang: learnLanguage
+            lang: userSettings.learnLanguage
         },
         success: function (result) {
             console.log("take quiz successful.", result);   
@@ -469,7 +469,7 @@ function appendPopUp(event) {
             data: {
                 translation_pair_id: popupData.pairID,
                 user_id: userSettings.userId,
-                lang: learnLanguage
+                lang: userSettings.learnLanguage
             },
             success: function (result) {
                 

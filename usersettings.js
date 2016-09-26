@@ -18,10 +18,10 @@ var UserSettings = (function ( onCompleteCallback = null ) {
         // var isWorking;
         // var wordDisplay;
         // var wordsReplaced;
-        // var learnLanguage;
         // var translationType;
-        // var annotationLanguage;
-
+        
+        var learnLanguage;        
+        var annotationLanguage;
         var websiteSetting;
         var userId;
         var rank;
@@ -46,6 +46,25 @@ var UserSettings = (function ( onCompleteCallback = null ) {
                 //console.log("websiteSetting undefined");
                 saveSetting({ 'websiteSetting': websiteSetting });
             }
+            
+            if ( typeof result.learnLanguage != 'undefined' ) {
+                learnLanguage = result.learnLanguage;
+            }
+            else {
+                learnLanguage = 'zh_CN';
+                //console.log("learnLanguage undefined");
+                saveSetting ({'learnLanguage': learnLanguage});
+            }
+            
+            if ( typeof result.annotationLanguage != 'undefined' ) {
+                annotationLanguage = result.annotationLanguage;
+            }
+            else {
+                annotationLanguage = 'zh_CN';
+                //console.log("annotationLanguage undefined");
+                saveSetting({'annotationLanguage': annotationLanguage});
+            }
+            
             // if ( typeof result.isWorking != 'undefined' ) {
             //     isWorking = result.isWorking;
             // }
@@ -72,14 +91,7 @@ var UserSettings = (function ( onCompleteCallback = null ) {
             //     //console.log("wordsReplaced undefined");
             //     saveSetting({ 'wordsReplaced': wordsReplaced });
             // }
-            // if ( typeof result.learnLanguage != 'undefined' ) {
-            //     learnLanguage = result.learnLanguage;
-            // }
-            // else {
-            //     learnLanguage = 'zh_CN';
-            //     //console.log("learnLanguage undefined");
-            //     saveSetting ({'learnLanguage': 'zh_CN'});
-            // }
+            
             //
             // if ( typeof result.translationType != 'undefined' ) {
             //     translationType = result.translationType;
@@ -90,14 +102,7 @@ var UserSettings = (function ( onCompleteCallback = null ) {
             //     saveSetting ({'translationType': 1});
             // }
             //
-            // if ( typeof result.annotationLanguage != 'undefined' ) {
-            //     annotationLanguage = result.annotationLanguage;
-            // }
-            // else {
-            //     annotationLanguage = 'zh_CN';
-            //     //console.log("annotationLanguage undefined");
-            //     saveSetting({'annotationLanguage': 'zh_CN'});
-            // }
+            
 
             if ( typeof result.userId == 'undefined' ) {
                 currentState = "ON_CREATE_USER";
@@ -221,8 +226,8 @@ var UserSettings = (function ( onCompleteCallback = null ) {
                     // "isWorking" : isWorking,
                     // "wordDisplay" : wordDisplay,
                     // "wordsReplaced" : wordsReplaced,
-                    // "learnLanguage" : learnLanguage,
-                    // "annotationLanguage" : annotationLanguage,
+                    "learnLanguage" : learnLanguage,
+                    "annotationLanguage" : annotationLanguage,
                     //"translationType" :translationType,
                     "websiteSetting" : websiteSetting,
                     "userId" : userId
