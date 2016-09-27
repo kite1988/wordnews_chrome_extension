@@ -356,6 +356,14 @@ function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex, 
     //Set submit botton to be disabled as default
     $('#annontation-submit-btn' + annotationPanelID).prop('disabled', true);    
     
+    
+    var loginResult = checkRankAndLogin(5);
+    var textareaIsDisabled = (loginResult < 0) ? true : false;
+    //document.getElementById(annotationPanelID + "_editor").disabled = textareaIsDisabled;
+    $('#'+annotationPanelID + "_editor").prop('disabled', textareaIsDisabled);   
+    
+    
+    
     //Toggle disable of submit button according the text entered in text field
     $('#' + editorID).on('keyup', function() {         
             
