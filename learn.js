@@ -14,9 +14,7 @@ var TranslationDirection = {
 };
 var isTranslatingByParagraph = true;
 
-
 var translationType = "";
-
 var wordsReplaced = '';
 // a dictionary of english to chinese words 
 var pageDictionary = {};
@@ -25,7 +23,6 @@ var displayID = '';
 
 
 var popupDataCont = {};
-
 var learnTypeLookup = ["view", "test"];
 var learnTypeENUM = {view: 0, test: 1};
 var idToOriginalWordDictionary = {};
@@ -135,8 +132,8 @@ function translateWords (result) {
 
 //var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"test","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"quiz":{"test_type":1,"choices":{"0":"possible","1":"potential","2":"green","3":"medical"}}}]};
 //translateWords(temp_result);
-var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"view","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"annotations":[ { "id" : 15, "translation": "采取", }  ]}]};
-translateWords(temp_result);
+//var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"view","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"annotations":[ { "id" : 15, "translation": "采取", }  ]}]};
+//translateWords(temp_result);
 //TODO: Need to remove this hardcoded const variable and change to a more scalable method
 const CHINESE_TO_ENGLISH_QUIZ = 1;
 const ENGLISH_TO_CHINESE_QUIZ = 2;
@@ -224,7 +221,7 @@ function generateHTMLForViewPopup(popupID, word, wordElem) {
     var see_more_id = "more_" + popupID;
     html += '</p>';
     //TODO: href is hardcoded
-    html += '<a id="' + see_more_id + '" target="_blank" class="More" href="http://dict.cn/en/search?q=' + word + '" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
+    html += '<a id="' + see_more_id + '" target="_blank" class="More" href="'+ wordElem.more_url +'" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
     html += '</div></div></div></div></div>';
     html += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
     html += '<div class="jfk-bubble-arrowimplbefore"></div>';
@@ -300,7 +297,9 @@ function replaceWords (wordsCont) {
                                   pronunciation: pronunciation,
                                   audio_urls: wordElem.audio_urls, 
                                   source: 0,//machine 
-                                  vote: wordElem.vote})
+                                  vote: wordElem.vote,
+                                  more_url: wordElem.more_url
+                                });
         
         var joinString = '';
         joinString += '<span ';
