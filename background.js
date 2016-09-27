@@ -56,18 +56,23 @@ function setMode (mode, tabID) {
             console.log(result);
             chrome.tabs.sendMessage(
                 tabID, 
-                { mode: "annotate",  user_id : result.userId, ann_lang: tabsInfoCont[tabID].ann_lang}, 
+                {   mode: "annotate",  
+                    user_id : result.userId, 
+                    ann_lang: tabsInfoCont[tabID].ann_lang,
+                    wordDisplay: tabsInfoCont[tabID].wordDisplay
+                }, 
                 function(response) {} );
         });        
     }
     else if (modeENUM.learn == mode) {
         chrome.tabs.sendMessage(
             tabID, 
-            { mode: "learn", learn_lang: tabsInfoCont[tabID].learn_lang, translationType: tabsInfoCont[tabID].translationType}, 
-            function(response) {
-                
-            } 
-        );
+            {   mode: "learn", 
+                learn_lang: tabsInfoCont[tabID].learn_lang, 
+                translationType: tabsInfoCont[tabID].translationType,
+                wordDisplay: tabsInfoCont[tabID].wordDisplay
+            }, 
+            function(response) {} );
     }
 }
 //Listener
@@ -195,7 +200,6 @@ chrome.cookies.onChanged.addListener(
                 );
             }
         }
-
     }
 );
 

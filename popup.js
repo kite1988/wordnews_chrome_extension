@@ -135,9 +135,7 @@ function initalize() {
 }
 
 //TODO: Need to revamp this whole function!
-function syncUser() {            
-    //chrome.storage.sync.clear();
-    
+function syncUser() {                    
     chrome.storage.sync
         .get(
             null, //
@@ -183,10 +181,7 @@ function syncUser() {
 //TODO: Need to update wordsLearn variable at background.js
 function setWordReplace() {   
    $('#wordsLearn').on('slide', function(slideEvt) {
-        chrome.runtime.sendMessage(
-            { type: "update_tab", tab_id: currentTabID, settings: {wordsLearn: slideEvt.value}, update_mode: false },
-            function(response) { }
-        );               
+        updateTabSettings({wordsLearn: slideEvt.value}, false);                       
     });
 }
 
@@ -311,13 +306,7 @@ function setAnnotationLanguage() {
     $('#annotate-panel .bfh-selectbox').on('change.bfhselectbox', function() {
         annotationLanguage = $(this).val();
         console.log("set annotation language on popup.html: " + annotationLanguage);
-
-        chrome.runtime.sendMessage(
-            { type: "update_tab", tab_id: currentTabID, settings: {ann_lang: annotationLanguage}, update_mode: true },
-            function(response) {                
-                console.log("Updated annotation language.");                               
-            }
-        );
+        updateTabSettings({ann_lang: annotationLanguage}, true);
         showAnnotationHistory();
         //Update the annotation links with the newly selected language
         setAnnotationLinks();
@@ -330,13 +319,7 @@ function setLearnLanguage() {
         learnLanguage = $(this).val();
         console.log("set learning language on popup.html: " + learnLanguage);
         //Send message to background.js to update the tab settings
-        chrome.runtime.sendMessage(
-            { type: "update_tab", tab_id: currentTabID, settings: {learn_lang: learnLanguage}, update_mode: false },
-            function(response) {                
-                console.log("Updated learn language.");               
-                //TODO: Check whether is there a need to update learn with new language selected
-            }
-        );
+        updateTabSettings({learn_lang: learnLanguage}, false);
     });
 }
 
@@ -363,6 +346,14 @@ function showAnnotationHistory() {
         }
     });
 }
+
+function updateTabSettings (tabSettings, updateMode) {
+    chrome.runtime.sendMessage(
+        { type: "update_tab", tab_id: currentTabID, settings: tabSettings, update_mode: updateMode },
+        function(response) { }
+    );
+}
+
 // TODO: refine code
 //       and shift this to tab level settings
 function setReplace() {
@@ -383,6 +374,8 @@ function setReplace() {
         	wordDisplay = 0;
         }
         
+        updateTabSettings({wordDisplay: wordDisplay}, true);
+                
         //console.log("change replaced lang to " + wordDisplay);
         //
         //chrome.storage.sync.set({

@@ -178,10 +178,8 @@ function initAnnotate(result) {
     if (annotationLanguage == undefined) {
     	annotationLanguage = 'zh_CN';
     	saveSetting({'annotationLanguage': 'zh_CN'});
-    }
-    
+    }    
     userId = result.userId;
-
 }
 
 //Window event to check whether window is focused 
@@ -245,12 +243,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     
     if (request.mode == "annotate") {
         annotationLanguage = request.ann_lang;
+        //wordDisplay = request.wordDisplay;
         //console.log("annotate mode lang:" + annotationLanguage);        
         beginAnnotation(request.user_id);
     }     
     else if (request.mode == "learn") {
         learnLanguage = request.learn_lang;
         translationType = request.translationType;
+        wordDisplay = request.wordDisplay;
         beginTranslating();
     }    
     
