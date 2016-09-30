@@ -403,6 +403,11 @@ function documentClickOnInlineRadioButton() {
 function validateQuizInput(popupID, input) {
     var popupData = popupDataCont[popupID];
     var answer = popupData.word;
+    //Add the quiz answer into event log
+    addDetail(popupID, "answer", answer);
+    //Send ajax post /log
+    sendLog (getEvent(popupID));
+    
     //Can be changed to number
     var isCorrect =  (answer == input) ? "correct" : "wrong";
     //Send ajax post /take_quiz 
@@ -509,8 +514,7 @@ function appendPopUp(event) {
             
         //Get Audio elem
         var audioElem = document.getElementById('pronunciation_audio_' + id);
-        //Get audio sources from element
-        var audioSources =  audioElem.getElementsByTagName("source");
+        
         var index = 1;
         //This function will auto loop to play the next track until the last one and reset it back to 0 
         var playNext = function() {
@@ -562,15 +566,46 @@ function appendPopUp(event) {
         popupData.html = generateHTMLForQuiz(popupData.word, popupData.translation, id, popupData.quiz, result);
         $('body').append(popupData.html);
         if (result == USER_HAS_ACCESS) {
-        //4 is hardcoded
+            
+            //Create an event log for take quiz
+            createEventLog(id, userSettings.userId, "take_quiz", "start_quiz");
+            
+            //Create a variable to hold all the information for the choices
+            var choicesInfo = [];
+            
+            //4 is hardcoded
             for (var i = 0; i < 4; ++i) {
                 var  elem = document.getElementById('quiz_' + id + '_' + i);
-                var input = elem.innerHTML;
+                
+                choicesInfo.push(i + "_" + elem.innerHTML);
+                
+                // Add an event listener for on click
                 elem.addEventListener("click", function () {  
-                    console.log(this.innerHTML);
-                    validateQuizInput(id, this.innerHTML);
+                    
+                    var quizOptionID = $(this).attr('id');
+                    var splitQuiz = quizOptionID.split("_");
+                    var index = splitQuiz[splitQuiz.length-1];
+                    var input = this.innerHTML;
+                    //Create 
+                    newEvent(id, "Click on " + index + ": " + input);
+                    console.log(input);
+                    validateQuizInput(id, input);
                 });
+                
+                // Add an event listen for hover/mouse over
+                elem.addEventListener("mouseover", function () {  
+                    
+                    var quizOptionID = $(this).attr('id');
+                    var input = this.innerHTML;
+                    var splitQuiz = quizOptionID.split("_");
+                    var index = splitQuiz[splitQuiz.length-1];
+                    //Create 
+                    newEvent(id, "Hover over on " + index + ": " + input);
+                    
+                });    
             }
+            //Add additional information for the event log
+            addDetail(id, "choices", choicesInfo);
         }
     }
     

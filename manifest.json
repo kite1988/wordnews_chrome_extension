@@ -37,6 +37,7 @@
         "notifyjs/notify.min.js",
         "common.js",
         "content-share.js",
+        "eventLogger.js",
         "annotate.js",
         "learn.js"        
       ],
