@@ -64,6 +64,7 @@ function checkRankAndLogin(requiredRank) {
     var NOT_LOGIN = false;
     //TODO: How to even check is it login?
     if (requiredRank > userSettings.rank) {
+        console.log('rank in setting ' + userSettings.rank)
         return USER_RANK_INSUFFICIENT;
     } else if (userSettings.rank >= 4 && NOT_LOGIN) { //IF not login return, -2 to prompt for login
         return USER_NOT_LOGGED_IN;        

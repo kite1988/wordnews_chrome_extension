@@ -98,7 +98,7 @@ function requestTranslatedWords(paragraphs, translatorType, quizType) {
         beforeSend : function (request) {
             request.setRequestHeader("Accept", "application/json");
         },
-        url: hostUrl + "/show_learn_words_demo",
+        url: hostUrl + "/show_learn_words",
         dataType: "json",
         data: {
             paragraphs: [paragraphs],
