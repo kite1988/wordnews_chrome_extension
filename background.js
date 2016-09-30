@@ -70,7 +70,8 @@ function setMode (mode, tabID) {
             {   mode: "learn", 
                 learn_lang: tabsInfoCont[tabID].learn_lang, 
                 translationType: tabsInfoCont[tabID].translationType,
-                wordDisplay: tabsInfoCont[tabID].wordDisplay
+                wordDisplay: tabsInfoCont[tabID].wordDisplay,
+                quizType: tabsInfoCont[tabID].quizType
             }, 
             function(response) {} );
     }
@@ -117,7 +118,8 @@ chrome.runtime.onMessage.addListener(
                                     learn_lang: 'zh_CN',
                                     wordsDisplay: 0,
                                     wordsLearn: 0,
-                                    translationType: 'dict'
+                                    translationType: 'dict',
+                                    quizType: 'semantic'
                                   };
             //Sync tab information container in google local storage
             chrome.storage.local.set({
@@ -180,6 +182,9 @@ chrome.runtime.onMessage.addListener(
                 userSettings.rank = request.rank;
             }
             userSettings.score = request.score;
+        } else if (request.type == "change_quiz") {
+            tabsInfoCont[tabID].quizType = request.quizType;
+            setMode(tabsInfoCont[tabID].mode, tabID);
         }
     }
 );

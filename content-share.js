@@ -51,6 +51,7 @@ function updateScoreAndRank(score, rank) {
         },
         function(response) {   
             console.log("Score and rank updated");
+            console.log('Score :' + score + " Rank: " + rank)
         }
     );    
 }
@@ -250,6 +251,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     else if (request.mode == "learn") {
         learnLanguage = request.learn_lang;
         translationType = request.translationType;
+        quizType = request.quizType;
         wordDisplay = request.wordDisplay;
         beginTranslating();
     }    

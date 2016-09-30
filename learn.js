@@ -16,6 +16,7 @@ var isTranslatingByParagraph = true;
 
 var translationType = "";
 var wordsReplaced = '';
+var quizType = "";
 // a dictionary of english to chinese words 
 var pageDictionary = {};
 var vocabularyListDisplayed;
@@ -89,7 +90,7 @@ function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) 
     })
 }
 
-function requestTranslatedWords(paragraphs, translatorType) {
+function requestTranslatedWords(paragraphs, translatorType, quizType) {
     console.log(paragraphs);
     var title_date = getArticleTitleAndPublicationDate();
     $.ajax({
@@ -97,7 +98,7 @@ function requestTranslatedWords(paragraphs, translatorType) {
         beforeSend : function (request) {
             request.setRequestHeader("Accept", "application/json");
         },
-        url: hostUrl + "/show_learn_words",
+        url: hostUrl + "/show_learn_words_demo",
         dataType: "json",
         data: {
             paragraphs: [paragraphs],
@@ -108,7 +109,8 @@ function requestTranslatedWords(paragraphs, translatorType) {
             url_postfix: getURLPostfix(window.location.href),
             url: window.location.href,
             title: title_date[0],
-            publication_date: title_date[1]
+            publication_date: title_date[1],
+            quiz_generator: quizType
             
         },
         success: function (result) {
@@ -664,7 +666,7 @@ function beginTranslating() {
             var text = preproccessParagraph(paragraph.innerText);
             if (text.split(' ').length >= 10  )
             {
-                requestTranslatedWords({ paragraph_index : i,  text: text }, translationType);
+                requestTranslatedWords({ paragraph_index : i,  text: text }, translationType, quizType);
             }
             //console.log("Before: " + paragraph.innerText);
             //console.log("After: " +  paragraph.innerText.replace(/[^\x00-\x7F]/g, " ")); //encodeURIComponent(paragraph.innerText));

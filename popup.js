@@ -238,6 +238,39 @@ function setTranslation() {
 }
 
 
+// stop here.
+function setQuizGenerator() {
+    $('#quizGenerator .btn')
+        .click(
+            function() {
+                $("#quizGenerator .btn").removeClass('active');
+                $("#quizGenerator .btn").removeClass('btn-primary');
+                $("#quizGenerator .btn").addClass('btn-default');
+
+                var quizType = $(this).attr('id');
+                console.log(quizType);
+                var quizTypeShortForm = "";
+                if (quizType.indexOf('semantic') >= 0) {                    
+                    quizTypeShortForm = 'semantic';
+                    $("#quizGenerator #semanticSimilarWords").addClass(
+                        'active btn-primary');
+                } else if (quizType.indexOf('recent') >= 0) {
+                    quizTypeShortForm = 'recent';
+                    $("#quizGenerator #recentWords")
+                        .addClass('active btn-primary');
+                } 
+                reload();
+                chrome.runtime.sendMessage(
+                    { type: "change_quiz", tab_id: currentTabID, quizType: quizTypeShortForm },
+                    function(response) {
+                        //console.log("New tab message sent.");
+                    }
+                ); 
+            });
+}
+
+
+
 function setModeCallback() {
     $('#mode .btn').click(function() {
         // "this" refers to the button element
@@ -472,6 +505,7 @@ function onWindowLoad() {
     setAnnotationLanguage();
     setLearnLanguage();
     setLinks();
+    setQuizGenerator();
 }
 
 window.onload = onWindowLoad;

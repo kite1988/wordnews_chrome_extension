@@ -88,11 +88,11 @@
             <div class="row" style="margin:10px;">
                 <div class="col-xs-4">
                     <!-- TODO: a better name -->
-                    <h4>Backend:</h4>
+                    <h4>Translator:</h4>
                 </div>
                 <div class="col-xs-8" style="margin:5px;">
                     <div id="translationUrl" class="btn-group">
-                        <button id="imsTranslations" class="btn btn-default default">FYP</button>
+                        <button id="imsTranslations" class="btn btn-default default">IMS</button>
                         <button id="dictionaryTranslations" class="btn btn-primary">Standard</button>
                         <button id="bingTranslations" class="btn btn-default">Bing</button>
                     </div>
@@ -103,14 +103,28 @@
                 <div class="col-xs-4">
                     <h4>Words Displayed:</h4>
                 </div>
-                <!-- TODO: change to source and target language -->
                 <div class="col-xs-7" style="margin:5px;">
                     <div id="displayLanguage" class="btn-group btn-toggle">
-                        <button id="displaySource" class="btn btn-primary active">English</button>
-                        <button id="displayTarget" class="btn btn-default">Chinese</button>
+                        <button id="displaySource" class="btn btn-primary active">Source</button>
+                        <button id="displayTarget" class="btn btn-default">Target</button>
                     </div>
                 </div>
             </div>
+
+
+            <div class="row" style="margin:10px;">
+                <div class="col-xs-4">
+                    <h4>Quiz generator</h4>
+                </div>
+                <div class="col-xs-7" style="margin:5px;">
+                    <div id="quizGenerator" class="btn-group btn-toggle">
+                        <button id="semanticSimilarWords" class="btn btn-primary active">Semantic</button>
+                        <button id="recentWords" class="btn btn-default">Recent</button>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Enabled websites -->
             <div class="row website-checkbox" style="margin:10px;">
                 <div class="col-xs-4">
