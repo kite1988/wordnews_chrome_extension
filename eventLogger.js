@@ -36,7 +36,7 @@ function addDetail (id, detailTitle, detail) {
     eventLogCont[id].detail[detailTitle] = detail;
 }
 
-function getEvent(id) {
+function getEventLog(id) {
     var eventLog = eventLogCont[id]; 
     var newEventDetail = {};
     var newCurrentStartTime = performance.now();

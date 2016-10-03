@@ -406,7 +406,7 @@ function validateQuizInput(popupID, input) {
     //Add the quiz answer into event log
     addDetail(popupID, "answer", answer);
     //Send ajax post /log
-    sendLog (getEvent(popupID));
+    sendLog (getEventLog(popupID));
     
     //Can be changed to number
     var isCorrect =  (answer == input) ? "correct" : "wrong";
@@ -460,38 +460,37 @@ function appendPopUp(event) {
         document.body.removeChild(myElem);
     }
     var popupData = popupDataCont[id];
-    
-    
-    //If the translated word has not been clicked yet, send ajax post to server 
-    if (popupData.clickCounter == 0) {
-        //Send ajax post /view 
-        $.ajax({
-            type: "post",
-            beforeSend : function (request) {
-                request.setRequestHeader("Accept", "application/json");
-            },
-            url: hostUrl + '/view',
-            dataType: "json",
-            data: {
-                translation_pair_id: popupData.pairID,
-                user_id: userSettings.userId,
-                lang: userSettings.learnLanguage
-            },
-            success: function (result) {
-                
-                console.log("view successful.");
-                updateScoreAndRank(result.user.score, result.user.rank)
-                
-            },
-            error: function (error) {
-                console.log("view error.");            
-            }        
-        });
-    }
-    
-    ++popupData.clickCounter;
-    
+        
     if (popupData.type == 0) {
+        
+        //If the translated word has not been clicked yet, send ajax post to server 
+        if (popupData.clickCounter == 0) {
+            //Send ajax post /view 
+            $.ajax({
+                type: "post",
+                beforeSend : function (request) {
+                    request.setRequestHeader("Accept", "application/json");
+                },
+                url: hostUrl + '/view',
+                dataType: "json",
+                data: {
+                    translation_pair_id: popupData.pairID,
+                    user_id: userSettings.userId,
+                    lang: userSettings.learnLanguage
+                },
+                success: function (result) {
+                    
+                    console.log("view successful.");
+                    updateScoreAndRank(result.user.score, result.user.rank)
+                    
+                },
+                error: function (error) {
+                    console.log("view error.");            
+                }        
+            });
+        }
+        
+        ++popupData.clickCounter;
         
         popupData.html = generateHTMLForViewPopup(id, popupData.word, popupData.translatedWords[0]);
         $('body').append(popupData.html);
@@ -621,10 +620,16 @@ function appendPopUp(event) {
         // Prevents the default action to be triggered. 
         e.preventDefault();
         $('#'+displayID).fadeOut(300);
+        newEvent(id, "close");
+        
+        sendLog(getEventLog(id));
     });
     
     $('#'+displayID).on('blur',function(){
         $(this).fadeOut(300);
+        newEvent(id, "close");
+        
+        sendLog(getEventLog(id));
     })
     
     //Add an event to close the translation/quiz popup
