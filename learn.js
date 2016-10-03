@@ -492,6 +492,8 @@ function appendPopUp(event) {
         
         ++popupData.clickCounter;
         
+        createEventLog(id, userSettings.userId, "view", "start_view");
+        
         popupData.html = generateHTMLForViewPopup(id, popupData.word, popupData.translatedWords[0]);
         $('body').append(popupData.html);
         //Get select translated character elem    
@@ -511,13 +513,21 @@ function appendPopUp(event) {
             translatedCharSelectElem.appendChild(opt);
         }    
             
+        translatedCharSelectElem.addEventListener("click", function () {
+            
+        });
+        
         //Get Audio elem
         var audioElem = document.getElementById('pronunciation_audio_' + id);
+        //Log down the event
+        audioElem.addEventListener("click", function () {
+            newEvent(id, "Click on audio");
+        });
         
         var index = 1;
         //This function will auto loop to play the next track until the last one and reset it back to 0 
         var playNext = function() {
-            if(index <  popupData.translatedWords[popupData.translatedWordIndex].audio_urls.length) {            
+            if ( index <  popupData.translatedWords[popupData.translatedWordIndex].audio_urls.length) {            
                 audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[index];
                 index += 1;
             } else {
@@ -527,6 +537,7 @@ function appendPopUp(event) {
                 index = 1;            
             }
         };
+        
         //Add event for end of audio play to play next track
         audioElem.addEventListener('ended', playNext);    
         audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
@@ -553,10 +564,12 @@ function appendPopUp(event) {
         if (result == 0 ) {
             voteYesBtnElem.addEventListener("click", function () {        
                 voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
+                newEvent(id, "Click on yes");
             });
             //Add onclick event for no button
             voteNoBtnElem.addEventListener("click", function () {        
                 voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
+                newEvent(id, "Click on no");
             });
         }
     } 
