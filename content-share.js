@@ -15,7 +15,7 @@ var userSettings = {
     annotationLanguage: ""
 };
 
-
+var eventLogger = {};
 
 if (typeof chrome != 'undefined') {
     console.log('Chrome, initializating with chrome storage.');   
@@ -184,6 +184,7 @@ function initAnnotate(result) {
     userId = result.userId;
 }
 
+
 //Window event to check whether window is focused 
 $(window).on("blur focus", function(e) {
     var prevType = $(this).data("prevType");
@@ -192,6 +193,11 @@ $(window).on("blur focus", function(e) {
         switch (e.type) {
             case "blur":
                 console.log("Blured"); 
+                //Loop through the all the events and add no focus event
+                for (var key in eventLogCont) {
+                    newEvent(key, "no focus");
+                }
+                
                 break;
             case "focus": //Update the chrome UI
                 console.log("Focused")                
@@ -265,5 +271,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     	console.log("update lang to " + annotationLanguage);
     }
 });
+
+//Common function to call ajax post for /log
+function sendLog (data) {
+    $.ajax({
+        type: "post",
+        beforeSend : function (request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url: hostUrl + '/log',
+        dataType: "json",
+        data: data,
+        success: function (result) {
+            console.log("log successful.", result);                     
+        },
+        error: function (error) {
+            console.log("log error.");            
+        }        
+    })
+}
 
 

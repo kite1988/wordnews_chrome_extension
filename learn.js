@@ -184,11 +184,11 @@ function generateHTMLForQuiz(word, translatedWord, popupID, quiz, access) {
 
 
 function playAudio(audioElem) {
-    console.log("play " + audioElem.id);    
+    console.log("play " + audioElem.id);
     //Get audio sources from element
     var audioSources = audioElem.getElementsByTagName("source");
     var index = 1;
-    
+
     //This function will auto loop to play the next track until the last one and reset it back to 0 
     var playNext = function() {
         if (index < audioSources.length) {
@@ -227,9 +227,9 @@ function generateHTMLForViewPopup(popupID, word, wordElem) {
     html += '<div class="gtx-body" style="padding-left:21px;">' + word + '</div><br>';
     //TODO: Language is hardcoded
     html += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
-  
+
     html += '<div>';
-    html += '<button class="audio-button" id="btn_audio_' + popupID + '"></button>';  
+    html += '<button class="audio-button" id="btn_audio_' + popupID + '"></button>';
     html += '<audio id="pronunciation_audio_' + popupID + '">';
     html += '</audio>';
 
@@ -242,7 +242,7 @@ function generateHTMLForViewPopup(popupID, word, wordElem) {
     html += '<div>Is the translation accurate?</div>';
     //Accurate "Yes/No buttons"
     html += '<div id="tooltip_' + popupID + '" class="tooltip-wrapper disabled" data-title="Not enough rank to vote.">';
-    html += '<button type="button" class="btn btn-success btn-sm" id="vote_yes_button_' + popupID + '" data-pair_id="' + wordElem.id + '" data-source="' + wordElem.source +'" style="margin-right:10px">Yes</button>';
+    html += '<button type="button" class="btn btn-success btn-sm" id="vote_yes_button_' + popupID + '" data-pair_id="' + wordElem.id + '" data-source="' + wordElem.source + '" style="margin-right:10px">Yes</button>';
     html += '<button type="button" class="btn btn-success btn-sm" id="vote_no_button_' + popupID + '" data-pair_id="' + wordElem.id + '" data-source="' + wordElem.source + '">No</button>';
     html += '</div><br>';
 
@@ -435,6 +435,11 @@ function documentClickOnInlineRadioButton() {
 function validateQuizInput(popupID, input) {
     var popupData = popupDataCont[popupID];
     var answer = popupData.word;
+    //Add the quiz answer into event log
+    addDetail(popupID, "answer", answer);
+    //Send ajax post /log
+    sendLog(getEventLog(popupID));
+
     //Can be changed to number
     var isCorrect = (answer == input) ? "correct" : "wrong";
     //Send ajax post /take_quiz 
@@ -487,7 +492,6 @@ function appendPopUp(event) {
     }
     var popupData = popupDataCont[id];
 
-
     //If the translated word has not been clicked yet, send ajax post to server 
     if (popupData.clickCounter == 0) {
         //Send ajax post /view 
@@ -517,138 +521,156 @@ function appendPopUp(event) {
 
     ++popupData.clickCounter;
 
-    if (popupData.type == 0) {
 
-        popupData.html = generateHTMLForViewPopup(id, popupData.word, popupData.translatedWords[0]);
-        $('body').append(popupData.html);
-        //Get select translated character elem    
-        var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
+    createEventLog(id, userSettings.userId, "view", "start_view");
 
-        var result = USER_RANK_INSUFFICIENT;
-        result = checkRankAndLogin(3);
+    popupData.html = generateHTMLForViewPopup(id, popupData.word, popupData.translatedWords[0]);
+    $('body').append(popupData.html);
+    //Get select translated character elem    
+    var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
 
-        //Determine the length of translation words to display
-        var lenOfTranslatedWords = result < 0 ? 1 : popupData.translatedWords.length;
+    var result = USER_RANK_INSUFFICIENT;
+    result = checkRankAndLogin(3);
 
-        //Create the list of translated words according to votes
-        for (var i = 0; i < lenOfTranslatedWords; ++i) {
-            var opt = document.createElement('option');
-            opt.value = i;
-            opt.innerHTML = popupData.translatedWords[i].translation;
-            translatedCharSelectElem.appendChild(opt);
-        }
+    //Determine the length of translation words to display
+    var lenOfTranslatedWords = result < 0 ? 1 : popupData.translatedWords.length;
 
-        //Get Audio elem
-        var audioElem = document.getElementById('pronunciation_audio_' + id);
+    //Create the list of translated words according to votes
+    for (var i = 0; i < lenOfTranslatedWords; ++i) {
+        var opt = document.createElement('option');
+        opt.value = i;
+        opt.innerHTML = popupData.translatedWords[i].translation;
+        translatedCharSelectElem.appendChild(opt);
+    }
 
-        //Get audio sources from element
-        //var audioSources = audioElem.getElementsByTagName("source");
-        var audio_urls = popupData.translatedWords[popupData.translatedWordIndex].audio_urls;
-        appendAudioUrls(audioElem, audio_urls);
+    //Get Audio elem
+    var audioElem = document.getElementById('pronunciation_audio_' + id);
+    var audio_urls = popupData.translatedWords[popupData.translatedWordIndex].audio_urls;
+    appendAudioUrls(audioElem, audio_urls);
 
-        var audioButtonElement = document.getElementById('btn_audio_' + id);
-        audioButtonElement.addEventListener('click', function() {
-            playAudio(audioElem);
+    //Add event listener for playing the audio
+    var audioButtonElement = document.getElementById('btn_audio_' + id);
+    audioButtonElement.addEventListener('click', function() {
+        playAudio(audioElem);
+        //Log down the event
+        newEvent(id, "Click on audio");
+    });
+
+
+    //Add event listener for select onchange to update the other html elem
+    translatedCharSelectElem.addEventListener("change", function() {
+        popupData.translatedWordIndex = translatedCharSelectElem.selectedIndex;
+        //set audio urls
+        appendAudioUrls(audioElem, popupData.translatedWords[popupData.translatedWordIndex].audio_urls);
+        //audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
+        var pronunciationElem = document.getElementById('pronunciation_' + id);
+        pronunciationElem.value = popupData.translatedWords[popupData.translatedWordIndex].pronunciation;
+    });
+
+
+    //Setting up onclick function for the vote buttons
+    var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
+    var voteNoBtnElem = document.getElementById('vote_no_button_' + id);
+
+    //$('#vote_yes_button_' + id).prop('disabled', true); 
+    //$('#vote_no_button_' + id).prop('disabled', true); 
+    $('#tooltip_' + id).tooltip();
+
+    result = checkRankAndLogin(4);
+    //Add onclick event for yes button
+    if (result == 0) {
+        voteYesBtnElem.addEventListener("click", function() {
+            voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
+            newEvent(id, "Click on yes");
         });
-
-
-        /*var index = 1;
-        //This function will auto loop to play the next track until the last one and reset it back to 0 
-        var playNext = function() {
-            if (index < popupData.translatedWords[popupData.translatedWordIndex].audio_urls.length) {
-                audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[index];
-                index += 1;
-            } else {
-                //Reset back to first audio source
-                audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
-                audioElem.pause();
-                index = 1;
-            }
-        };
-        //Add event for end of audio play to play next track
-        audioElem.addEventListener('ended', playNext);
-        audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
-        */
-
-        //Add event listener for select onchange to update the other html elem
-        translatedCharSelectElem.addEventListener("change", function() {
-            popupData.translatedWordIndex = translatedCharSelectElem.selectedIndex;
-            //set audio urls
-            appendAudioUrls(audioElem, popupData.translatedWords[popupData.translatedWordIndex].audio_urls);
-            //audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
-            var pronunciationElem = document.getElementById('pronunciation_' + id);
-            pronunciationElem.value = popupData.translatedWords[popupData.translatedWordIndex].pronunciation;
+        //Add onclick event for no button
+        voteNoBtnElem.addEventListener("click", function() {
+            voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
+            newEvent(id, "Click on no");
         });
-
-        //Add event listener for playing the audio
-
-
-
-        //Setting up onclick function for the vote buttons
-        var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
-        var voteNoBtnElem = document.getElementById('vote_no_button_' + id);
-
-        //$('#vote_yes_button_' + id).prop('disabled', true); 
-        //$('#vote_no_button_' + id).prop('disabled', true); 
-        $('#tooltip_' + id).tooltip();
-
-        result = checkRankAndLogin(4);
-        //Add onclick event for yes button
-        if (result == 0) {
-            voteYesBtnElem.addEventListener("click", function() {
-                voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
-            });
-            //Add onclick event for no button
-            voteNoBtnElem.addEventListener("click", function() {
-                voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
-            });
-        }
     } else { // Quiz
-        var result = checkRankAndLogin(1);
-        popupData.html = generateHTMLForQuiz(popupData.word, popupData.translation, id, popupData.quiz, result);
-        $('body').append(popupData.html);
-        if (result == USER_HAS_ACCESS) {
-            //4 is hardcoded
-            for (var i = 0; i < 4; ++i) {
-                var elem = document.getElementById('quiz_' + id + '_' + i);
-                var input = elem.innerHTML;
-                elem.addEventListener("click", function() {
-                    console.log(this.innerHTML);
-                    validateQuizInput(id, this.innerHTML);
-                });
-            }
+    var result = checkRankAndLogin(1);
+    popupData.html = generateHTMLForQuiz(popupData.word, popupData.translation, id, popupData.quiz, result);
+    $('body').append(popupData.html);
+    if (result == USER_HAS_ACCESS) {
+
+        //Create an event log for take quiz
+        createEventLog(id, userSettings.userId, "take_quiz", "start_quiz");
+
+        //Create a variable to hold all the information for the choices
+        var choicesInfo = [];
+
+        //4 is hardcoded
+        for (var i = 0; i < 4; ++i) {
+            var elem = document.getElementById('quiz_' + id + '_' + i);
+
+            choicesInfo.push(i + "_" + elem.innerHTML);
+
+            // Add an event listener for on click
+            elem.addEventListener("click", function() {
+
+                var quizOptionID = $(this).attr('id');
+                var splitQuiz = quizOptionID.split("_");
+                var index = splitQuiz[splitQuiz.length - 1];
+                var input = this.innerHTML;
+                //Create 
+                newEvent(id, "Click on " + index + ": " + input);
+                console.log(input);
+                validateQuizInput(id, input);
+            });
+
+            // Add an event listen for hover/mouse over
+            elem.addEventListener("mouseover", function() {
+
+                var quizOptionID = $(this).attr('id');
+                var input = this.innerHTML;
+                var splitQuiz = quizOptionID.split("_");
+                var index = splitQuiz[splitQuiz.length - 1];
+                //Create 
+                newEvent(id, "Hover over on " + index + ": " + input);
+
+            });
         }
+        //Add additional information for the event log
+        addDetail(id, "choices", choicesInfo);
     }
+}
 
-    var elem = document.getElementById(id + '_popup');
-    elem.style.left = (rect.left - 100) + 'px';
+var elem = document.getElementById(id + '_popup');
+elem.style.left = (rect.left - 100) + 'px';
 
-    $('#' + displayID).fadeIn(300, function() {
-        //$(this).focus();
-    });
+$('#' + displayID).fadeIn(300, function() {
+    //$(this).focus();
+});
 
-    $('#' + id + '_close').bind('click', function(e) {
-        // Prevents the default action to be triggered. 
-        e.preventDefault();
-        $('#' + displayID).fadeOut(300);
-    });
+$('#' + id + '_close').bind('click', function(e) {
+    // Prevents the default action to be triggered. 
+    e.preventDefault();
+    $('#' + displayID).fadeOut(300);
+    newEvent(id, "close");
 
-    $('#' + displayID).on('blur', function() {
-        $(this).fadeOut(300);
-    })
+    sendLog(getEventLog(id));
+});
 
-    //Add an event to close the translation/quiz popup
-    //document.addEventListener("click", function (event) {  
-    //    console.log("hide panel")
-    //    elem.style.visibility = "hidden";
-    //}, true);        
+$('#' + displayID).on('blur', function() {
+    $(this).fadeOut(300);
+    newEvent(id, "close");
 
-    // Fix left overflow out of screen
-    if (rect.left - 100 < 0) {
-        document.getElementById(id + '_popup').style.left = '0';
-    }
-    // TODO: Fix right overflow out of screen with screenWidth
-    document.getElementById(id + '_popup').style.top = (rect.top + 30) + 'px';
+    sendLog(getEventLog(id));
+})
+
+//Add an event to close the translation/quiz popup
+//document.addEventListener("click", function (event) {  
+//    console.log("hide panel")
+//    elem.style.visibility = "hidden";
+//}, true);        
+
+// Fix left overflow out of screen
+if (rect.left - 100 < 0) {
+    document.getElementById(id + '_popup').style.left = '0';
+}
+// TODO: Fix right overflow out of screen with screenWidth
+document.getElementById(id + '_popup').style.top = (rect.top + 30) + 'px';
 }
 
 
@@ -656,7 +678,7 @@ function appendAudioUrls(audioElement, urls) {
     // remove existing source elements
     $(audioElement).remove("source");
     // create and append new source elements
-    for (var i=0; i<urls.length; i++) {
+    for (var i = 0; i < urls.length; i++) {
         var source = document.createElement("source");
         source.setAttribute("src", urls[i]);
         audioElement.appendChild(source);
