@@ -25,7 +25,7 @@ var displayID = '';
 
 var popupDataCont = {};
 var learnTypeLookup = ["view", "test"];
-var learnTypeENUM = {view: 0, test: 1};
+var learnTypeENUM = { view: 0, test: 1 };
 var idToOriginalWordDictionary = {};
 
 
@@ -39,12 +39,12 @@ var pageWordsLearned = new Set();
 var startTime;
 
 function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback = null) {
-    
+
     $.ajax({
         type: "post",
-        beforeSend : function (request) {
+        beforeSend: function(request) {
             request.setRequestHeader("Accept", "application/json");
-        },    
+        },
         url: hostUrl + '/remember',
         dataType: "json",
         data: {
@@ -52,23 +52,23 @@ function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback 
             wordID: wordID,
             isRemembered: isRemembered,
             url: url
-            
+
         },
-        success: function (result) {
+        success: function(result) {
             console.log("Remember words successful.", result);
             onSuccessCallback();
         },
-        error: function (error) {
+        error: function(error) {
             console.log("Remember words error.");
             alert(error.responseText);
-        }        
+        }
     })
 }
 
 function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) {
     $.ajax({
         type: "post",
-        beforeSend : function (request) {
+        beforeSend: function(request) {
             request.setRequestHeader("Accept", "application/json");
         },
         url: hostUrl + '/log',
@@ -77,16 +77,16 @@ function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) 
             user_id: userID,
             time: elapsed_time,
             move: action,
-            
+
         },
-        success: function (result) {
+        success: function(result) {
             console.log("Log successful.", result);
             onSuccessCallback();
         },
-        error: function (error) {
+        error: function(error) {
             console.log("Log words error.");
             alert(error.responseText);
-        }        
+        }
     })
 }
 
@@ -95,7 +95,7 @@ function requestTranslatedWords(paragraphs, translatorType, quizType) {
     var title_date = getArticleTitleAndPublicationDate();
     $.ajax({
         type: "post",
-        beforeSend : function (request) {
+        beforeSend: function(request) {
             request.setRequestHeader("Accept", "application/json");
         },
         url: hostUrl + "/show_learn_words",
@@ -111,24 +111,24 @@ function requestTranslatedWords(paragraphs, translatorType, quizType) {
             title: title_date[0],
             publication_date: title_date[1],
             quiz_generator: quizType
-            
+
         },
-        success: function (result) {
+        success: function(result) {
             console.log("Request for tranlsated words successful.");
             console.log(JSON.stringify(result));
             translateWords(result);
         },
-        error: function (error) {
+        error: function(error) {
             console.log("Request for tranlsated words error.");
             //alert(error.responseText);
         }
-        
+
     })
 }
 
-function translateWords (result) {    
+function translateWords(result) {
     var wordsCont = result;
-    replaceWords(wordsCont.words_to_learn);    
+    replaceWords(wordsCont.words_to_learn);
 }
 
 
@@ -139,48 +139,80 @@ function translateWords (result) {
 //TODO: Need to remove this hardcoded const variable and change to a more scalable method
 const CHINESE_TO_ENGLISH_QUIZ = 1;
 const ENGLISH_TO_CHINESE_QUIZ = 2;
-    
+
 function generateHTMLForQuiz(word, translatedWord, popupID, quiz, access) {
-    
+
     var arrayShuffle = shuffle([0, 1, 2, 3]);
     var html = '<div tabindex="-1" id=\"' + popupID + '_popup\" class="jfk-bubble gtx-bubble" style="visibility: visible;  opacity: 1; padding-bottom: 40px; ">';
     html += '<a href="#" style="position: absolute; right: 8px;" id=\"' + popupID + '_close">X</a>';
     html += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
-    html += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">'; 
+    html += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
     html += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">'
     if (access == USER_HAS_ACCESS) {
-            
-        html += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';   
-        
+
+        html += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';
+
         for (var i = 0; i < arrayShuffle.length; ++i) {
             //Append div tag
             if (i == 0 || i == 2) {
                 html += '<div style="width: 100%;">';
             }
-            
-            var num = arrayShuffle[i];    
-    
+
+            var num = arrayShuffle[i];
+
             html += '<div id="quiz_' + popupID + '_' + i + '" align="center"' +
-                    'onMouseOver="this.style.color=\'#FF9900\'"' +
-                    'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
-                    'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:' +
-                    '16px;">' + quiz.choices[num] + '</div>';
-    
+                'onMouseOver="this.style.color=\'#FF9900\'"' +
+                'onMouseOut="this.style.color=\'#626262\'" style="font-weight: bold;' +
+                'cursor:pointer; color: #626262; float: left; width: 50%; padding-top:' +
+                '16px;">' + quiz.choices[num] + '</div>';
+
             //Append the end of div tag
             if (i == 1 || i == 3) {
                 html += "</div>";
             }
         }
     } else {
-        html += '<div style="font-size: 80%;" class="gtx-language">You do not have enough rank to do quiz.</div>';   
+        html += '<div style="font-size: 80%;" class="gtx-language">You do not have enough rank to do quiz.</div>';
     }
-    
+
     html += '</div></div></div></div>';
     html += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
-    html += '<div class="jfk-bubble-arrowimplbefore"></div>'; 
+    html += '<div class="jfk-bubble-arrowimplbefore"></div>';
     html += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
     return html;
 }
+
+
+function playAudio(audioElem) {
+    console.log("play " + audioElem.id);    
+    //Get audio sources from element
+    var audioSources = audioElem.getElementsByTagName("source");
+    var index = 1;
+    
+    //This function will auto loop to play the next track until the last one and reset it back to 0 
+    var playNext = function() {
+        if (index < audioSources.length) {
+            audioElem.src = audioSources[index].src;
+            index += 1;
+            // use timeout to prevent The play() request was interrupted by a call to pause() error
+            setTimeout(function() {
+                audioElem.play();
+            }, 10);
+        } else {
+            //Reset back to first audio source
+            audioElem.src = audioSources[0].src;
+            audioElem.pause();
+            index = 1;
+        }
+    };
+    //Add event for end of audio play to play next track
+    audioElem.addEventListener('ended', playNext);
+    audioElem.src = audioSources[0].src;
+    setTimeout(function() {
+        audioElem.play();
+    }, 10);
+}
+
 
 //This function takes in id and wordElem and gerneate html for view popup
 function generateHTMLForViewPopup(popupID, word, wordElem) {
@@ -194,48 +226,44 @@ function generateHTMLForViewPopup(popupID, word, wordElem) {
     html += '<div class="gtx-language">ENGLISH</div>';
     html += '<div class="gtx-body" style="padding-left:21px;">' + word + '</div><br>';
     //TODO: Language is hardcoded
-    html += '<div class="gtx-language">CHINESE (SIMPLIFIED) <span style ="color:red;">Accurate?</span></div>';
-    
-    html += '<p style = "margin: 0px;padding-left:10px;">';
-    //"audio speaker" image
-    html += '<img style="height:21px;width:21px;display:inline-block;opacity:0.55;vertical-align:middle;background-size:91%;-webkit-user-select: none;-webkit-font-smoothing: antialiased;" class="audioButton"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAACjSURBVDjLY2AYYmA1QwADI3FKy8HkfyA8zqBOjPL/YLqO4SWQ9YXBmbDy/1C2EMMGsBZNQsr/w/lMDCuAvKOElP+HeloQSPIxPAPynVAV/seAENHtYLoKyJpDnIb/DOZA2gBI3yRWQx6Q5gZ7nFYaQE4yJN5JW8B0PaanYaADRcMaBh5wsD7HDFZMLURGHEIL0UkDpoWExAfRQlLyJiMDDSAAALgghxq3YsGLAAAAAElFTkSuQmCC" >'
-    html += '<select id = "translatedSelect_' + popupID + '" style="font-size:16px"> </select>';//translatedCharacters;            
-    
+    html += '<div class="gtx-language">CHINESE (SIMPLIFIED)</div>';
+  
+    html += '<div>';
+    html += '<button class="audio-button" id="btn_audio_' + popupID + '"></button>';  
+    html += '<audio id="pronunciation_audio_' + popupID + '">';
+    html += '</audio>';
+
+    html += '<select id = "translatedSelect_' + popupID + '" style="font-size:16px; margin-right:5px"> </select>'; //translatedCharacters;            
+
+    html += '<small id="pronunciation_' + popupID + '">' + wordElem.pronunciation + '</small> ';
+    html += '</div><br>';
+
+
+    html += '<div>Is the translation accurate?</div>';
     //Accurate "Yes/No buttons"
     html += '<div id="tooltip_' + popupID + '" class="tooltip-wrapper disabled" data-title="Not enough rank to vote.">';
-    html += '<button class="button" id="vote_yes_button_' + popupID + '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="background-color: #4CAF50; border-radius: 5px; border: none; font-size:16px; padding: 10px 24px;">Yes</button>';
-    html += '<button class="button" id="vote_no_button_' + popupID +  '" data-pair_id="'+ wordElem.id + '" data-source="' + wordElem.source + '" style="background-color: #4CAF50; border-radius: 5px; border: none; font-size:16px; padding: 10px 24px;">No</button>';
-    html += '</div>';
-   
-    html += '<div class="row" style="margin-left:10px">';
-    html += '<small id="pronunciation_' + popupID + '">' + wordElem.pronunciation + '</small> ';
+    html += '<button type="button" class="btn btn-success btn-sm" id="vote_yes_button_' + popupID + '" data-pair_id="' + wordElem.id + '" data-source="' + wordElem.source +'" style="margin-right:10px">Yes</button>';
+    html += '<button type="button" class="btn btn-success btn-sm" id="vote_no_button_' + popupID + '" data-pair_id="' + wordElem.id + '" data-source="' + wordElem.source + '">No</button>';
+    html += '</div><br>';
 
-    html += '</div>';
-    
-    //Audio bar div
-    html += '<div class="row" >';
-    html += '<audio id="pronunciation_audio_' + popupID + '" controls="" autoplay="">'
-         
-    html += '</audio>';
-    html += '</div>';
-    //End of audio bar div
-    
+
     var see_more_id = "more_" + popupID;
-    html += '</p>';
-    //TODO: href is hardcoded
-    html += '<a id="' + see_more_id + '" target="_blank" class="More" href="'+ wordElem.more_url +'" style="color: #A2A2A2; float: right; padding-top: 16px;">MORE »</a>';
+    html += '<a id="' + see_more_id + '" target="_blank" class="More" href="' + wordElem.more_url + '" style="color: #A2A2A2; float: right; padding-top: 16px;" data-toggle="tooltip" title="Learn more about the translation">MORE »</a>';
+
     html += '</div></div></div></div></div>';
     html += '<div class="jfk-bubble-arrow-id jfk-bubble-arrow jfk-bubble-arrowup" style="left: 117px;">';
     html += '<div class="jfk-bubble-arrowimplbefore"></div>';
     html += '<div class="jfk-bubble-arrowimplafter"></div></div></div>';
-    
+
     return html;
 }
+
+
 
 function voteTranslation(translationPairID, score, source, isExplicit) {
     $.ajax({
         type: "post",
-        beforeSend : function (request) {
+        beforeSend: function(request) {
             request.setRequestHeader("Accept", "application/json");
         },
         url: hostUrl + '/vote',
@@ -247,134 +275,138 @@ function voteTranslation(translationPairID, score, source, isExplicit) {
             source: source,
             is_explicit: isExplicit
         },
-        success: function (result) {
+        success: function(result) {
             console.log("vote successful.");
             updateScoreAndRank(result.user.score, result.user.rank)
-            
+
         },
-        error: function (error) {
-            console.log("vote error.");            
-        }        
+        error: function(error) {
+            console.log("vote error.");
+        }
     });
 }
-    
-function replaceWords (wordsCont) {
+
+function replaceWords(wordsCont) {
     var paragraphs = paragraphsInArticle();
-    
+
     for (var i = 0; i < wordsCont.length; ++i) {
         var wordElem = wordsCont[i];
         var wordLowerCase = wordElem.text.toLowerCase();
         //We only need to translate the same word once, therefore, 
         //translatedWords will be a global container to keep track of the number times the translated word appear.        
-        translatedWords[wordLowerCase] =  wordElem.text in translateWords ? translatedWords[wordLowerCase] + 1 : 1;
-        
+        translatedWords[wordLowerCase] = wordElem.text in translateWords ? translatedWords[wordLowerCase] + 1 : 1;
+
         if (translatedWords[wordLowerCase] >= 2) {
             continue;
-        }    
-        
+        }
+
         var paragraph = paragraphs[wordElem.paragraph_index];
-        var text = paragraph.innerHTML;    
+        var text = paragraph.innerHTML;
         //Set learnType to a int
         var learnType = wordElem.learn_type == "view" ? 0 : 1;
-        var popupID =  wordElem.text + '_' + wordElem.word_id + '_' + wordElem.paragraph_index + '_' + learnType;
-                
+        var popupID = wordElem.text + '_' + wordElem.word_id + '_' + wordElem.paragraph_index + '_' + learnType;
+
         var pronunciation = wordElem.pronunciation.replace('5', '');
-        
+
         //Create a map to store popup data
-        var popupData = {   html: "", 
-                            clickCounter: 0, 
-                            word: wordElem.text, 
-                            type: 0, 
-                            pairID: wordElem.pair_id, 
-                            translatedWordIndex: 0, 
-                            translatedWords : [],
-                            quiz: []
-                        }; 
-        
+        var popupData = {
+            html: "",
+            clickCounter: 0,
+            word: wordElem.text,
+            type: 0,
+            pairID: wordElem.pair_id,
+            translatedWordIndex: 0,
+            translatedWords: [],
+            quiz: []
+        };
+
         //Create a map to store all the translated words
         var translatedWordsCont = [];
         //Push machine translation into translated word container
-        translatedWordsCont.push({ id: wordElem.machine_translation_id, 
-                                  translation: wordElem.translation, 
-                                  pronunciation: pronunciation,
-                                  audio_urls: wordElem.audio_urls, 
-                                  source: 0,//machine 
-                                  vote: wordElem.vote,
-                                  more_url: wordElem.more_url
-                                });
-        
+        translatedWordsCont.push({
+            id: wordElem.machine_translation_id,
+            translation: wordElem.translation,
+            pronunciation: pronunciation,
+            audio_urls: wordElem.audio_urls,
+            source: 0, //machine 
+            vote: wordElem.vote,
+            more_url: wordElem.more_url
+        });
+
         var joinString = '';
         joinString += '<span ';
         joinString += 'class = "translate_class" ';
         joinString += 'style="text-decoration:underline; font-weight: bold; "';
         joinString += 'data-placement="above" ';
-        
+
         //If it is view mode
         if (learnType == 0) {
-            
+
             //In learn mode, there will be annotation property in wordElem.
             //Therefore, we need to insert all the different translation avaialble into a container and sort the ranking
             for (var annotationIndex = 0; annotationIndex < wordElem.annotations.length; ++annotationIndex) {
-                translatedWordsCont.push({  id: wordElem.annotations[annotationIndex].id, 
-                                            translation: wordElem.annotations[annotationIndex].translation, 
-                                            pronunciation: wordElem.annotations[annotationIndex].pronunciation,
-                                            audio_urls: wordElem.annotations[annotationIndex].audio_urls, 
-                                            source: 1,//user/human 
-                                            vote: wordElem.annotations[annotationIndex].vote })
+                translatedWordsCont.push({
+                    id: wordElem.annotations[annotationIndex].id,
+                    translation: wordElem.annotations[annotationIndex].translation,
+                    pronunciation: wordElem.annotations[annotationIndex].pronunciation,
+                    audio_urls: wordElem.annotations[annotationIndex].audio_urls,
+                    source: 1, //user/human 
+                    vote: wordElem.annotations[annotationIndex].vote
+                })
             }
-            
+
             //Sort the translated words in decreasing order according to vote
             function compare(lhs, rhs) {
                 if (lhs.vote < rhs.vote) {
                     return -1;
                 }
-                    
+
                 if (lhs.vote > rhs.vote) {
-                        return 1;
+                    return 1;
                 }
                 return 0;
             }
-            translatedWordsCont.sort(compare); 
+            translatedWordsCont.sort(compare);
         } else {
-            popupData.type = 1;                  
+            popupData.type = 1;
             popupData.quiz = wordElem.quiz;
         }
         joinString += 'id = "' + popupID + '" >';
-            
+
         //TODO: Check what is wordDisplay for
         if (wordDisplay == 1) {
             joinString += wordElem.text;
         } else {
             joinString += wordElem.translation;
         }
-        joinString += '</span> ';        
-        
+        joinString += '</span> ';
+
         $(document).off('click.wordnews').on('click.wordnews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
 
         var parts = text.split(new RegExp('\\b' + wordElem.text + '\\b'));
         var result = '';
         if (parts.length > 1) {
             var n = occurrences(parts[0], '\"');
-            result += parts[0] + joinString;  
+            result += parts[0] + joinString;
             parts.splice(0, 1);
         }
 
         result += parts.join(' ' + wordElem.text + ' ');
         //Create the inner html for highlighted/underlined translated text
-        paragraph.innerHTML = result;       
-        
+        paragraph.innerHTML = result;
+
         //add popup data to container
         popupData.translatedWords = translatedWordsCont;
         popupDataCont[popupID] = popupData;
     }
-   
+
     $(".translate_class").off('click.wordnews').on('click.wordnews', appendPopUp);
 
     $('.translate_class').mouseover(function() {
         $(this).css("color", "#FF9900");
         $(this).css("cursor", "pointer");
     });
-    
+
     $('.translate_class').mouseout(function() {
         $(this).css("color", "black");
     });
@@ -404,31 +436,31 @@ function validateQuizInput(popupID, input) {
     var popupData = popupDataCont[popupID];
     var answer = popupData.word;
     //Can be changed to number
-    var isCorrect =  (answer == input) ? "correct" : "wrong";
+    var isCorrect = (answer == input) ? "correct" : "wrong";
     //Send ajax post /take_quiz 
     $.ajax({
-        type: "post",
-        beforeSend : function (request) {
-            request.setRequestHeader("Accept", "application/json");
-        },
-        url: hostUrl + '/take_quiz',
-        dataType: "json",
-        data: {
-            user_id: userSettings.userId,
-            translation_pair_id: popupData.pairID,            
-            answer: isCorrect,
-            lang: userSettings.learnLanguage
-        },
-        success: function (result) {
-            console.log("take quiz successful.", result);   
-            updateScoreAndRank(result.user.score, result.user.rank)
-            
-        },
-        error: function (error) {
-            console.log("take quiz error.");            
-        }        
-    })
-    //TODO: This way of changing the backgroud image is wrong
+            type: "post",
+            beforeSend: function(request) {
+                request.setRequestHeader("Accept", "application/json");
+            },
+            url: hostUrl + '/take_quiz',
+            dataType: "json",
+            data: {
+                user_id: userSettings.userId,
+                translation_pair_id: popupData.pairID,
+                answer: isCorrect,
+                lang: userSettings.learnLanguage
+            },
+            success: function(result) {
+                console.log("take quiz successful.", result);
+                updateScoreAndRank(result.user.score, result.user.rank)
+
+            },
+            error: function(error) {
+                console.log("take quiz error.");
+            }
+        })
+        //TODO: This way of changing the backgroud image is wrong
     if (isCorrect == "correct") {
         $('.jfk-bubble').css("background-image", "url('https://lh4.googleusercontent.com/-RrJfb16vV84/VSvvkrrgAjI/AAAAAAAACCw/K3FWeamIb8U/w725-h525-no/fyp-correct.jpg')");
         $('.jfk-bubble').css("background-size", "cover");
@@ -436,8 +468,7 @@ function validateQuizInput(popupID, input) {
         popupData.html = generateHTMLForViewPopup(popupID, answer, popupData.translatedWords[popupData.translatedWordIndex]);
         popupData.type = 0;
         //$('#'+popupID+'_popup').fadeOut(300);
-    }
-    else {
+    } else {
         $('.jfk-bubble').css("background-image", "url('https://lh6.googleusercontent.com/--PJRQ0mlPes/VSv52jGjlUI/AAAAAAAACDU/dU3ehfK8Dq8/w725-h525-no/fyp-wrong.jpg')");
         $('.jfk-bubble').css("background-size", "cover");
     }
@@ -455,14 +486,14 @@ function appendPopUp(event) {
         document.body.removeChild(myElem);
     }
     var popupData = popupDataCont[id];
-    
-    
+
+
     //If the translated word has not been clicked yet, send ajax post to server 
     if (popupData.clickCounter == 0) {
         //Send ajax post /view 
         $.ajax({
             type: "post",
-            beforeSend : function (request) {
+            beforeSend: function(request) {
                 request.setRequestHeader("Accept", "application/json");
             },
             url: hostUrl + '/view',
@@ -472,126 +503,140 @@ function appendPopUp(event) {
                 user_id: userSettings.userId,
                 lang: userSettings.learnLanguage
             },
-            success: function (result) {
-                
+            success: function(result) {
+
                 console.log("view successful.");
                 updateScoreAndRank(result.user.score, result.user.rank)
-                
+
             },
-            error: function (error) {
-                console.log("view error.");            
-            }        
+            error: function(error) {
+                console.log("view error.");
+            }
         });
     }
-    
+
     ++popupData.clickCounter;
-    
+
     if (popupData.type == 0) {
-        
+
         popupData.html = generateHTMLForViewPopup(id, popupData.word, popupData.translatedWords[0]);
         $('body').append(popupData.html);
         //Get select translated character elem    
         var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
-        
+
         var result = USER_RANK_INSUFFICIENT;
         result = checkRankAndLogin(3);
-        
+
         //Determine the length of translation words to display
         var lenOfTranslatedWords = result < 0 ? 1 : popupData.translatedWords.length;
-        
+
         //Create the list of translated words according to votes
         for (var i = 0; i < lenOfTranslatedWords; ++i) {
             var opt = document.createElement('option');
             opt.value = i;
             opt.innerHTML = popupData.translatedWords[i].translation;
             translatedCharSelectElem.appendChild(opt);
-        }    
-            
+        }
+
         //Get Audio elem
         var audioElem = document.getElementById('pronunciation_audio_' + id);
+
         //Get audio sources from element
-        var audioSources =  audioElem.getElementsByTagName("source");
-        var index = 1;
+        //var audioSources = audioElem.getElementsByTagName("source");
+        var audio_urls = popupData.translatedWords[popupData.translatedWordIndex].audio_urls;
+        appendAudioUrls(audioElem, audio_urls);
+
+        var audioButtonElement = document.getElementById('btn_audio_' + id);
+        audioButtonElement.addEventListener('click', function() {
+            playAudio(audioElem);
+        });
+
+
+        /*var index = 1;
         //This function will auto loop to play the next track until the last one and reset it back to 0 
         var playNext = function() {
-            if(index <  popupData.translatedWords[popupData.translatedWordIndex].audio_urls.length) {            
+            if (index < popupData.translatedWords[popupData.translatedWordIndex].audio_urls.length) {
                 audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[index];
                 index += 1;
             } else {
                 //Reset back to first audio source
                 audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
-                audioElem.pause();            
-                index = 1;            
+                audioElem.pause();
+                index = 1;
             }
         };
         //Add event for end of audio play to play next track
-        audioElem.addEventListener('ended', playNext);    
+        audioElem.addEventListener('ended', playNext);
         audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
-        
+        */
+
         //Add event listener for select onchange to update the other html elem
         translatedCharSelectElem.addEventListener("change", function() {
             popupData.translatedWordIndex = translatedCharSelectElem.selectedIndex;
             //set audio urls
-            audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
+            appendAudioUrls(audioElem, popupData.translatedWords[popupData.translatedWordIndex].audio_urls);
+            //audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
             var pronunciationElem = document.getElementById('pronunciation_' + id);
             pronunciationElem.value = popupData.translatedWords[popupData.translatedWordIndex].pronunciation;
         });
-        
+
+        //Add event listener for playing the audio
+
+
+
         //Setting up onclick function for the vote buttons
         var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
         var voteNoBtnElem = document.getElementById('vote_no_button_' + id);
-        
+
         //$('#vote_yes_button_' + id).prop('disabled', true); 
         //$('#vote_no_button_' + id).prop('disabled', true); 
         $('#tooltip_' + id).tooltip();
-        
+
         result = checkRankAndLogin(4);
         //Add onclick event for yes button
-        if (result == 0 ) {
-            voteYesBtnElem.addEventListener("click", function () {        
+        if (result == 0) {
+            voteYesBtnElem.addEventListener("click", function() {
                 voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
             });
             //Add onclick event for no button
-            voteNoBtnElem.addEventListener("click", function () {        
+            voteNoBtnElem.addEventListener("click", function() {
                 voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
             });
         }
-    } 
-    else { // Quiz
+    } else { // Quiz
         var result = checkRankAndLogin(1);
         popupData.html = generateHTMLForQuiz(popupData.word, popupData.translation, id, popupData.quiz, result);
         $('body').append(popupData.html);
         if (result == USER_HAS_ACCESS) {
-        //4 is hardcoded
+            //4 is hardcoded
             for (var i = 0; i < 4; ++i) {
-                var  elem = document.getElementById('quiz_' + id + '_' + i);
+                var elem = document.getElementById('quiz_' + id + '_' + i);
                 var input = elem.innerHTML;
-                elem.addEventListener("click", function () {  
+                elem.addEventListener("click", function() {
                     console.log(this.innerHTML);
                     validateQuizInput(id, this.innerHTML);
                 });
             }
         }
     }
-    
-    var elem = document.getElementById(id + '_popup'); 
-    elem.style.left = (rect.left - 100) + 'px';   
-        
-    $('#'+displayID).fadeIn(300, function(){
+
+    var elem = document.getElementById(id + '_popup');
+    elem.style.left = (rect.left - 100) + 'px';
+
+    $('#' + displayID).fadeIn(300, function() {
         //$(this).focus();
     });
-    
-    $('#'+ id + '_close').bind('click', function(e)
-    {
+
+    $('#' + id + '_close').bind('click', function(e) {
         // Prevents the default action to be triggered. 
         e.preventDefault();
-        $('#'+displayID).fadeOut(300);
+        $('#' + displayID).fadeOut(300);
     });
-    
-    $('#'+displayID).on('blur',function(){
+
+    $('#' + displayID).on('blur', function() {
         $(this).fadeOut(300);
     })
-    
+
     //Add an event to close the translation/quiz popup
     //document.addEventListener("click", function (event) {  
     //    console.log("hide panel")
@@ -604,6 +649,18 @@ function appendPopUp(event) {
     }
     // TODO: Fix right overflow out of screen with screenWidth
     document.getElementById(id + '_popup').style.top = (rect.top + 30) + 'px';
+}
+
+
+function appendAudioUrls(audioElement, urls) {
+    // remove existing source elements
+    $(audioElement).remove("source");
+    // create and append new source elements
+    for (var i=0; i<urls.length; i++) {
+        var source = document.createElement("source");
+        source.setAttribute("src", urls[i]);
+        audioElement.appendChild(source);
+    }
 }
 
 vocabularyListDisplayed = 0;
@@ -633,8 +690,8 @@ function beginTranslating() {
         if (document.URL.indexOf(website) !== -1) {
             isWebsiteForTranslation = 1;
         }
-    }    
-    
+    }
+
     console.log('websiteCheck ' + isWebsiteForTranslation);
 
     if (isWebsiteForTranslation) {
@@ -659,19 +716,18 @@ function beginTranslating() {
         });
 
         var paragraphs = paragraphsInArticle();
-        
+
         var articleText = "";
         for (var i = 0; i < paragraphs.length; i++) {
             var paragraph = paragraphs[i];
             var text = preproccessParagraph(paragraph.innerText);
-            if (text.split(' ').length >= 10  )
-            {
-                requestTranslatedWords({ paragraph_index : i,  text: text }, translationType, quizType);
+            if (text.split(' ').length >= 10) {
+                requestTranslatedWords({ paragraph_index: i, text: text }, translationType, quizType);
             }
             //console.log("Before: " + paragraph.innerText);
             //console.log("After: " +  paragraph.innerText.replace(/[^\x00-\x7F]/g, " ")); //encodeURIComponent(paragraph.innerText));
-            
-        }        
+
+        }
     }
 };
 

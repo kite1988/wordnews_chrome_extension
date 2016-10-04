@@ -27,3 +27,27 @@
   cursor: not-allowed;
 }
 
+.audio-button {
+  height:21px;
+  width:21px;
+  display:inline-block;
+  opacity:0.5;
+  /*vertical-align:middle; */
+  background-image:url('chrome-extension://__MSG_@@extension_id__/icons/audio.png');
+  background-size: 21px 21px;
+  -webkit-user-select: none;
+  -webkit-font-smoothing: antialiased;
+  padding: 0;
+  background-repeat:no-repeat;
+  background-color:transparent; 
+  border-color:transparent;
+}
+
+.audio-image {
+  height:21px;
+  width:21px;
+  display:inline-block;
+  opacity:0.55;
+  -webkit-user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
