@@ -569,6 +569,8 @@ function appendPopUp(event) {
         //audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
         var pronunciationElem = document.getElementById('pronunciation_' + id);
         pronunciationElem.value = popupData.translatedWords[popupData.translatedWordIndex].pronunciation;
+        
+        voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 0);
     });
 
 
