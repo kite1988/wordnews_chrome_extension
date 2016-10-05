@@ -14,6 +14,7 @@ var userSettings = {
     learnLanguage: "",
     annotationLanguage: ""
 };
+var website;
 
 var eventLogger = {};
 
@@ -77,6 +78,28 @@ function getURLPostfix(url) {
     var noHTTPString = url.substr(index + 2); // this will get the string with http://
     index = noHTTPString.search('/');
     return noHTTPString.substr(index + 1);
+}
+
+function getParagraphs() {
+	var paragraphs;
+    //If website is cnn
+    if (document.URL.indexOf('cnn.com') !== -1) {
+        paragraphs = $('.zn-body__paragraph').get();
+        paragraphFormatTag = '.zn-body__paragraph';
+        website = "cnn";
+    }
+    //if website is bbc
+    else if (document.URL.indexOf('bbc.com') !== -1){
+        paragraphs = document.getElementsByTagName('p');
+        paragraphFormatTag = 'p'
+        website = "bbc";
+    }
+    else { //TODO: Other webpages could be other tags instead of <p>
+        paragraphs = document.getElementsByTagName('p');
+        paragraphFormatTag = 'p'
+        website = "other";
+    }
+    return paragraphs;
 }
 
 // This function is called from Android client, with appropriate params
