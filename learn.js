@@ -526,168 +526,169 @@ function appendPopUp(event) {
         document.body.removeChild(myElem);
     }
     var popupData = popupDataCont[id];
-
-    //If the translated word has not been clicked yet, send ajax post to server 
-    if (popupData.clickCounter == 0) {
-        //Send ajax post /view 
-        $.ajax({
-            type: "post",
-            beforeSend: function(request) {
-                request.setRequestHeader("Accept", "application/json");
-            },
-            url: hostUrl + '/view',
-            dataType: "json",
-            data: {
-                translation_pair_id: popupData.pairID,
-                user_id: userSettings.userId,
-                lang: userSettings.learnLanguage
-            },
-            success: function(result) {
-
-                console.log("view successful.");
-                updateScoreAndRank(result.user.score, result.user.rank)
-
-            },
-            error: function(error) {
-                console.log("view error.");
-            }
-        });
-    }
-
-    ++popupData.clickCounter;
-
-    createEventLog(id, userSettings.userId, "view", "start_view");
-
-    popupData.html = generateHTMLForViewPopup(id, popupData.word, popupData.translatedWords[0]);
-    $('body').append(popupData.html);
-    //Get select translated character elem    
-    var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
-
-    var result = USER_RANK_INSUFFICIENT;
-    result = checkRankAndLogin(3);
-
-    //Determine the length of translation words to display
-    var lenOfTranslatedWords = result < 0 ? 1 : popupData.translatedWords.length;
-
-    //Create the list of translated words according to votes
-    for (var i = 0; i < lenOfTranslatedWords; ++i) {
-        var opt = document.createElement('option');
-        opt.value = i;
-        opt.innerHTML = popupData.translatedWords[i].translation;
-        translatedCharSelectElem.appendChild(opt);
-    }
-
-    //Get Audio elem
-    var audioElem = document.getElementById('pronunciation_audio_' + id);
-    var audio_urls = popupData.translatedWords[popupData.translatedWordIndex].audio_urls;
-    appendAudioUrls(audioElem, audio_urls);
-
-    //Add event listener for playing the audio
-    var audioButtonElement = document.getElementById('btn_audio_' + id);
-    audioButtonElement.addEventListener('click', function() {
-        playAudio(audioElem);
-        //Log down the event
-        newEvent(id, "Click on audio");
-    });
-
-
-    //Add event listener for select onchange to update the other html elem
-    translatedCharSelectElem.addEventListener("change", function() {
-        popupData.translatedWordIndex = translatedCharSelectElem.selectedIndex;
-        //set audio urls
-        appendAudioUrls(audioElem, popupData.translatedWords[popupData.translatedWordIndex].audio_urls);
-        //audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
-        var pronunciationElem = document.getElementById('pronunciation_' + id);
-        pronunciationElem.value = popupData.translatedWords[popupData.translatedWordIndex].pronunciation;
-        
-        voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 0);
-    });
-
-
-    //Setting up onclick function for the vote buttons
-    var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
-    var voteNoBtnElem = document.getElementById('vote_no_button_' + id);
-
-    $('#tooltip_' + id).tooltip();
-    
-    //Get the text area
-    var textAreaDiv = document.getElementById('textarea_' + id);
-    textAreaDiv.style.display ='none';
-    
-    result = checkRankAndLogin(4);
-    
-    if (result == 0) {
-        //Add onclick event for yes button
-        voteYesBtnElem.addEventListener("click", function() {
-            voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
-            newEvent(id, "Click on yes");
-        });
-        //Add onclick event for no button
-        voteNoBtnElem.addEventListener("click", function() {
-            voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
-            newEvent(id, "Click on no");
-            //Hide the vote translation div 
-            var voteTranslationDiv = document.getElementById('vote_translation_' + id);
-            voteTranslationDiv.style.display ='none';
-            //Unhide textbox to allow user to input their annotation                                    
-            textAreaDiv.style.display ='block';
-            
-        });
-        
-        
-        
-        var translatedTextInput = document.getElementById('translated_text_input_' + id);
-        //Check for any input in the textbox
-        translatedTextInput.addEventListener('keyup', function() {                    
-            //If the length of text is more than 0, enable submit button
-            var voteSubmitButton = document.getElementById('vote_submit_button_' + id);;
-            voteSubmitButton.disabled = !(this.value.length > 0);
-            
-        });
-      
-        var voteSubmitButton = document.getElementById('vote_submit_button_' + id);
-        //Disable the button as default 
-        voteSubmitButton.disabled = true;
-        //When user keys his own translation, send an create_annotation API with respective data
-        //
-        voteSubmitButton.addEventListener("click", function () {
+    if (popupData.type == 0) {
+        //If the translated word has not been clicked yet, send ajax post to server 
+        if (popupData.clickCounter == 0) {
+            //Send ajax post /view 
             $.ajax({
-                type : "post",
-                beforeSend : function(request) {
+                type: "post",
+                beforeSend: function(request) {
                     request.setRequestHeader("Accept", "application/json");
                 },
-                url : hostUrl + "/create_annotation",
-                dataType : 'json',
-                data : {
-                    annotation: {
-                        ann_id: generateId(), //This is popup panel id
-                        user_id: userSettings.userId,
-                        selected_text: popupData.word,
-                        translation: translatedTextInput.value,
-                        lang: userSettings.learnLanguage,
-                        url: window.location.href,
-                        url_postfix: getURLPostfix(window.location.href),
-                        website: website,
-                        paragraph_idx: popupData.paragraphIndex,
-                        text_idx: popupData.wordIndex
-
-                    }   
+                url: hostUrl + '/view',
+                dataType: "json",
+                data: {
+                    translation_pair_id: popupData.pairID,
+                    user_id: userSettings.userId,
+                    lang: userSettings.learnLanguage
                 },
-                success : function(result) { // post successful and result returned by server
-                    console.log( "add annotaiton post success", result );          
-                    
-                    //Change the state of the annotation from new to existed
-                    var panelID  = annotationPanelID + "_panel";
-                    $('#' + panelID).data('state', annotationState.EXISTED);
-                    $('#' + panelID).data('id', result.id); // add the annotation id from server
-                },
+                success: function(result) {
 
-                error : function(result) {
-                    console.log("add annotation post error", result);
+                    console.log("view successful.");
+                    updateScoreAndRank(result.user.score, result.user.rank)
+
+                },
+                error: function(error) {
+                    console.log("view error.");
                 }
             });
+        }
+
+        ++popupData.clickCounter;
+
+        createEventLog(id, userSettings.userId, "view", "start_view");
+
+        popupData.html = generateHTMLForViewPopup(id, popupData.word, popupData.translatedWords[0]);
+        $('body').append(popupData.html);
+        //Get select translated character elem    
+        var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
+
+        var result = USER_RANK_INSUFFICIENT;
+        result = checkRankAndLogin(3);
+
+        //Determine the length of translation words to display
+        var lenOfTranslatedWords = result < 0 ? 1 : popupData.translatedWords.length;
+
+        //Create the list of translated words according to votes
+        for (var i = 0; i < lenOfTranslatedWords; ++i) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.innerHTML = popupData.translatedWords[i].translation;
+            translatedCharSelectElem.appendChild(opt);
+        }
+
+        //Get Audio elem
+        var audioElem = document.getElementById('pronunciation_audio_' + id);
+        var audio_urls = popupData.translatedWords[popupData.translatedWordIndex].audio_urls;
+        appendAudioUrls(audioElem, audio_urls);
+
+        //Add event listener for playing the audio
+        var audioButtonElement = document.getElementById('btn_audio_' + id);
+        audioButtonElement.addEventListener('click', function() {
+            playAudio(audioElem);
+            //Log down the event
+            newEvent(id, "Click on audio");
         });
+
+
+        //Add event listener for select onchange to update the other html elem
+        translatedCharSelectElem.addEventListener("change", function() {
+            popupData.translatedWordIndex = translatedCharSelectElem.selectedIndex;
+            //set audio urls
+            appendAudioUrls(audioElem, popupData.translatedWords[popupData.translatedWordIndex].audio_urls);
+            //audioElem.src = popupData.translatedWords[popupData.translatedWordIndex].audio_urls[0];
+            var pronunciationElem = document.getElementById('pronunciation_' + id);
+            pronunciationElem.value = popupData.translatedWords[popupData.translatedWordIndex].pronunciation;
+            
+            voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 0);
+        });
+
+
+        //Setting up onclick function for the vote buttons
+        var voteYesBtnElem = document.getElementById('vote_yes_button_' + id);
+        var voteNoBtnElem = document.getElementById('vote_no_button_' + id);
+
+        $('#tooltip_' + id).tooltip();
         
+        //Get the text area
+        var textAreaDiv = document.getElementById('textarea_' + id);
+        textAreaDiv.style.display ='none';
+        
+        result = checkRankAndLogin(4);
+        
+        if (result == 0) {
+            //Add onclick event for yes button
+            voteYesBtnElem.addEventListener("click", function() {
+                voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, 1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
+                newEvent(id, "Click on yes");
+            });
+            //Add onclick event for no button
+            voteNoBtnElem.addEventListener("click", function() {
+                voteTranslation(popupData.translatedWords[popupData.translatedWordIndex].id, -1, popupData.translatedWords[popupData.translatedWordIndex].source, 1);
+                newEvent(id, "Click on no");
+                //Hide the vote translation div 
+                var voteTranslationDiv = document.getElementById('vote_translation_' + id);
+                voteTranslationDiv.style.display ='none';
+                //Unhide textbox to allow user to input their annotation                                    
+                textAreaDiv.style.display ='block';
+                
+            });
+          
+            
+            
+            var translatedTextInput = document.getElementById('translated_text_input_' + id);
+            //Check for any input in the textbox
+            translatedTextInput.addEventListener('keyup', function() {                    
+                //If the length of text is more than 0, enable submit button
+                var voteSubmitButton = document.getElementById('vote_submit_button_' + id);;
+                voteSubmitButton.disabled = !(this.value.length > 0);
+                
+            });
+          
+            var voteSubmitButton = document.getElementById('vote_submit_button_' + id);
+            //Disable the button as default 
+            voteSubmitButton.disabled = true;
+            //When user keys his own translation, send an create_annotation API with respective data
+            //
+            voteSubmitButton.addEventListener("click", function () {
+                $.ajax({
+                    type : "post",
+                    beforeSend : function(request) {
+                        request.setRequestHeader("Accept", "application/json");
+                    },
+                    url : hostUrl + "/create_annotation",
+                    dataType : 'json',
+                    data : {
+                        annotation: {
+                            ann_id: generateId(), //This is popup panel id
+                            user_id: userSettings.userId,
+                            selected_text: popupData.word,
+                            translation: translatedTextInput.value,
+                            lang: userSettings.learnLanguage,
+                            url: window.location.href,
+                            url_postfix: getURLPostfix(window.location.href),
+                            website: website,
+                            paragraph_idx: popupData.paragraphIndex,
+                            text_idx: popupData.wordIndex
+
+                        }   
+                    },
+                    success : function(result) { // post successful and result returned by server
+                        console.log( "add annotaiton post success", result );          
+                        
+                        //Change the state of the annotation from new to existed
+                        var panelID  = annotationPanelID + "_panel";
+                        $('#' + panelID).data('state', annotationState.EXISTED);
+                        $('#' + panelID).data('id', result.id); // add the annotation id from server
+                    },
+
+                    error : function(result) {
+                        console.log("add annotation post error", result);
+                    }
+                });
+            });
+        }
+            
     } else { // Quiz
     var result = checkRankAndLogin(1);
     popupData.html = generateHTMLForQuiz(popupData.word, popupData.translation, id, popupData.quiz, result);

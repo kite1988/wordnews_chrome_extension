@@ -45,6 +45,8 @@ if (typeof chrome != 'undefined') {
 
 // Common function to 
 function updateScoreAndRank(score, rank) {
+    userSettings.score = score;
+    userSettings.rank = rank;
     chrome.runtime.sendMessage(
         { type: "update_score_rank",
           score: score,
@@ -238,7 +240,12 @@ $(window).on("blur focus", function(e) {
 
                 chrome.runtime.sendMessage(                                
                     {type: "active", value: true},
-                    function (response) {                       
+                    function (response) { 
+                        //Respone will be a copy of user settings
+                        //Save a local copy of the user settings in content-share.js
+                        for (var key in response) {
+                            userSettings[key] = response[key];
+                        }
                 });      
                 break;
         }

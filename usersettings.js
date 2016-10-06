@@ -65,6 +65,24 @@ var UserSettings = (function ( onCompleteCallback = null ) {
                 saveSetting({'annotationLanguage': annotationLanguage});
             }
             
+            if ( typeof result.score != 'undefined' ) {
+                score = result.score;
+            }
+            else {
+                score = 0;
+                //console.log("annotationLanguage undefined");
+                saveSetting({'score': score});
+            }
+            console.log("Rank: " + result.rank);
+            if ( typeof result.rank != 'undefined' ) {
+                rank = result.rank;
+            }
+            else {
+                
+                rank = 0;
+                //console.log("annotationLanguage undefined");
+                saveSetting({'rank': rank});
+            }
             // if ( typeof result.isWorking != 'undefined' ) {
             //     isWorking = result.isWorking;
             // }
@@ -106,7 +124,7 @@ var UserSettings = (function ( onCompleteCallback = null ) {
 
             if ( typeof result.userId == 'undefined' ) {
                 currentState = "ON_CREATE_USER";
-                //console.log("userId undefined");
+                console.log("userId undefined");
                 $.ajax({
                     type : "get",
                     beforeSend : function(request) {
@@ -229,6 +247,8 @@ var UserSettings = (function ( onCompleteCallback = null ) {
                     "learnLanguage" : learnLanguage,
                     "annotationLanguage" : annotationLanguage,
                     //"translationType" :translationType,
+                    "score": score,
+                    "rank": rank,
                     "websiteSetting" : websiteSetting,
                     "userId" : userId
                 };

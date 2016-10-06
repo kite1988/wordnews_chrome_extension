@@ -4,6 +4,8 @@ var logoImgDir = [  "images/logo-gray.png", //disable
                     "images/logo.png", //learn
                     "images/logo.png" //annotation
                  ];
+
+//chrome.storage.sync.clear();
                  
 var modeENUM = { disable: 0, learn : 1, annotation: 2 };
 
@@ -107,8 +109,9 @@ chrome.runtime.onMessage.addListener(
                 mode = tmp.mode;
             }            
             updateLogo(mode);      
+            sendResponse(userSettings.getSettings());
             //Many more things need to be done...
-
+            return true;
         } else if (request.type == "new_tab") {
             console.log("Request type is new tab");
             
@@ -180,6 +183,8 @@ chrome.runtime.onMessage.addListener(
                 //Send message to notify js 
                 console.log("Rank increase");
                 userSettings.rank = request.rank;
+                userSettings.score = request.score;
+                //Send to all content-share.js to update the user rank and score
             }
             userSettings.score = request.score;
         } else if (request.type == "change_quiz") {
