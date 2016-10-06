@@ -112,6 +112,7 @@ function initalize() {
             if (result.hasTabs) {
                 //Use the current tab id to get the tab information
                 currentTabInfo = result.tabsInfoCont[currentTabID];
+                setMode(modeLookUpTable[currentTabInfo.mode]); 
             }             
             console.log(currentTabInfo);
             //If current tab info is undefined, it means this a new tab
