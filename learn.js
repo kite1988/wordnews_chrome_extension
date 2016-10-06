@@ -145,10 +145,12 @@ function fb_send_recommend() {
         },
         success: function(result) {
             //console.log(JSON.stringify(result));
+            $.notify("Share successful", { globalPosition: 'top left', className: 'success'} );
         },
         error: function(error) {
-            console.log("Request for fb post recommend.");
+            //console.log("Request for fb post recommend.");
             //alert(error.responseText);
+            $.notify("Share unsuccessful", { globalPosition: 'top left', className: 'error'} );
         }
 
     })
