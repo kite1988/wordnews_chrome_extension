@@ -619,7 +619,10 @@ function getArticleTitleAndPublicationDate() {
         }
         else {
             //TODO: Need to check again for this case whether the dateset contains datetime
-            timestamp = dateElem[0].dataset.datetime;
+            // timestamp = dateElem[0].dataset.datetime;
+            // to capture the date in pages like http://www.bbc.com/future/story/20161003-would-it-be-ethical-to-implant-false-memories-in-therapy
+            timestamp = dateElem[0].dataset.datetime || dateElem[0].innerHTML;
+
         }
         //Format the date to yyyy-mm-dd
         date = formatDate(timestamp);

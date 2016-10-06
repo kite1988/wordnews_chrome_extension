@@ -90,11 +90,18 @@ function getParagraphs() {
     }
     //if website is bbc
     else if (document.URL.indexOf('bbc.com') !== -1){
-        // paragraphs = document.getElementsByTagName('p');
-        article = document.getElementsByTagName("article");
-        if (article.length>0) {
-            paragraphs = article[0].getElementsByTagName('p');
-        } 
+        // for most pages like http://www.bbc.com/sport/formula1/37506181
+        article = document.getElementById('responsive-story-page');
+        // for pages like http://www.bbc.com/future/story/20161003-would-it-be-ethical-to-implant-false-memories-in-therapy
+        mainContent = document.getElementsByClassName('primary-content-lining');
+
+        if (article!=null) {
+            paragraphs = article.getElementsByTagName('p');
+        } else if (mainContent.length>0) {
+            paragraphs = mainContent[0].getElementsByTagName('p');
+        } else {
+             paragraphs = document.getElementsByTagName('p');
+        }
         paragraphFormatTag = 'p';
         website = "bbc";
     }
