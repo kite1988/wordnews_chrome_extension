@@ -126,6 +126,34 @@ function requestTranslatedWords(paragraphs, translatorType, quizType) {
     })
 }
 
+function fb_send_recommend() {
+    var title_date = getArticleTitleAndPublicationDate();
+    $.ajax({
+        type: "post",
+        beforeSend: function(request) {
+            request.setRequestHeader("Accept", "application/json");
+        },
+        url: hostUrl + "/auth/facebook/post_recommend",
+        dataType: "json",
+        data: {
+            num: 1, //Hardcoded for now
+            lang: userSettings.learnLanguage,
+            user_id: userSettings.userId,
+            url: window.location.href,
+            title: title_date[0],
+
+        },
+        success: function(result) {
+            //console.log(JSON.stringify(result));
+        },
+        error: function(error) {
+            console.log("Request for fb post recommend.");
+            //alert(error.responseText);
+        }
+
+    })
+}
+
 function translateWords(result) {
     var wordsCont = result;
     replaceWords(wordsCont.words_to_learn);
