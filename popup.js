@@ -238,7 +238,6 @@ function setTranslation() {
 }
 
 
-// stop here.
 function setQuizGenerator() {
     $('#quizGenerator .btn')
         .click(
@@ -327,8 +326,7 @@ function showDivByMode(mode) {
         learn.style.display = 'none';
         annotate.style.display = 'block';
         disable.style.display = 'none';
-    }
-    if (mode == 'disable') {
+    } else if (mode == 'disable') {
         learn.style.display = 'none';
         annotate.style.display = 'none';
         disable.style.display = 'block';
@@ -477,7 +475,7 @@ function setAnnotationLinks() {
     });
     
     $('#annotate-panel #most-annotated .btn').click(function() {
-    	var url = hostUrl + '/show_most_annotated_urls?lang=' + annotationLanguage + '&num='+mostAnnotatedArticle;
+    	var url = hostUrl + '/show_most_annotated_urls?user_id=' + userId + '&lang=' + annotationLanguage + '&num='+mostAnnotatedArticle;
     	var today = new Date().toJSON().slice(0,10);
     
         if ($(this).val() == 'today') {
