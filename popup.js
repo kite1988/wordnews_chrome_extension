@@ -462,6 +462,13 @@ function setLinks() {
         window.open(hostUrl + '/login');
     });
 
+    $('#fb-recommend').click(function() {
+        chrome.runtime.sendMessage(
+            { type: "send_fb_recommend", tab_id: currentTabID },
+            function(response) { }
+        );
+    });
+
     setAnnotationLinks();
 }
 

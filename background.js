@@ -185,6 +185,19 @@ chrome.runtime.onMessage.addListener(
         } else if (request.type == "change_quiz") {
             tabsInfoCont[tabID].quizType = request.quizType;
             setMode(tabsInfoCont[tabID].mode, tabID);
+
+        } else if (request.type == "send_fb_recommend") {
+            chrome.tabs.sendMessage(
+                tabID,
+                {
+                    mode: "learn",
+                    learn_lang: tabsInfoCont[tabID].learn_lang,
+                    translationType: tabsInfoCont[tabID].translationType,
+                    wordDisplay: tabsInfoCont[tabID].wordDisplay,
+                    quizType: tabsInfoCont[tabID].quizType,
+                    action: "send_fb_recommend"
+                },
+                function(response) {} );
         }
     }
 );

@@ -3,7 +3,7 @@
 // Note cnn used ".zn-body__paragraph" instead of p
 var paragraphFormatTag;
 var paragraphs = getParagraphs();// = document.getElementsByTagName('p');
-var website;
+
 
 var selectionMaxNoOfWords = 5;
 var selectionMinNoOfWords = 1;
@@ -189,28 +189,7 @@ function getParagraphIndex(p) {
     return -1;
 }
 
-//TODO: This function exists in contentscript.js
-function getParagraphs() {
-	var paragraphs;
-    //If website is cnn
-    if (document.URL.indexOf('cnn.com') !== -1) {
-        paragraphs = $('.zn-body__paragraph').get();
-        paragraphFormatTag = '.zn-body__paragraph';
-        website = "cnn";
-    }
-    //if website is bbc
-    else if (document.URL.indexOf('bbc.com') !== -1){
-        paragraphs = document.getElementsByTagName('p');
-        paragraphFormatTag = 'p'
-        website = "bbc";
-    }
-    else { //TODO: Other webpages could be other tags instead of <p>
-        paragraphs = document.getElementsByTagName('p');
-        paragraphFormatTag = 'p'
-        website = "other";
-    }
-    return paragraphs;
-}
+
 
 //Find the occurrence of the selected text in preceding string which is
 //all of the text before the selected text. 
