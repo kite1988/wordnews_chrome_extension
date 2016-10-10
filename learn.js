@@ -39,7 +39,6 @@ var pageWordsLearned = new Set();
 var startTime;
 
 function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback = null) {
-
     $.ajax({
         type: "post",
         beforeSend: function(request) {
@@ -76,8 +75,7 @@ function sendUserAction(userId, elapsed_time, action, onSuccessCallback = null) 
         data: {
             user_id: userID,
             time: elapsed_time,
-            move: action,
-
+            move: action
         },
         success: function(result) {
             console.log("Log successful.", result);

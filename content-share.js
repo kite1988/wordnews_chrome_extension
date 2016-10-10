@@ -28,7 +28,7 @@ if (typeof chrome != 'undefined') {
     //});
     //Send message to background to notify new page
     chrome.runtime.sendMessage(
-        { type: "new_page" },
+        { type: "new_page", currentURL:window.location.href   },
         function(response) {   
             //Respone will be a copy of user settings
             //Save a local copy of the user settings in content-share.js
@@ -114,112 +114,6 @@ function getParagraphs() {
     }
     return paragraphs;
 }
-
-// This function is called from Android client, with appropriate params
-function initFromAndroid(androidID, andoridScreenWidth) {
-    console.log('initFromAndroid: ' + androidID + ' ' + andoridScreenWidth);
-    //TODO: The function parameter does not match with function defination
-    //      unless it is calling handleInitResult at some other files.
-    handleInitResult({
-        userAccount: androidID
-    });
-}
-
-function saveSetting(obj) {
-    if (typeof chrome != 'undefined') {
-        // console.log('saving setting for ', JSON.stringify(obj, null, '\t'));
-        chrome.storage.sync.set(obj);
-    } else {
-        console.log('saving setting for other clients not implemented.');
-    }
-}
-//Need to change this for website
-function handleInitResult(result, androidID) {
-
-    var allKeys = Object.keys(result);
-    isWorking = result.isWorking;//undefined;
-    
-    console.log("isWorking in init " + isWorking);
-    
-    if (isWorking == undefined) {
-        isWorking = 1;
-        saveSetting({ 'isWorking': isWorking });
-    }
-    
-    if (isWorking == 1) { // learning
-    	initLearn(result);
-    } else if (isWorking == 2) { // annotation
-    	initAnnotate(result);
-    } else { // disable
-    }
-}
-
-// TODO: keep consistent with the synUser() in popup.js
-function initLearn(result) {
-    if ( typeof result.wordDisplay != 'undefined' ) {
-        wordDisplay = result.wordDisplay
-    }
-    //TODO: wordsReplace is not being used by anywhere. Check again before removing this
-    if ( typeof result.wordsReplaced != 'undefined' ) {
-        wordsReplaced = result.wordsReplaced
-    }
-    if ( typeof result.websiteSetting != 'undefined' ) {
-        websiteSetting = result.websiteSetting
-    }
-    //TODO: translationUrl is being initialized twice! Once here and another time at learn.js
-    console.log(result.translationUrl);
-    if (typeof result.translationUrl != 'undefined') {
-        translationUrl = result.translationUrl;
-    }
-
-    //console.log("user isWorking: "+ result.isWorking);
-    console.log("user wordDisplay: "+ result.wordDisplay);
-    //console.log("user wordsReplaced: "+ result.wordsReplaced);
-    //console.log("user websiteSetting: "+ result.websiteSetting);
-
-    //TODO: Find where is TranslationDirection defined at
-	if (wordDisplay == undefined) {
-        wordDisplay = TranslationDirection.ENGLISH;
-        saveSetting({ 'wordDisplay': wordDisplay });
-    }
-
-    if (wordsReplaced == undefined) {
-        wordsReplaced = 6;
-        //console.log("Setting words to replace to : " + wordsReplaced + " (default setting)");
-        saveSetting({ 'wordsReplaced': wordsReplaced });
-    }
-
-    if (websiteSetting == undefined) {
-        websiteSetting = "cnn.com_bbc.co";
-        //console.log("Setting websites to use to : " + websiteSetting + " (default setting)");
-        saveSetting({ 'websiteSetting': websiteSetting });
-    }
-
-    startTime = new Date(); // this is used to track the time between each click
-
-    userSettings.updateNumWords(wordsReplaced);
-    
-    learnLanguage = result.learnLanguage;
-    if (learnLanguage == undefined) {
-    	learnLanguage = 'zh_CN';
-        saveSetting ({'learnLanguage': 'zh_CN'});
-    }    
-
-
-    beginTranslating();
-}
-
-//TODO: 1) keep consistent with the synUser() in popup.js and 
-// 2) wrap some code as a utility function for annotate.js 
-function initAnnotate(result) {
-	annotationLanguage = result.annotationLanguage;
-    if (annotationLanguage == undefined) {
-    	annotationLanguage = 'zh_CN';
-    	saveSetting({'annotationLanguage': 'zh_CN'});
-    }    
-    userId = result.userId;
-}
-
 
 //Window event to check whether window is focused 
 $(window).on("blur focus", function(e) {

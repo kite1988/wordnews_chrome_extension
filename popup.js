@@ -119,7 +119,7 @@ function initalize() {
             if (currentTabInfo == undefined) {              
                 //Send message to background to register the new tab
                 chrome.runtime.sendMessage(
-                    { type: "new_tab", tab_id: currentTabID },
+                    { type: "new_tab", tab_id: currentTabID, currentURL: arrayOfTabs[0].url  },
                     function(response) {
                         //background.js will respond back with current tab info to update the UI
                         console.log("New tab message sent.");         
@@ -185,7 +185,7 @@ function setWordReplace() {
         updateTabSettings({wordsLearn: slideEvt.value}, false);                       
     });
 }
-
+//TODO: Need to set this
 function setWebsite() {
     $('input').change(function() {
         console.log("Set Website");
@@ -197,9 +197,17 @@ function setWebsite() {
                 websiteSetting.push(i);
             }
         }
-        chrome.storage.sync.set({
-            'websiteSetting': websiteSetting
-        });        
+        //Send message to background to update user settings
+        chrome.runtime.sendMessage(
+            {   type: "update_website_setting",//"update_user_settings", 
+                tab_id: currentTabID, 
+                websiteSetting:  websiteSetting
+                
+            },
+            function(response) {
+                console.log("Update user setting success.");
+            }
+        ); 
     });
 }
 
@@ -381,7 +389,11 @@ function showAnnotationHistory() {
 
 function updateTabSettings (tabSettings, updateMode) {
     chrome.runtime.sendMessage(
-        { type: "update_tab", tab_id: currentTabID, settings: tabSettings, update_mode: updateMode },
+        {   type: "update_tab", 
+            tab_id: currentTabID, 
+            settings: tabSettings, 
+            update_mode: updateMode 
+        },
         function(response) { }
     );
 }

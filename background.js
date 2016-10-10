@@ -5,6 +5,10 @@ var logoImgDir = [  "images/logo-gray.png", //disable
                     "images/logo.png" //annotation
                  ];
 
+//Some cache result of 
+var websiteSettingENUM = {cnn: 1, chinadaily: 2, bbc: 3};
+var websiteSettingLookupTable = ['none', 'cnn.com', 'chinadaily.com.cn', 'bbc.co']; //none is just a buffer
+
 //chrome.storage.sync.clear();
                  
 var modeENUM = { disable: 0, learn : 1, annotation: 2 };
@@ -122,7 +126,8 @@ chrome.runtime.onMessage.addListener(
                                     wordsDisplay: 0,
                                     wordsLearn: 0,
                                     translationType: 'dict',
-                                    quizType: 'semantic'
+                                    quizType: 'semantic',
+                                    currentURL: request.currentURL
                                   };
             //Sync tab information container in google local storage
             chrome.storage.local.set({
@@ -157,8 +162,9 @@ chrome.runtime.onMessage.addListener(
             }
             //Update the local chrome storage with the local copy
             chrome.storage.local.set({
-                        'tabsInfoCont': tabsInfoCont,
-                    }, function() {
+                    'tabsInfoCont': tabsInfoCont,
+                    }, 
+                    function() {
                         console.log("tabsInfoCont is sync-ed.");                        
                 }
             );
@@ -167,10 +173,12 @@ chrome.runtime.onMessage.addListener(
                 setMode(tabsInfoCont[tabID].mode, tabID);
             }
         } else if (request.type == "new_page") {
-            //Send back a copy of user settings
-            sendResponse(userSettings.getSettings());
+            
             if (tabID in tabsInfoCont) {                
-                setMode(tabsInfoCont[tabID].mode, tabID);
+                setMode(tabsInfoCont[tabID].mode, tabID);                
+                tabsInfoCont[tabID].currentURL = request.currentURL;
+                //Send back a copy of user settings
+                sendResponse(userSettings.getSettings());
                 //See "new_tab" condition for the reason of putting return true
                 return true;
             }   
@@ -182,11 +190,10 @@ chrome.runtime.onMessage.addListener(
             if (request.rank > userSettings.rank) {
                 //Send message to notify js 
                 console.log("Rank increase");
-                userSettings.rank = request.rank;
-                userSettings.score = request.score;
-                //Send to all content-share.js to update the user rank and score
+                userSettings.rank = request.rank;                
             }
             userSettings.score = request.score;
+            updateUserSettings();
         } else if (request.type == "change_quiz") {
             tabsInfoCont[tabID].quizType = request.quizType;
             setMode(tabsInfoCont[tabID].mode, tabID);
@@ -202,10 +209,53 @@ chrome.runtime.onMessage.addListener(
                     quizType: tabsInfoCont[tabID].quizType,
                     action: "send_fb_recommend"
                 },
-                function(response) {} );
+                function(response) {} 
+            );    
+        } else if (request.type == "update_website_setting") {
+            userSettings.websiteSetting = request.websiteSetting;
+            //Update the sync storage and this will trigger onChange add listener for all tabs
+            updateUserSettings(userSettings);
+            
+            //Check the url is valid             
+
+            //Get the current URL
+            var currentTabURL = tabsInfoCont[tabID].currentURL;
+            //Cache the check result
+            var result = true;
+            //Check the whether the current URL contains 
+            //Iterate the website settings 
+            for (var i = 0; i < userSettings.websiteSetting.length; ++i) {
+                var websiteIndex = userSettings.websiteSetting[i];
+                var website  = websiteSettingLookupTable[websiteIndex];
+                
+                if (currentTabURL.includes(website)) {
+                    result = true;
+                    break;
+                } else {
+                    result = false;
+                }
+            }   
+            //If result is false, send to current tab content-share.js to disable mode
+            if (!result) {
+                chrome.tabs.sendMessage(
+                    tabID,
+                    {
+                        mode: "disable"                            
+                    },
+                    function(response) {} 
+                ); 
+            } else { 
+                setMode(tabsInfoCont[tabID].mode, tabID);
+              
+            }       
         }
     }
 );
+
+//This function will call chrome.storage.sync to update the userSettings
+function updateUserSettings () {
+    chrome.storage.sync.set(userSettings);
+}
 
 chrome.cookies.onChanged.addListener(
     function (changeInfo) {
