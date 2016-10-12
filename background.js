@@ -120,7 +120,7 @@ chrome.runtime.onMessage.addListener(
             console.log("Request type is new tab");
             
             //Set learn mode "1" and lanuage to chinese for both annotation and learn as default for new tab
-            tabsInfoCont[tabID] = { mode: "learn",
+            tabsInfoCont[tabID] = { mode: 1,
                                     ann_lang: 'zh_CN', 
                                     learn_lang: 'zh_CN',
                                     wordsDisplay: 0,

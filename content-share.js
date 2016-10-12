@@ -28,7 +28,7 @@ if (typeof chrome != 'undefined') {
     //});
     //Send message to background to notify new page
     chrome.runtime.sendMessage(
-        { type: "new_page", currentURL:window.location.href   },
+        { type: "new_page", currentURL: window.location.href   },
         function(response) {   
             //Respone will be a copy of user settings
             //Save a local copy of the user settings in content-share.js

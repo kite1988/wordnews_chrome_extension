@@ -112,6 +112,7 @@ function initalize() {
             if (result.hasTabs) {
                 //Use the current tab id to get the tab information
                 currentTabInfo = result.tabsInfoCont[currentTabID];
+                console.log ("hasTabs mode: " + modeLookUpTable[currentTabInfo.mode]);
                 setMode(modeLookUpTable[currentTabInfo.mode]); 
             }             
             console.log(currentTabInfo);
@@ -125,6 +126,7 @@ function initalize() {
                         console.log("New tab message sent.");         
                         currentTabInfo = response;
                         updatePopupUI(currentTabInfo);
+                        console.log ("no tabinfo mode: " + currentTabInfo.mode);
                         setMode(modeLookUpTable[currentTabInfo.mode]); 
                     }
                 );
@@ -161,6 +163,7 @@ function syncUser() {
                 }
                                 
                 websiteSetting = result.websiteSetting;
+                console.log("websiteSetting: "+ websiteSetting);
                 learnLanguage = result.learnLanguage;
                 annotationLanguage = result.annotationLanguage;
                 
@@ -192,8 +195,11 @@ function setWebsite() {
         websiteSetting = [];
         //Iterate the checkbox, as for now, there is only 3 checkboxes      
         for (var i = 1; i <= 3; ++i)
-        {
-            if (document.getElementById('inlineCheckbox' + i).checked) {
+        {   
+            console.log(i);
+            var websiteCheckedBoxElem = document.getElementById('inlineCheckbox' + i);
+            console.log(websiteCheckedBoxElem);
+            if (websiteCheckedBoxElem != null && websiteCheckedBoxElem.checked) {
                 websiteSetting.push(i);
             }
         }
@@ -288,6 +294,7 @@ function setModeCallback() {
 }
 
 function setMode(mode) {
+    console.log("Mode: " + mode);
     $("#mode .btn").removeClass('active');
     $("#mode .btn").removeClass('btn-primary');
     $("#mode .btn").addClass('btn-default');
