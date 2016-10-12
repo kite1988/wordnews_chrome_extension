@@ -70,6 +70,13 @@ function updatePopupUI (currentTabInfo) {
             // specified precision
     });
     
+    //Set the all translationType to default
+    document.getElementById('dictTranslations').className = 'btn btn-default';
+    document.getElementById('imsTranslations').className = 'btn btn-default';
+    document.getElementById('bingTranslations').className = 'btn btn-default';
+    //Set the selected translationType to be primary
+    document.getElementById(currentTabInfo.translationType + 'Translations').className = 'btn btn-primary active';
+    
     document.getElementById('learnt').innerHTML = '-';
     document.getElementById('toLearn').innerHTML = '-';
     console.log("show learning history")
@@ -145,22 +152,6 @@ function syncUser() {
             function(result) {
                 console.log(result);
                 userId = result.userId;
-
-                translationUrl = result.translationUrl || "http://wordnews-mobile.herokuapp.com/";
-                console.log('transUrl', translationUrl);
-                if (translationUrl.indexOf('mobile') >= 0) {
-                    document.getElementById('dictionaryTranslations').className = 'btn btn-default';
-                    document.getElementById('imsTranslations').className = 'btn btn-default';
-                    document.getElementById('bingTranslations').className = 'btn btn-primary active';
-                } else if (translationUrl.indexOf('wordnews') >= 0 && translationUrl.indexOf('ims') < 0) {
-                    document.getElementById('dictionaryTranslations').className = 'btn btn-primary active';
-                    document.getElementById('imsTranslations').className = 'btn btn-default';
-                    document.getElementById('bingTranslations').className = 'btn btn-default';
-                } else {
-                    document.getElementById('dictionaryTranslations').className = 'btn btn-default';
-                    document.getElementById('imsTranslations').className = 'btn btn-primary active';
-                    document.getElementById('bingTranslations').className = 'btn btn-default';
-                }
                                 
                 websiteSetting = result.websiteSetting;
                 console.log("websiteSetting: "+ websiteSetting);
@@ -232,9 +223,9 @@ function setTranslation() {
                     translationTypeShortForm = 'ims';
                     $("#translationUrl #imsTranslations").addClass(
                         'active btn-primary');
-                } else if (translationType.indexOf('dictionary') >= 0) {
+                } else if (translationType.indexOf('dict') >= 0) {
                     translationTypeShortForm = 'dict';
-                    $("#translationUrl #dictionaryTranslations")
+                    $("#translationUrl #dictTranslations")
                         .addClass('active btn-primary');
                 } else {
                     // this one uses Bing translator

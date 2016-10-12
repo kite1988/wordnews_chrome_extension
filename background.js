@@ -177,6 +177,7 @@ chrome.runtime.onMessage.addListener(
             if (tabID in tabsInfoCont) {                
                 setMode(tabsInfoCont[tabID].mode, tabID);                
                 tabsInfoCont[tabID].currentURL = request.currentURL;
+                updateTabInfo();
                 //Send back a copy of user settings
                 sendResponse(userSettings.getSettings());
                 //See "new_tab" condition for the reason of putting return true
@@ -184,6 +185,7 @@ chrome.runtime.onMessage.addListener(
             }   
         } else if (request.type == "change_translation") {
             tabsInfoCont[tabID].translationType = request.translationType;
+            updateTabInfo();
             setMode(tabsInfoCont[tabID].mode, tabID);
             
         } else if (request.type == "update_score_rank") {
@@ -196,6 +198,7 @@ chrome.runtime.onMessage.addListener(
             updateUserSettings();
         } else if (request.type == "change_quiz") {
             tabsInfoCont[tabID].quizType = request.quizType;
+            updateTabInfo();
             setMode(tabsInfoCont[tabID].mode, tabID);
 
         } else if (request.type == "send_fb_recommend") {
@@ -255,6 +258,15 @@ chrome.runtime.onMessage.addListener(
 //This function will call chrome.storage.sync to update the userSettings
 function updateUserSettings () {
     chrome.storage.sync.set(userSettings);
+}
+
+function updateTabInfo () {
+    
+    chrome.storage.local.set({
+                'tabsInfoCont': tabsInfoCont
+            }, function() {
+                console.log("tabsInfoCont is sync-ed.");
+    });
 }
 
 chrome.cookies.onChanged.addListener(
