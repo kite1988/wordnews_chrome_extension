@@ -562,7 +562,7 @@ function appendPopUp(event) {
         var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
 
         var result = USER_RANK_INSUFFICIENT;
-        result = checkRankAndLogin(3);
+        result = checkRankAndLogin(rankAccess.VIEW_HUMAN_ANNOTATION);
 
         //Determine the length of translation words to display
         var lenOfTranslatedWords = result < 0 ? 1 : popupData.translatedWords.length;
@@ -612,7 +612,7 @@ function appendPopUp(event) {
         var textAreaDiv = document.getElementById('textarea_' + id);
         textAreaDiv.style.display ='none';
         
-        result = checkRankAndLogin(4);
+        result = checkRankAndLogin(rankAccess.VOTE_TRANSLATIONS);
         
         if (result == 0) {
             //Add onclick event for yes button
@@ -688,7 +688,7 @@ function appendPopUp(event) {
         }
             
     } else { // Quiz
-    var result = checkRankAndLogin(1);
+    var result = checkRankAndLogin(rankAccess.VIEW_MACHINE_TRANSLATION);
     popupData.html = generateHTMLForQuiz(popupData.word, popupData.translation, id, popupData.quiz, result);
     $('body').append(popupData.html);
     if (result == USER_HAS_ACCESS) {

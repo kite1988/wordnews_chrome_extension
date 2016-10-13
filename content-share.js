@@ -14,7 +14,17 @@ var userSettings = {
     learnLanguage: "",
     annotationLanguage: ""
 };
+
 var website;
+
+var rankAccess = { 
+                    FREE: 0,
+                    VIEW_MACHINE_TRANSLATION: 1, 
+                    TAKE_QUIZ : 2, 
+                    VIEW_HUMAN_ANNOTATION: 3 ,
+                    VOTE_TRANSLATIONS: 4,
+                    INPUT_OWN_TRANSLATION: 5
+                };
 
 var eventLogger = {};
 

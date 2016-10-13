@@ -336,7 +336,7 @@ function appendPanel(annotationPanelID, word, userId, paragrahIndex, wordIndex, 
     $('#annontation-submit-btn' + annotationPanelID).prop('disabled', true);    
     
     
-    var loginResult = checkRankAndLogin(5);
+    var loginResult = checkRankAndLogin(rankAccess.INPUT_OWN_TRANSLATION);
     var textareaIsDisabled = (loginResult < 0) ? true : false;
     //document.getElementById(annotationPanelID + "_editor").disabled = textareaIsDisabled;
     $('#'+annotationPanelID + "_editor").prop('disabled', textareaIsDisabled);   
