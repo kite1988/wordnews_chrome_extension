@@ -46,7 +46,7 @@ function programmaticInjection () {
 
 function updatePopupUI (currentTabInfo) {
     //var mode = modeLookUpTable[currentTabInfo.mode];
-    //setMode(mode);            
+    setMode(modeLookUpTable[currentTabInfo.mode]); 
     
     //Update Learn language UI
     $('#learn-panel .bfh-selectbox').val(currentTabInfo.learn_lang);
@@ -112,16 +112,18 @@ function initalize() {
         currentWindow: true
     }, function(arrayOfTabs) {
         //Get the current tab id 
-        currentTabID = arrayOfTabs[0].id;        
+        currentTabID = arrayOfTabs[0].id;   
+        console.log(currentTabID);
         //Grab all the data from the google local storage
         chrome.storage.local.get(null, function (result) {      
-        
-            if (result.hasTabs) {
+            console.log( result);
+            //if (result.hasTabs) {
                 //Use the current tab id to get the tab information
-                currentTabInfo = result.tabsInfoCont[currentTabID];
-                console.log ("hasTabs mode: " + modeLookUpTable[currentTabInfo.mode]);
-                setMode(modeLookUpTable[currentTabInfo.mode]); 
-            }             
+            currentTabInfo = result.tabsInfoCont[currentTabID];
+            console.log("currentTabInfo: " + currentTabInfo);
+            //console.log ("hasTabs mode: " + modeLookUpTable[currentTabInfo.mode]);
+                
+            //}             
             console.log(currentTabInfo);
             //If current tab info is undefined, it means this a new tab
             if (currentTabInfo == undefined) {              
@@ -134,7 +136,7 @@ function initalize() {
                         currentTabInfo = response;
                         updatePopupUI(currentTabInfo);
                         console.log ("no tabinfo mode: " + currentTabInfo.mode);
-                        setMode(modeLookUpTable[currentTabInfo.mode]); 
+                        //setMode(modeLookUpTable[currentTabInfo.mode]); 
                     }
                 );
             } else {                

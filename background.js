@@ -119,8 +119,8 @@ chrome.runtime.onMessage.addListener(
         } else if (request.type == "new_tab") {
             console.log("Request type is new tab");
             
-            //Set learn mode "1" and lanuage to chinese for both annotation and learn as default for new tab
-            tabsInfoCont[tabID] = { mode: 1,
+            //Set mode to learn and lanuage to chinese for both annotation and learn as default for new tab
+            tabsInfoCont[tabID] = { mode: modeENUM.learn,
                                     ann_lang: 'zh_CN', 
                                     learn_lang: 'zh_CN',
                                     wordsDisplay: 0,
@@ -136,8 +136,9 @@ chrome.runtime.onMessage.addListener(
                     }, function() {
                         console.log("tabsInfoCont is sync-ed.");
                         //Send a response back to popup.js to update the UI                        
-                        sendResponse(tabsInfoCont[tabID]);
+                        
             });
+            sendResponse(tabsInfoCont[tabID]);
             //From Google API...
             //This function becomes invalid when the event listener returns, 
             //unless you return true from the event listener to 
