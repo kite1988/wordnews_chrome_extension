@@ -77,6 +77,7 @@ function setMode (mode, tabID) {
                 learn_lang: tabsInfoCont[tabID].learn_lang, 
                 translationType: tabsInfoCont[tabID].translationType,
                 wordDisplay: tabsInfoCont[tabID].wordDisplay,
+                wordsLearn: tabsInfoCont[tabID].wordsLearn,
                 quizType: tabsInfoCont[tabID].quizType
             }, 
             function(response) {} );

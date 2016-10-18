@@ -3,6 +3,7 @@
 // TODO: move into UserSettings
 var categoryParameter = '';
 var wordDisplay;
+var wordsLearn;
 
 var translationUrl = 'http://wordnews-mobile.herokuapp.com/show';
 //var translationUrl = "http://localhost:3000/show";
@@ -628,12 +629,9 @@ function appendPopUp(event) {
                 var voteTranslationDiv = document.getElementById('vote_translation_' + id);
                 voteTranslationDiv.style.display ='none';
                 //Unhide textbox to allow user to input their annotation                                    
-                textAreaDiv.style.display ='block';
-                
-            });
-          
-            
-            
+                textAreaDiv.style.display ='block';                
+            });          
+                        
             var translatedTextInput = document.getElementById('translated_text_input_' + id);
             //Check for any input in the textbox
             translatedTextInput.addEventListener('keyup', function() {                    
@@ -827,15 +825,26 @@ function beginTranslating() {
                 //}
             }
         });
-
+        
+        //Need to randomly select paragraphs and use "wordsLearn" variable from tab settings
+        //to control the number of words needed to be learn
         var paragraphs = getParagraphs();
-
-        var articleText = "";
-        for (var i = 0; i < paragraphs.length; i++) {
-            var paragraph = paragraphs[i];
+        //Get the number of paragraphs in the article
+        var numberOfParagrpahs = paragraph.length;        
+        //Create a random index array 
+        var randomIndexArray = new Array(45);
+        for (var i = 0; i < n; ++i) {
+            randomIndexArray[i] = i;
+        }
+        //Shuffle the array
+        randomIndexArray = shuffle(randomIndexArray);        
+        //wordsLearn variable will be used to limit the number of paragraphs send to server
+        for (var i = 0; i < wordsLearn; i++) {
+            var index = randomIndexArray[i];
+            var paragraph = paragraphs[index];
             var text = preproccessParagraph(paragraph.innerText);
             if (text.split(' ').length >= 10) {
-                requestTranslatedWords({ paragraph_index: i, text: text }, translationType, quizType);
+                requestTranslatedWords({ paragraph_index: index, text: text }, translationType, quizType);
             }
             //console.log("Before: " + paragraph.innerText);
             //console.log("After: " +  paragraph.innerText.replace(/[^\x00-\x7F]/g, " ")); //encodeURIComponent(paragraph.innerText));

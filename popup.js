@@ -176,9 +176,9 @@ function syncUser() {
 }
 
 //TODO: Need to update wordsLearn variable at background.js
-function setWordReplace() {   
+function setWordLearn() {   
    $('#wordsLearn').on('slide', function(slideEvt) {
-        updateTabSettings({wordsLearn: slideEvt.value}, false);                       
+        updateTabSettings({wordsLearn: slideEvt.value}, true);                       
     });
 }
 //TODO: Need to set this
@@ -515,7 +515,7 @@ function setAnnotationLinks() {
 function onWindowLoad() {
     initalize();
     syncUser();
-    setWordReplace();
+    setWordLearn();
     setWebsite();
     setTranslation();
     setModeCallback();

@@ -205,6 +205,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         translationType = request.translationType;
         quizType = request.quizType;
         wordDisplay = request.wordDisplay;
+        wordsLearn = request.wordsLearn;
         if ( 'action' in request ) {
             // there is a user click in one of the social button
             if ( request.action == "send_fb_recommend" ) {
