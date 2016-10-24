@@ -1,9 +1,5 @@
 // Shared functions and configurations for learning and annotation mode
 
-//TODO: Variables such as isWorking, userAccount, wordDisplay, wordsReplace and translationUrl
-//      are declared in learn.js BUT initalized at here
-//      Need to remove these variables from learn.js and shift them to their respective settings.
-
 var websiteSettingENUM = {cnn: 1, chinadaily: 2, bbc: 3};
 var websiteSettingLookupTable = ['none', 'cnn.com', 'chinadaily.com.cn', 'bbc.co']; //none is just a buffer
 var userSettings = {
@@ -15,8 +11,11 @@ var userSettings = {
     annotationLanguage: ""
 };
 
+//This variable stores the result of the current website 
+//e.g. "cnn.com", "bbc.com"
 var website;
 
+//According to https://docs.google.com/spreadsheets/d/1OHxJHR1XdkLxQRxPyvbnf0k9tWe-CHrcsnNbJGKVVT8/edit#gid=0
 var rankAccess = { 
                     FREE: 0,
                     VIEW_MACHINE_TRANSLATION: 1, 
@@ -31,11 +30,6 @@ var eventLogger = {};
 if (typeof chrome != 'undefined') {
     console.log('Chrome, initializating with chrome storage.');   
     
-    //chrome.storage.sync.get(null, function(result) {
-    //    for (var key in result) {
-    //        userSettings[key] = result[key];
-    //    }
-    //});
     //Send message to background to notify new page
     chrome.runtime.sendMessage(
         { type: "new_page", currentURL: window.location.href   },
@@ -47,8 +41,7 @@ if (typeof chrome != 'undefined') {
             }
         }
     );
-    //TODO: Why is handleInitResult is stored in sync?
-    //chrome.storage.sync.get(null, handleInitResult);
+
 } else {
     console.log('Not chrome, waiting for manual initialization.');
 }
@@ -201,6 +194,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         beginAnnotation(request.user_id);
     }     
     else if (request.mode == "learn") {
+        //Set the respective variables
         learnLanguage = request.learn_lang;
         translationType = request.translationType;
         quizType = request.quizType;
@@ -216,7 +210,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             beginTranslating();
         }
     }    
-    
+    //Set the mode
     currentMode = request.mode;
     
     //TODO: This doesn't makes any sense unless the request only send ann_lang in the parameter

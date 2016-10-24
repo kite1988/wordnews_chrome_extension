@@ -1,19 +1,14 @@
 'use strict';
 
-// TODO: move into UserSettings
-var categoryParameter = '';
-var wordDisplay;
+//Word display variable is used to determine source-to-target or target-to-source.
+//Currently this variable is represented using 1 and 0 for now
+//TODO: If we want to localize this project, wordDisplay should be able to handle more than two languages(chinese and english)
+var wordDisplay
+//Words learn variable is used to deterine the number paragraph(Should change the name of the variable)
 var wordsLearn;
 
 var translationUrl = 'http://wordnews-mobile.herokuapp.com/show';
 //var translationUrl = "http://localhost:3000/show";
-
-
-var TranslationDirection = {
-    CHINESE: 0,
-    ENGLISH: 1
-};
-var isTranslatingByParagraph = true;
 
 var translationType = "";
 var wordsReplaced = '';
@@ -23,21 +18,16 @@ var pageDictionary = {};
 var vocabularyListDisplayed;
 var displayID = '';
 
-
+//This cont will hold all the important variable for popup
 var popupDataCont = {};
 var learnTypeLookup = ["view", "test"];
 var learnTypeENUM = { view: 0, test: 1 };
 var idToOriginalWordDictionary = {};
 
-
 // a dictionary of word : times returned by server for translation
 var translatedWords = {};
 
 var pageWordsLearned = new Set();
-
-// startTime is used for logging, it is initialised after the user settings have been 
-// retrieved from chrome
-var startTime;
 
 function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback = null) {
     $.ajax({
@@ -52,7 +42,6 @@ function sendRememberWords(userID, wordID, isRemembered, url, onSuccessCallback 
             wordID: wordID,
             isRemembered: isRemembered,
             url: url
-
         },
         success: function(result) {
             console.log("Remember words successful.", result);
@@ -101,7 +90,8 @@ function requestTranslatedWords(paragraphs, translatorType, quizType) {
         dataType: "json",
         data: {
             paragraphs: [paragraphs],
-            num_of_words: 1, //Hardcoded for now
+            //TODO: It is hardcoded for now and need to check whether do we need to use wordLearn variable
+            num_of_words: 1, 
             lang: userSettings.learnLanguage,
             translator: translatorType,
             user_id: userSettings.userId,
@@ -121,7 +111,6 @@ function requestTranslatedWords(paragraphs, translatorType, quizType) {
             console.log("Request for tranlsated words error.");
             //alert(error.responseText);
         }
-
     })
 }
 
@@ -160,15 +149,6 @@ function translateWords(result) {
     replaceWords(wordsCont.words_to_learn);
 }
 
-
-//var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"test","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"quiz":{"test_type":1,"choices":{"0":"possible","1":"potential","2":"green","3":"medical"}}}]};
-//translateWords(temp_result);
-//var temp_result = {"msg":"OK","words_to_learn":[{"text":"medical","paragraph_index":"8","sentence_index":0,"word_index":1,"word_id":2307,"pos_tag":"JJ","position":[91,97],"machine_translation_id":983,"translation":"医","weighted_vote":0,"translation_id":15247,"pair_id":51634,"learn_type":"view","pronunciation":"yi4 ","audio_urls":["http://www.chinese-tools.com/jdd/public/ct/pinyinaudio/yi4.mp3"],"annotations":[ { "id" : 15, "translation": "采取", }  ]}]};
-//translateWords(temp_result);
-//TODO: Need to remove this hardcoded const variable and change to a more scalable method
-const CHINESE_TO_ENGLISH_QUIZ = 1;
-const ENGLISH_TO_CHINESE_QUIZ = 2;
-
 function generateHTMLForQuiz(word, translatedWord, popupID, quiz, access) {
 
     var arrayShuffle = shuffle([0, 1, 2, 3]);
@@ -177,6 +157,7 @@ function generateHTMLForQuiz(word, translatedWord, popupID, quiz, access) {
     html += '<div class="jfk-bubble-content-id"><div id="gtx-host" style="min-width: 200px; max-width: 400px;">';
     html += '<div id="bubble-content" style="min-width: 200px; max-width: 400px;" class="gtx-content">';
     html += '<div id="translation" style="min-width: 200px; max-width: 400px; display: inline;">'
+    //User access check: if it has access, create the four quiz buttons 
     if (access == USER_HAS_ACCESS) {
 
         html += '<div style="font-size: 80%;" class="gtx-language">Choose the most appropriate translation:</div>';
@@ -200,7 +181,7 @@ function generateHTMLForQuiz(word, translatedWord, popupID, quiz, access) {
                 html += "</div>";
             }
         }
-    } else {
+    } else { //Render a feedback message
         html += '<div style="font-size: 80%;" class="gtx-language">You do not have enough rank to do quiz.</div>';
     }
 
@@ -335,7 +316,7 @@ function replaceWords(wordsCont) {
         var paragraph = paragraphs[wordElem.paragraph_index];
         var text = paragraph.innerHTML;
         //Set learnType to a int
-        var learnType = wordElem.learn_type == "view" ? 0 : 1;
+        var learnType = wordElem.learn_type == "view" ? learnTypeENUM.view : learnTypeENUM.learn;
         var popupID = wordElem.text + '_' + wordElem.word_id + '_' + wordElem.paragraph_index + '_' + learnType;
 
         var pronunciation = wordElem.pronunciation.replace('5', '');
@@ -374,7 +355,7 @@ function replaceWords(wordsCont) {
         joinString += 'data-placement="above" ';
 
         //If it is view mode
-        if (learnType == 0) {
+        if (learnType == learnTypeENUM.view) {
 
             //In learn mode, there will be annotation property in wordElem.
             //Therefore, we need to insert all the different translation avaialble into a container and sort the ranking
@@ -407,15 +388,13 @@ function replaceWords(wordsCont) {
         }
         joinString += 'id = "' + popupID + '" >';
 
-        //TODO: Check what is wordDisplay for
+        //wordDisplay is a variable to determine target-to-source or source-to-target
         if (wordDisplay == 1) {
             joinString += wordElem.text;
         } else {
             joinString += wordElem.translation;
         }
         joinString += '</span> ';
-
-        $(document).off('click.wordnews').on('click.wordnews', "input[name*='inlineRadioOptions']", documentClickOnInlineRadioButton);
 
         var parts = text.split(new RegExp('\\b' + wordElem.text + '\\b'));
         var result = '';
@@ -446,25 +425,6 @@ function replaceWords(wordsCont) {
     });
 }
 
-function documentClickOnInlineRadioButton() {
-    var id = $(this).attr('id');
-    var tempWordID = $(this).attr('value').split('_')[0];
-
-    document.getElementById('inlineRadio1').disabled = true;
-    document.getElementById('inlineRadio2').disabled = true;
-    document.getElementById('inlineRadio3').disabled = true;
-    document.getElementById('inlineRadioCorrect').disabled = true;
-
-    if (document.getElementById('inlineRadioCorrect').checked) {
-        sendRememberWords(userSettings.userId, tempWordID, 1, document.URL);
-        document.getElementById('alertSuccess').style.display = 'inline-flex';
-        setTimeout(function() { $('.translate_class').popover('hide') }, 1000);
-    } else {
-        sendRememberWords(userSettings.userId, tempWordID, 0, document.URL);
-        document.getElementById('alertDanger').style.display = 'inline-flex';
-        setTimeout(function() { $('.translate_class').popover('hide') }, 2500);
-    }
-}
 
 function validateQuizInput(popupID, input) {
     var popupData = popupDataCont[popupID];
@@ -513,12 +473,15 @@ function validateQuizInput(popupID, input) {
     }
 }
 
+//This function is called when "translated word"(underlined) being clicked. 
+//It will insert the html generated by the respective functions
+//After the HTML is inserted, it will set up needed event listener for the buttons and links
 function appendPopUp(event) {
     var id = $(this).attr('id');
 
     var element = document.getElementById(id);
     var rect = cumulativeOffset(element);
-
+    
     displayID = id + "_popup";
     var myElem = document.getElementById(displayID);
     if (myElem != null) {
@@ -555,13 +518,15 @@ function appendPopUp(event) {
 
         ++popupData.clickCounter;
 
+        //Create an event log to store event details of "view"
         createEventLog(id, userSettings.userId, "view", "start_view");
-
+        //Generate html for view popup
         popupData.html = generateHTMLForViewPopup(id, popupData.word, popupData.translatedWords[0]);
         $('body').append(popupData.html);
         //Get select translated character elem    
         var translatedCharSelectElem = document.getElementById('translatedSelect_' + id);
-
+        
+        //Variable to hold the user rank result
         var result = USER_RANK_INSUFFICIENT;
         result = checkRankAndLogin(rankAccess.VIEW_HUMAN_ANNOTATION);
 
@@ -688,6 +653,7 @@ function appendPopUp(event) {
     } else { // Quiz
     var result = checkRankAndLogin(rankAccess.VIEW_MACHINE_TRANSLATION);
     popupData.html = generateHTMLForQuiz(popupData.word, popupData.translation, id, popupData.quiz, result);
+    //Append the html to the body
     $('body').append(popupData.html);
     if (result == USER_HAS_ACCESS) {
 
@@ -830,10 +796,10 @@ function beginTranslating() {
         //to control the number of words needed to be learn
         var paragraphs = getParagraphs();
         //Get the number of paragraphs in the article
-        var numberOfParagrpahs = paragraph.length;        
+        var numberOfParagrpahs = paragraphs.length;        
         //Create a random index array 
-        var randomIndexArray = new Array(45);
-        for (var i = 0; i < n; ++i) {
+        var randomIndexArray = new Array(numberOfParagrpahs);
+        for (var i = 0; i < numberOfParagrpahs; ++i) {
             randomIndexArray[i] = i;
         }
         //Shuffle the array

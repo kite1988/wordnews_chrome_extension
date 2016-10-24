@@ -15,6 +15,7 @@ var mostAnnotatedArticle = 10;
 var currentTabInfo = undefined;
 var websiteSetting = [];
 
+//THis is an expierment and currently not being used
 //This function will inject all the the scripts
 function programmaticInjection () {
     var js = [  "jquery-2.1.1.min.js",
@@ -175,13 +176,13 @@ function syncUser() {
             });
 }
 
-//TODO: Need to update wordsLearn variable at background.js
+//TODO: Need to change variable
 function setWordLearn() {   
    $('#wordsLearn').on('slide', function(slideEvt) {
         updateTabSettings({wordsLearn: slideEvt.value}, true);                       
     });
 }
-//TODO: Need to set this
+
 function setWebsite() {
     $('input').change(function() {
         console.log("Set Website");
@@ -193,7 +194,7 @@ function setWebsite() {
             var websiteCheckedBoxElem = document.getElementById('inlineCheckbox' + i);
             console.log(websiteCheckedBoxElem);
             if (websiteCheckedBoxElem != null && websiteCheckedBoxElem.checked) {
-                websiteSetting.push(i);
+                websiteSetting.push(i); //If the website is checked, stored it in a container/
             }
         }
         //Send message to background to update user settings
@@ -245,7 +246,7 @@ function setTranslation() {
             });
 }
 
-
+//TODO: Need to check what is this being used for
 function setQuizGenerator() {
     $('#quizGenerator .btn')
         .click(
@@ -288,6 +289,7 @@ function setModeCallback() {
 
 function setMode(mode) {
     console.log("Mode: " + mode);
+    //Reset the HTML button
     $("#mode .btn").removeClass('active');
     $("#mode .btn").removeClass('btn-primary');
     $("#mode .btn").addClass('btn-default');
@@ -398,8 +400,6 @@ function updateTabSettings (tabSettings, updateMode) {
     );
 }
 
-// TODO: refine code
-//       and shift this to tab level settings
 function setReplace() {
 	
 	$('#displayLanguage .btn').click(function() {

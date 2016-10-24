@@ -12,10 +12,7 @@ var websiteSettingLookupTable = ['none', 'cnn.com', 'chinadaily.com.cn', 'bbc.co
 //chrome.storage.sync.clear();
                  
 var modeENUM = { disable: 0, learn : 1, annotation: 2 };
-
 var userSettings = UserSettings.getInstance();
-
-var testSettings = userSettings.getSettings();
 var userid = userSettings.getUserId();
 
 //Have a local copy of current window store in Google storage local
@@ -175,9 +172,11 @@ chrome.runtime.onMessage.addListener(
                 setMode(tabsInfoCont[tabID].mode, tabID);
             }
         } else if (request.type == "new_page") {
-            
-            if (tabID in tabsInfoCont) {                
+            //If there is a message recieved from tab regarding new page
+            //Check where this tab id is inside the tab info cont
+            if (tabID in tabsInfoCont) {                                
                 setMode(tabsInfoCont[tabID].mode, tabID);                
+                
                 tabsInfoCont[tabID].currentURL = request.currentURL;
                 updateTabInfo();
                 //Send back a copy of user settings
@@ -185,17 +184,20 @@ chrome.runtime.onMessage.addListener(
                 //See "new_tab" condition for the reason of putting return true
                 return true;
             }   
+            //If the tab is not inside the tab info cont, we will ignore update the tab
         } else if (request.type == "change_translation") {
             tabsInfoCont[tabID].translationType = request.translationType;
             updateTabInfo();
             setMode(tabsInfoCont[tabID].mode, tabID);
             
         } else if (request.type == "update_score_rank") {
+            //If new rank from server is higher than current rank
             if (request.rank > userSettings.rank) {
                 //Send message to notify js 
                 console.log("Rank increase");
                 userSettings.rank = request.rank;                
             }
+            //Update the score 
             userSettings.score = request.score;
             updateUserSettings();
         } else if (request.type == "change_quiz") {
@@ -221,8 +223,7 @@ chrome.runtime.onMessage.addListener(
             //Update the sync storage and this will trigger onChange add listener for all tabs
             updateUserSettings(userSettings);
             
-            //Check the url is valid             
-
+            //Check the url is valid           
             //Get the current URL
             var currentTabURL = tabsInfoCont[tabID].currentURL;
             //Cache the check result
@@ -230,9 +231,10 @@ chrome.runtime.onMessage.addListener(
             //Check the whether the current URL contains 
             //Iterate the website settings 
             for (var i = 0; i < userSettings.websiteSetting.length; ++i) {
+                //cache the website index
                 var websiteIndex = userSettings.websiteSetting[i];
                 var website  = websiteSettingLookupTable[websiteIndex];
-                
+                //If the current url is part of the allowed website lists
                 if (currentTabURL.includes(website)) {
                     result = true;
                     break;
@@ -250,8 +252,7 @@ chrome.runtime.onMessage.addListener(
                     function(response) {} 
                 ); 
             } else { 
-                setMode(tabsInfoCont[tabID].mode, tabID);
-              
+                setMode(tabsInfoCont[tabID].mode, tabID);              
             }       
         }
     }
@@ -263,7 +264,6 @@ function updateUserSettings () {
 }
 
 function updateTabInfo () {
-    
     chrome.storage.local.set({
                 'tabsInfoCont': tabsInfoCont
             }, function() {
