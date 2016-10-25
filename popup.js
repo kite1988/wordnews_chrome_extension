@@ -4,11 +4,11 @@
 var userId = -1; // this is user internal id
 var categoryParameter = '';
 var wordDisplay = ''; //0: in target language, 1: in source language
-var wordsLearn = ''; // number of words to learn
+var wordsLearn = 1; // number of words to learn
 var websiteSetting = '';
 var translationUrl = '';
-var annotationLanguage = ''; // TODO: init this according to users' setting
-var learnLanguage = ''; // TODO: init this according to user's setting
+var annotationLanguage = 'zh_CN'; 
+var learnLanguage = 'zh_CN'; 
 var currentTabID;
 var modeLookUpTable = ["disable", "learn", "annotate"];
 var mostAnnotatedArticle = 10;
@@ -127,10 +127,17 @@ function initalize() {
             //}             
             console.log(currentTabInfo);
             //If current tab info is undefined, it means this a new tab
+            //Take the settings from here instead of tab
             if (currentTabInfo == undefined) {              
                 //Send message to background to register the new tab
                 chrome.runtime.sendMessage(
-                    { type: "new_tab", tab_id: currentTabID, currentURL: arrayOfTabs[0].url  },
+                    {   type: "new_tab", 
+                        tab_id: currentTabID, 
+                        currentURL: arrayOfTabs[0].url,
+                        annotationLanguage: annotationLanguage,
+                        learnLanguage: learnLanguage,
+                        wordsLearn: wordsLearn
+                    },
                     function(response) {
                         //background.js will respond back with current tab info to update the UI
                         console.log("New tab message sent.");         

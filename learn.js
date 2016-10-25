@@ -757,6 +757,7 @@ function preproccessParagraph(paragraph) {
     return paragraph.replace(/[^\x00-\x7F]/g, " ");
 }
 
+
 function beginTranslating() {
 
     var isWebsiteForTranslation = 0;

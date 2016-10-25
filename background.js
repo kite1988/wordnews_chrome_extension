@@ -116,13 +116,13 @@ chrome.runtime.onMessage.addListener(
             return true;
         } else if (request.type == "new_tab") {
             console.log("Request type is new tab");
-            
+            //TODO: Need to get more information from popup.js to initalize variables correctly
             //Set mode to learn and lanuage to chinese for both annotation and learn as default for new tab
             tabsInfoCont[tabID] = { mode: modeENUM.learn,
-                                    ann_lang: 'zh_CN', 
-                                    learn_lang: 'zh_CN',
+                                    ann_lang: request.annotationLanguage, 
+                                    learn_lang: request.learnLanguage,
                                     wordsDisplay: 0,
-                                    wordsLearn: 0,
+                                    wordsLearn: request.wordsLearn,
                                     translationType: 'dict',
                                     quizType: 'semantic',
                                     currentURL: request.currentURL
